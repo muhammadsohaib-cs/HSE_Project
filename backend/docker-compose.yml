@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 15 with PostGIS Spatial Extension
+  postgres-postgis:
+    image: postgis/postgis:15-3.3
+    container_name: chiniot_hse_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: chiniot_hse
+      POSTGRES_USER: hse_admin
+      POSTGRES_PASSWORD: ChiniotSecurePassword2026!
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - chiniot_hse_network
+
+  # MinIO S3-Compatible Storage for Incident & Resolution Photos
+  minio:
+    image: minio/minio:latest
+    container_name: chiniot_hse_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: chiniot_s3_admin
+      MINIO_ROOT_PASSWORD: ChiniotMinioPassword2026!
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web Console
+    volumes:
+      - minio_data:/data
+    networks:
+      - chiniot_hse_network
+
+  # Redis for Asynchronous Emergency Queue & FCM Push Job Worker
+  redis:
+    image: redis:7-alpine
+    container_name: chiniot_hse_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - chiniot_hse_network
+
+volumes:
+  pgdata:
+  minio_data:
+
+networks:
+  chiniot_hse_network:
+    driver: bridge
+
