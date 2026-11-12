@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/localization/cpl_localizations.dart';
+import '../../core/platform/audio_record_service.dart';
+import '../../core/platform/media_service.dart';
 import '../../core/theme/cpl_theme.dart';
 import '../cpl_system/cubit/cpl_system_cubit.dart';
 import '../cpl_system/cubit/cpl_system_state.dart';
@@ -14,6 +16,9 @@ class HazardReportScreen extends StatefulWidget {
 }
 
 class _HazardReportScreenState extends State<HazardReportScreen> with SingleTickerProviderStateMixin {
+  final AudioRecordService _recordService = AudioRecordService();
+  final MediaService _mediaService = MediaService();
+
   String _selectedCategory = 'Steam Leak';
   String _selectedSeverity = 'High';
   String _selectedZone = 'Boiler House Unit-1';
@@ -26,6 +31,9 @@ class _HazardReportScreenState extends State<HazardReportScreen> with SingleTick
   int _recordSeconds = 0;
   Timer? _recordTimer;
   bool _photoCaptured = true;
+  String? _recordedVoicePath;
+  String? _capturedPhotoPath;
+  String _capturedPhotoName = 'Photo Captured • Flange Steam Jet FV-14';
 
   late AnimationController _animController;
 
@@ -53,23 +61,38 @@ class _HazardReportScreenState extends State<HazardReportScreen> with SingleTick
     _recordTimer?.cancel();
     _animController.dispose();
     _descController.dispose();
+    _recordService.dispose();
     super.dispose();
   }
 
-  void _toggleRecording() {
-    setState(() {
-      _isRecording = !_isRecording;
-      if (_isRecording) {
+  void _toggleRecording() async {
+    if (!_isRecording) {
+      final path = await _recordService.startRecording();
+      setState(() {
+        _isRecording = true;
+        _recordedVoicePath = path;
         _recordSeconds = 0;
         _recordTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-          setState(() {
-            _recordSeconds++;
-          });
+          setState(() => _recordSeconds++);
         });
-      } else {
-        _recordTimer?.cancel();
+      });
+    } else {
+      final path = await _recordService.stopRecording();
+      _recordTimer?.cancel();
+      setState(() {
+        _isRecording = false;
+        _recordedVoicePath = path ?? _recordedVoicePath;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Urdu Voice Note Saved & Attached to Incident Queue'),
+            backgroundColor: CplColors.emerald500,
+            duration: Duration(seconds: 2),
+          ),
+        );
       }
-    });
+    }
   }
 
   void _dispatchReport() {
@@ -80,6 +103,8 @@ class _HazardReportScreenState extends State<HazardReportScreen> with SingleTick
       severity: _selectedSeverity,
       description: _descController.text.trim(),
       coords: _gpsCoords,
+      photoPath: _capturedPhotoPath,
+      voicePath: _recordedVoicePath,
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -328,7 +353,7 @@ class _HazardReportScreenState extends State<HazardReportScreen> with SingleTick
                             const SizedBox(height: 6),
                             Text(
                               _photoCaptured
-                                ? 'Photo Captured • Flange Steam Jet FV-14'
+                                ? _capturedPhotoName
                                 : 'Tap Camera to Capture Proof',
                               style: TextStyle(
                                 color: _photoCaptured ? Colors.white : Colors.white60,
@@ -369,8 +394,23 @@ class _HazardReportScreenState extends State<HazardReportScreen> with SingleTick
                         top: 8,
                         right: 8,
                         child: InkWell(
-                          onTap: () {
-                            setState(() => _photoCaptured = !_photoCaptured);
+                          onTap: () async {
+                            final file = await _mediaService.capturePhoto();
+                            if (file != null) {
+                              setState(() {
+                                _photoCaptured = true;
+                                _capturedPhotoPath = file.path;
+                                _capturedPhotoName = 'Photo Captured • ${file.name}';
+                              });
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('GPS Watermarked: ${file.watermark}'),
+                                    backgroundColor: CplColors.emerald500,
+                                  ),
+                                );
+                              }
+                            }
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

@@ -1,7 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:chiniot_power_hse/core/utils/risk_calculator.dart';
+import 'package:chiniot_power_hse/core/storage/offline_sync_queue.dart';
 import 'package:chiniot_power_hse/features/auth/domain/entities/user.dart';
 import 'package:chiniot_power_hse/features/checklists/domain/entities/checklist.dart';
+import 'package:chiniot_power_hse/features/cpl_system/cubit/cpl_system_state.dart';
+import 'package:chiniot_power_hse/features/cpl_system/models/cpl_models.dart';
 
 void main() {
   group('Employee ID Validation Tests (CP-EMP-XXXX)', () {
@@ -79,6 +82,124 @@ void main() {
       expect(audit.passCount, equals(2));
       expect(audit.failCount, equals(1));
       expect(audit.naCount, equals(1));
+    });
+  });
+
+  group('Offline Sync Queue Item Serialization Tests', () {
+    test('Serializes to and from JSON accurately', () {
+      final now = DateTime(2026, 11, 12, 10, 30, 0);
+      final item = SyncQueueItem(
+        id: 'SYNC-001',
+        actionType: 'CREATE_HAZARD',
+        payload: {
+          'title': 'High Pressure Steam Leak',
+          'zone': 'Boiler House Unit-1',
+          'score': 16,
+        },
+        queuedAt: now,
+        retryCount: 1,
+      );
+
+      final json = item.toJson();
+      expect(json['id'], equals('SYNC-001'));
+      expect(json['actionType'], equals('CREATE_HAZARD'));
+      expect(json['payload']['title'], equals('High Pressure Steam Leak'));
+      expect(json['retryCount'], equals(1));
+
+      final restored = SyncQueueItem.fromJson(json);
+      expect(restored.id, equals(item.id));
+      expect(restored.actionType, equals(item.actionType));
+      expect(restored.payload['zone'], equals('Boiler House Unit-1'));
+      expect(restored.queuedAt, equals(now));
+      expect(restored.retryCount, equals(1));
+    });
+  });
+
+  group('Role-Based Access Control (RBAC) Permission Tests', () {
+    CplSystemState createStateForRole(String role) {
+      return CplSystemState(
+        language: 'en',
+        activeScreenIndex: 0,
+        currentUser: UserSession(
+          empId: 'CPL-EMP-TEST',
+          name: 'Test Staff',
+          urduName: 'ٹیسٹ اسٹاف',
+          role: role,
+          shift: 'Shift A',
+          cnic: '33202-0000000-0',
+          zone: 'Boiler House Unit-1',
+        ),
+        zones: const [],
+        hazards: const [],
+        selectedLikelihood: 3,
+        selectedSeverity: 4,
+        capas: const [],
+        checklistItems: const [],
+        checklistZone: 'Boiler House Unit-1',
+        checklistSigned: false,
+        permits: const [],
+        ptwFilter: 'All',
+        emailLogs: const [],
+        trainings: const [],
+        qrCheckedIn: false,
+        roster: const [],
+        analyticsPeriod: '6M',
+        pendingUsers: const [],
+        emailRecipients: const [],
+      );
+    }
+
+    test('Plant Worker has restricted access (cannot approve PTW or admin panel)', () {
+      final state = createStateForRole('Plant Worker');
+      expect(state.isManager, isFalse);
+      expect(state.isInspector, isFalse);
+      expect(state.canApprovePtw, isFalse);
+      expect(state.canAccessAdminPanel, isFalse);
+      expect(state.canSignOffCapa, isFalse);
+    });
+
+    test('Safety Officer / Inspector can sign off CAPA but cannot approve PTW/Admin', () {
+      final state = createStateForRole('Safety Officer');
+      expect(state.isManager, isFalse);
+      expect(state.isInspector, isTrue);
+      expect(state.canApprovePtw, isFalse);
+      expect(state.canAccessAdminPanel, isFalse);
+      expect(state.canSignOffCapa, isTrue);
+    });
+
+    test('HSE Manager has full authority (PTW approval, Admin panel, CAPA sign-off)', () {
+      final state = createStateForRole('HSE Manager');
+      expect(state.isManager, isTrue);
+      expect(state.isInspector, isTrue);
+      expect(state.canApprovePtw, isTrue);
+      expect(state.canAccessAdminPanel, isTrue);
+      expect(state.canSignOffCapa, isTrue);
+    });
+  });
+
+  group('Audit Log Item Model Tests (NEPRA / ISO 45001)', () {
+    test('Serializes to and from JSON accurately with GPS and timestamps', () {
+      const log = AuditLogItem(
+        id: 'LOG-999',
+        actorId: 'CP-EMP-1001',
+        actorRole: 'HSE Manager',
+        action: 'APPROVE_PTW',
+        targetResource: 'PTW-842',
+        timestamp: '2026-11-12T14:00:00Z',
+        coords: '31.7204° N, 72.9791° E',
+        details: 'Approved Hot Work welding permit for Boiler Header.',
+      );
+
+      final json = log.toJson();
+      expect(json['id'], equals('LOG-999'));
+      expect(json['actorId'], equals('CP-EMP-1001'));
+      expect(json['action'], equals('APPROVE_PTW'));
+      expect(json['coords'], equals('31.7204° N, 72.9791° E'));
+
+      final restored = AuditLogItem.fromJson(json);
+      expect(restored.id, equals(log.id));
+      expect(restored.targetResource, equals('PTW-842'));
+      expect(restored.details, contains('Approved Hot Work'));
     });
   });
 }

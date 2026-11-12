@@ -105,7 +105,7 @@ class CplTypography {
     double fontSize = 13,
     FontWeight fontWeight = FontWeight.w700,
     Color color = CplColors.slate800,
-    double height = 1.9,
+    double height = 1.95,
   }) {
     return GoogleFonts.notoNastaliqUrdu(
       fontSize: fontSize,
@@ -131,7 +131,7 @@ class CplTypography {
     fontSize: 13,
     fontWeight: FontWeight.w700,
     color: CplColors.slate800,
-    height: 1.8,
+    height: 1.95,
   );
 }
 

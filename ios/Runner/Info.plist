@@ -47,6 +47,14 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Chiniot Power HSE requires camera access to capture plant hazard photos and scan toolbox training attendance QR passes.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Chiniot Power HSE requires microphone access to record plant hazard voice notes in Urdu and English.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Chiniot Power HSE requires fine GPS location to geotag incident reports and verify safety muster roll coordinates at Chiniot Power Plant.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Chiniot Power HSE uses Face ID for rapid biometric staff authentication.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>

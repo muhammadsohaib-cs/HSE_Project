@@ -57,6 +57,10 @@ void main() async {
     await Hive.openBox(HiveBoxes.checklistTemplatesBox);
     await Hive.openBox(HiveBoxes.trainingsBox);
     await Hive.openBox(HiveBoxes.alarmsBox);
+    await Hive.openBox(HiveBoxes.auditLogsBox);
+    await Hive.openBox(HiveBoxes.rosterBox);
+    await Hive.openBox(HiveBoxes.permitsBox);
+    await Hive.openBox(HiveBoxes.userBox);
   } catch (e) {
     debugPrint('Hive initialization notice: $e');
   }
@@ -134,7 +138,11 @@ void main() async {
     MultiBlocProvider(
       providers: [
         BlocProvider<CplSystemCubit>(
-          create: (_) => CplSystemCubit(audioService: audioAlarmService),
+          create: (_) => CplSystemCubit(
+            audioService: audioAlarmService,
+            dioClient: dioClient,
+            syncQueue: syncQueue,
+          )..initFromStorage(),
         ),
         BlocProvider<AuthCubit>(
           create: (_) => AuthCubit(

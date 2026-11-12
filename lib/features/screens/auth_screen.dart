@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/localization/cpl_localizations.dart';
+import '../../core/platform/biometric_service.dart';
 import '../../core/theme/cpl_theme.dart';
 import '../cpl_system/cubit/cpl_system_cubit.dart';
 import '../cpl_system/cubit/cpl_system_state.dart';
@@ -15,8 +16,10 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
   final _empIdController = TextEditingController(text: 'CPL-EMP-1042');
+  final _pinController = TextEditingController(text: '1042');
   final _fullNameController = TextEditingController(text: 'Muhammad Tariq');
   final _cnicMobileController = TextEditingController(text: '33202-4829104-1 / 0300-8661042');
+  final BiometricAuthService _biometricAuth = BiometricAuthService();
 
   String _selectedShift = 'Shift A: Morning';
   String _selectedRole = 'Safety Officer';
@@ -36,9 +39,41 @@ class _AuthScreenState extends State<AuthScreen> {
   @override
   void dispose() {
     _empIdController.dispose();
+    _pinController.dispose();
     _fullNameController.dispose();
     _cnicMobileController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleBiometricLogin() async {
+    final authenticated = await _biometricAuth.authenticate(
+      reason: 'Scan fingerprint to verify CPL Staff identity',
+    );
+    if (!mounted) return;
+    if (authenticated) {
+      final cubit = context.read<CplSystemCubit>();
+      await cubit.login(
+        empId: _empIdController.text.trim(),
+        shift: _selectedShift,
+        role: _selectedRole,
+        pin: _pinController.text.trim(),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Biometric verified for ${_empIdController.text.trim()}'),
+            backgroundColor: CplColors.emerald600,
+          ),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Biometric verification failed. Please enter PIN.'),
+          backgroundColor: CplColors.red600,
+        ),
+      );
+    }
   }
 
   void _handleSubmit() {
@@ -48,6 +83,7 @@ class _AuthScreenState extends State<AuthScreen> {
         empId: _empIdController.text.trim(),
         shift: _selectedShift,
         role: _selectedRole,
+        pin: _pinController.text.trim(),
       );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -235,6 +271,20 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     const SizedBox(height: 14),
 
+                    Text('SECURITY PIN / PASSWORD • پن کوڈ', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _pinController,
+                      obscureText: true,
+                      keyboardType: TextInputType.number,
+                      style: CplTypography.mono(fontSize: 13, fontWeight: FontWeight.bold),
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.lock_outline, size: 18),
+                        hintText: '4-digit PIN (e.g. 1042, 1001)',
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
                     if (!_isLogin) ...[
                       Text('FULL NAME • پورا نام', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
                       const SizedBox(height: 6),
@@ -350,6 +400,24 @@ class _AuthScreenState extends State<AuthScreen> {
                   style: CplTypography.displayHeading(fontSize: 13, color: Colors.white),
                 ),
               ),
+
+              if (_isLogin) ...[
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: _handleBiometricLogin,
+                  icon: const Icon(Icons.fingerprint, color: CplColors.slate900, size: 20),
+                  label: Text(
+                    'Biometric Sign In • فنگر پرنٹ لاگ ان',
+                    style: CplTypography.body(fontSize: 12, fontWeight: FontWeight.bold, color: CplColors.slate900),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    side: const BorderSide(color: CplColors.slate300, width: 1.2),
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                ),
+              ],
             ],
           ),
         );

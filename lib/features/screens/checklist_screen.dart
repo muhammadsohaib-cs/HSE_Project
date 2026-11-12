@@ -253,87 +253,90 @@ class ChecklistScreen extends StatelessWidget {
                         // Pass / Fail / NA Button Bar
                         Row(
                           children: [
-                            // PASS BUTTON
+                            // PASS BUTTON (48dp Glove-Friendly)
                             Expanded(
                               child: InkWell(
                                 onTap: () {
                                   context.read<CplSystemCubit>().setChecklistItemStatus(item.id, 'pass');
                                 },
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(10),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  height: 48,
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
                                     color: isPass ? CplColors.emerald500 : CplColors.slate50,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: isPass ? CplColors.emerald500 : CplColors.slate200,
+                                      color: isPass ? CplColors.emerald500 : CplColors.slate300,
+                                      width: isPass ? 2 : 1,
                                     ),
                                   ),
                                   child: Text(
                                     isUr ? 'ٹھیک ہے ✓' : 'Pass ✓',
                                     style: TextStyle(
-                                      color: isPass ? Colors.white : CplColors.slate700,
+                                      color: isPass ? Colors.white : CplColors.slate800,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12.5,
+                                      fontSize: 13,
                                     ),
                                   ),
                                 ),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // FAIL BUTTON
+                            // FAIL BUTTON (48dp Glove-Friendly)
                             Expanded(
                               child: InkWell(
                                 onTap: () {
                                   context.read<CplSystemCubit>().setChecklistItemStatus(item.id, 'fail');
                                 },
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(10),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  height: 48,
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
                                     color: isFail ? CplColors.red600 : CplColors.slate50,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: isFail ? CplColors.red600 : CplColors.slate200,
+                                      color: isFail ? CplColors.red600 : CplColors.slate300,
+                                      width: isFail ? 2 : 1,
                                     ),
                                   ),
                                   child: Text(
                                     isUr ? 'خرابی ✕' : 'Fail ✕',
                                     style: TextStyle(
-                                      color: isFail ? Colors.white : CplColors.slate700,
+                                      color: isFail ? Colors.white : CplColors.slate800,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12.5,
+                                      fontSize: 13,
                                     ),
                                   ),
                                 ),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // N/A BUTTON
+                            // N/A BUTTON (48dp Glove-Friendly)
                             Expanded(
                               child: InkWell(
                                 onTap: () {
                                   context.read<CplSystemCubit>().setChecklistItemStatus(item.id, 'na');
                                 },
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(10),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  height: 48,
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: isNa ? CplColors.slate700 : CplColors.slate50,
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: isNa ? CplColors.slate800 : CplColors.slate50,
+                                    borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: isNa ? CplColors.slate700 : CplColors.slate200,
+                                      color: isNa ? CplColors.slate800 : CplColors.slate300,
+                                      width: isNa ? 2 : 1,
                                     ),
                                   ),
                                   child: Text(
                                     'N / A',
                                     style: TextStyle(
-                                      color: isNa ? Colors.white : CplColors.slate700,
+                                      color: isNa ? Colors.white : CplColors.slate800,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 12.5,
+                                      fontSize: 13,
                                     ),
                                   ),
                                 ),

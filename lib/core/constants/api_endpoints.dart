@@ -2,7 +2,7 @@ class ApiEndpoints {
   // Configurable base URL with desktop / dev localhost default
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:8080/api/v1',
+    defaultValue: 'http://localhost:5000/api/v1',
   );
 
   static const Duration connectTimeout = Duration(seconds: 15);
@@ -27,10 +27,19 @@ class ApiEndpoints {
   static String checklistDetails(String id) => '/checklists/$id';
   static const String shiftSummary = '/checklists/shift-summary';
 
+  // PTW & LOTO
+  static const String ptw = '/ptw';
+  static String ptwApprove(String id) => '/ptw/$id/approve';
+
   // Alarms
   static const String alarms = '/alarms';
   static const String triggerAlarm = '/alarms/trigger';
+  static const String clearAlarm = '/alarms/clear';
   static String acknowledgeAlarm(String id) => '/alarms/$id/acknowledge';
+
+  // Roster & PPE
+  static const String roster = '/roster';
+  static String workerPpe(String empId) => '/roster/$empId/ppe';
 
   // Training
   static const String trainings = '/trainings';
@@ -38,8 +47,11 @@ class ApiEndpoints {
   static const String userCertifications = '/trainings/my-certificates';
 
   // Analytics & Export
-  static const String metrics = '/analytics/dashboard';
+  static const String metrics = '/analytics/summary';
   static const String exportCsv = '/analytics/export/csv';
   static const String exportPdf = '/analytics/export/pdf';
+
+  // Immutable Audit Trail (NEPRA / ISO 45001)
+  static const String auditLogs = '/audit/logs';
 }
 

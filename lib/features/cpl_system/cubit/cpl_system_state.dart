@@ -24,6 +24,8 @@ class CplSystemState extends Equatable {
   final String analyticsPeriod; // '6M' or '1Y'
   final List<PendingUserRegistration> pendingUsers;
   final List<String> emailRecipients;
+  final int pendingOfflineCount;
+  final List<AuditLogItem> auditLogs;
 
   const CplSystemState({
     required this.language,
@@ -48,11 +50,28 @@ class CplSystemState extends Equatable {
     required this.analyticsPeriod,
     required this.pendingUsers,
     required this.emailRecipients,
+    this.pendingOfflineCount = 0,
+    this.auditLogs = const [],
   });
 
   int get riskScore => selectedLikelihood * selectedSeverity;
 
   bool get isUrdu => language == 'ur';
+
+  // Role-Based Access Control (RBAC) Permitted Actions
+  bool get isManager =>
+      currentUser.role.toLowerCase() == 'manager' ||
+      currentUser.role.toLowerCase() == 'admin' ||
+      currentUser.role.toLowerCase() == 'hse manager';
+
+  bool get isInspector =>
+      currentUser.role.toLowerCase() == 'inspector' ||
+      currentUser.role.toLowerCase() == 'safety officer' ||
+      isManager;
+
+  bool get canApprovePtw => isManager;
+  bool get canAccessAdminPanel => isManager;
+  bool get canSignOffCapa => isInspector;
 
   String get riskBand {
     final score = riskScore;
@@ -85,6 +104,8 @@ class CplSystemState extends Equatable {
     String? analyticsPeriod,
     List<PendingUserRegistration>? pendingUsers,
     List<String>? emailRecipients,
+    int? pendingOfflineCount,
+    List<AuditLogItem>? auditLogs,
   }) {
     return CplSystemState(
       language: language ?? this.language,
@@ -109,6 +130,8 @@ class CplSystemState extends Equatable {
       analyticsPeriod: analyticsPeriod ?? this.analyticsPeriod,
       pendingUsers: pendingUsers ?? this.pendingUsers,
       emailRecipients: emailRecipients ?? this.emailRecipients,
+      pendingOfflineCount: pendingOfflineCount ?? this.pendingOfflineCount,
+      auditLogs: auditLogs ?? this.auditLogs,
     );
   }
 

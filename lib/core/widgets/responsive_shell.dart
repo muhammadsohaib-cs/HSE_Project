@@ -146,114 +146,160 @@ class ResponsiveShell extends StatelessWidget {
             final activeIdx = state.activeScreenIndex;
             final user = state.currentUser;
 
-            return Scaffold(
-              backgroundColor: CplColors.slate50,
-              // Mobile Top Header
-              appBar: PreferredSize(
-                preferredSize: const Size.fromHeight(60),
-                child: Container(
-                  color: CplColors.slate900,
-                  padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top + 6,
-                    left: 12,
-                    right: 12,
-                    bottom: 8,
-                  ),
-                  child: Row(
-                    children: [
-                      // CPL Badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: CplColors.safety500,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'CPL',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 13,
-                            letterSpacing: 1.1,
+            return Directionality(
+              textDirection: isUr ? TextDirection.rtl : TextDirection.ltr,
+              child: Scaffold(
+                backgroundColor: CplColors.slate50,
+                resizeToAvoidBottomInset: true,
+                // Mobile Top Header
+                appBar: PreferredSize(
+                  preferredSize: const Size.fromHeight(60),
+                  child: Container(
+                    color: CplColors.slate900,
+                    padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).padding.top + 6,
+                      left: 12,
+                      right: 12,
+                      bottom: 8,
+                    ),
+                    child: Row(
+                      children: [
+                        // CPL Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: CplColors.safety500,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'CPL',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              letterSpacing: 1.1,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
+                        const SizedBox(width: 8),
 
-                      // Live Status Pill
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.white24),
+                        // Live Status Pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white24),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(
+                                  color: CplColors.emerald500,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Text(
+                                'UNIT-1 62.4 MW',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: const BoxDecoration(
-                                color: CplColors.emerald500,
-                                shape: BoxShape.circle,
+                        const Spacer(),
+
+                        // Employee ID Tag
+                        Text(
+                          user.empId,
+                          style: const TextStyle(
+                            color: CplColors.slate300,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'monospace',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // 1-Tap Bilingual Language Toggle Chip
+                        InkWell(
+                          onTap: () => context.read<CplSystemCubit>().toggleLanguage(),
+                          borderRadius: BorderRadius.circular(14),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: CplColors.safety500.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: CplColors.safety500.withOpacity(0.5)),
+                            ),
+                            child: Text(
+                              isUr ? 'اردو' : 'EN',
+                              style: const TextStyle(
+                                color: CplColors.safety500,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            const Text(
-                              'UNIT-1 62.4 MW',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 10.5,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'monospace',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Active Screen Body with Persistent Offline Sync Banner
+                body: Column(
+                  children: [
+                    if (state.pendingOfflineCount > 0)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        color: CplColors.amber500,
+                        child: Row(
+                          children: [
+                            const Icon(Icons.cloud_off, color: Colors.white, size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                isUr
+                                    ? '${state.pendingOfflineCount} رپورٹس آف لائن ہیں — سگنل پر خودکار سنک ہوں گی'
+                                    : '${state.pendingOfflineCount} Reports in Offline Queue — will auto-sync on signal',
+                                style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () => context.read<CplSystemCubit>().syncOfflineNow(),
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  isUr ? 'ابھی سنک کریں' : 'Sync Now',
+                                  style: const TextStyle(
+                                    color: CplColors.slate900,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const Spacer(),
-
-                      // Employee ID Tag
-                      Text(
-                        user.empId,
-                        style: const TextStyle(
-                          color: CplColors.slate300,
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-
-                      // 1-Tap Bilingual Language Toggle Chip
-                      InkWell(
-                        onTap: () => context.read<CplSystemCubit>().toggleLanguage(),
-                        borderRadius: BorderRadius.circular(14),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: CplColors.safety500.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: CplColors.safety500.withOpacity(0.5)),
-                          ),
-                          child: Text(
-                            isUr ? 'اردو' : 'EN',
-                            style: const TextStyle(
-                              color: CplColors.safety500,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    Expanded(child: _getScreenByIndex(activeIdx)),
+                  ],
                 ),
-              ),
-
-              // Active Screen Body
-              body: _getScreenByIndex(activeIdx),
 
               // Raised Safety Amber Floating Action Button for Instant Hazard Reporting
               floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -314,11 +360,12 @@ class ResponsiveShell extends StatelessWidget {
                   ),
                 ),
               ),
-            );
-          },
-        );
-      },
-    );
+            ),
+          );
+        },
+      );
+    },
+  );
   }
 
   Widget _buildBottomNavItem(

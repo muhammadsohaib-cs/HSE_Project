@@ -1,9 +1,34 @@
+import 'dart:io';
 import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:intl/intl.dart';
+import 'package:printing/printing.dart';
 
 class PdfReportGenerator {
+  /// Saves or shares the generated PDF, prioritizing getDownloadsDirectory on desktop
+  static Future<String> saveOrShareReport(Uint8List bytes, String fileName) async {
+    try {
+      if (!kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
+        final downloadsDir = await getDownloadsDirectory();
+        if (downloadsDir != null) {
+          final file = File('${downloadsDir.path}/$fileName');
+          await file.writeAsBytes(bytes);
+          debugPrint('PDF report saved to desktop downloads: ${file.path}');
+          return file.path;
+        }
+      }
+      await Printing.sharePdf(bytes: bytes, filename: fileName);
+      return 'Shared/Downloaded: $fileName';
+    } catch (e) {
+      debugPrint('Error saving PDF locally: $e. Falling back to share.');
+      await Printing.sharePdf(bytes: bytes, filename: fileName);
+      return fileName;
+    }
+  }
+
   /// Generates Shift Turnover HSE Compliance PDF Document
   static Future<Uint8List> generateShiftTurnoverPdf({
     required String plantUnit,

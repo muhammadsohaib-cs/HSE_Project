@@ -1,0 +1,399 @@
+{
+  "zones": [
+    {
+      "id": "Z1",
+      "name": "Boiler House Unit-1",
+      "ur": "بوائلر ہاؤس یونٹ-1",
+      "coords": "31.7204° N, 72.9791° E",
+      "workers": 34,
+      "riskLevel": "High"
+    },
+    {
+      "id": "Z2",
+      "name": "Steam Turbine Hall",
+      "ur": "سٹیم ٹربائن ہال",
+      "coords": "31.7201° N, 72.9788° E",
+      "workers": 26,
+      "riskLevel": "Critical"
+    },
+    {
+      "id": "Z3",
+      "name": "Bagasse & Coal Yard",
+      "ur": "بگاس اور کوئلہ یارڈ",
+      "coords": "31.7195° N, 72.9802° E",
+      "workers": 38,
+      "riskLevel": "High"
+    },
+    {
+      "id": "Z4",
+      "name": "132kV Grid Switchyard",
+      "ur": "132 کے وی گرڈ سوئچ یارڈ",
+      "coords": "31.7208° N, 72.9780° E",
+      "workers": 14,
+      "riskLevel": "Critical"
+    },
+    {
+      "id": "Z5",
+      "name": "Water Treatment Plant",
+      "ur": "واٹر ٹریٹمنٹ پلانٹ",
+      "coords": "31.7198° N, 72.9784° E",
+      "workers": 18,
+      "riskLevel": "Medium"
+    },
+    {
+      "id": "Z6",
+      "name": "Cooling Tower",
+      "ur": "کولنگ ٹاور",
+      "coords": "31.7192° N, 72.9795° E",
+      "workers": 18,
+      "riskLevel": "Low"
+    }
+  ],
+  "users": [
+    {
+      "id": "u-1001",
+      "employeeId": "CP-EMP-1001",
+      "name": "Engr. Tariq Khan",
+      "urduName": "انجینئر طارق خان",
+      "email": "tariq.khan@chiniotpower.com.pk",
+      "passwordHash": "$2a$10$vI8aWBnW3fID.ZQ4/zo1G.qH1q8vTqPzVwz60Vw3K5sJqUu8O1b9y",
+      "pin": "1001",
+      "role": "admin",
+      "department": "Executive HSE Board",
+      "shift": "Shift A: Morning (06:00 - 14:00)",
+      "cnic": "33202-1234567-1",
+      "plantZone": "Plant Headquarters",
+      "isActive": true
+    },
+    {
+      "id": "u-1002",
+      "employeeId": "CP-EMP-1002",
+      "name": "Asim Raza",
+      "urduName": "عاصم رضا",
+      "email": "asim.raza@chiniotpower.com.pk",
+      "passwordHash": "$2a$10$vI8aWBnW3fID.ZQ4/zo1G.qH1q8vTqPzVwz60Vw3K5sJqUu8O1b9y",
+      "pin": "1002",
+      "role": "manager",
+      "department": "Safety & Compliance",
+      "shift": "Shift A: Morning (06:00 - 14:00)",
+      "cnic": "33202-7654321-1",
+      "plantZone": "Main Control Station",
+      "isActive": true
+    },
+    {
+      "id": "u-1042",
+      "employeeId": "CPL-EMP-1042",
+      "name": "Muhammad Tariq",
+      "urduName": "محمد طارق",
+      "email": "m.tariq@chiniotpower.com.pk",
+      "passwordHash": "$2a$10$vI8aWBnW3fID.ZQ4/zo1G.qH1q8vTqPzVwz60Vw3K5sJqUu8O1b9y",
+      "pin": "1042",
+      "role": "inspector",
+      "department": "Safety & Field Audits",
+      "shift": "Shift A: Morning (06:00 - 14:00)",
+      "cnic": "33202-4829104-1",
+      "plantZone": "Boiler House Unit-1",
+      "isActive": true
+    },
+    {
+      "id": "u-1088",
+      "employeeId": "CPL-EMP-1088",
+      "name": "Zeeshan Ahmed",
+      "urduName": "ذیشان احمد",
+      "email": "zeeshan.a@chiniotpower.com.pk",
+      "passwordHash": "$2a$10$vI8aWBnW3fID.ZQ4/zo1G.qH1q8vTqPzVwz60Vw3K5sJqUu8O1b9y",
+      "pin": "1088",
+      "role": "worker",
+      "department": "Fuel & Material Handling",
+      "shift": "Shift A: Morning (06:00 - 14:00)",
+      "cnic": "33202-9182736-1",
+      "plantZone": "Bagasse & Coal Yard",
+      "isActive": true
+    }
+  ],
+  "checklistTemplates": [
+    {
+      "id": "TPL-BLR-01",
+      "title": "Boiler House Unit-1 High Pressure Safety SOP",
+      "plantZone": "Boiler House Unit-1",
+      "items": [
+        {
+          "id": 1,
+          "en": "Main Steam Line (105 bar) expansion joints checked for weeping",
+          "ur": "مین سٹیم لائن (105 بار) ایکسپینشن جوائنٹس کا معائنہ مکمل ہے",
+          "status": "pass"
+        },
+        {
+          "id": 2,
+          "en": "Bagasse feeder emergency stop pull-cords tested & responsive",
+          "ur": "بگاس فیڈر ایمرجنسی اسٹاپ پل کورڈز مکمل طور پر فعال ہیں",
+          "status": "pass"
+        },
+        {
+          "id": 3,
+          "en": "FD & ID Fan lubrication oil level & vibration within limits",
+          "ur": "ایف ڈی اور آئی ڈی فین کا لوبریکیشن آئل لیول اور وائبریشن نارمل ہے",
+          "status": "pass"
+        },
+        {
+          "id": 4,
+          "en": "Furnace flame scanner & purge interlock status verified",
+          "ur": "فرنس فلیم سکینر اور پرج انٹرلاک سٹیٹس تصدیق شدہ ہے",
+          "status": "pass"
+        },
+        {
+          "id": 5,
+          "en": "Safety relief valves manual lever inspection tagged",
+          "ur": "سیفٹی ریلیف والوز کی مینوئل لیور ٹیگنگ درست ہے",
+          "status": "fail"
+        },
+        {
+          "id": 6,
+          "en": "Fire hydrant pressure gauge reading >= 8.5 bar",
+          "ur": "فائر ہائیڈرنٹ پریشر گیج 8.5 بار یا زائد ہے",
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "TPL-TRB-01",
+      "title": "Steam Turbine Hall Daily Audit",
+      "plantZone": "Steam Turbine Hall",
+      "items": [
+        {
+          "id": 1,
+          "en": "Turbine emergency governor trip mechanism tested",
+          "ur": "ٹربائن ایمرجنسی گورنر ٹرپ سسٹم فعال ہے",
+          "status": "pass"
+        },
+        {
+          "id": 2,
+          "en": "Lube oil temperature and centrifuge cleanliness verified",
+          "ur": "لوبریکینٹ آئل کا درجہ حرارت اور فلٹر نارمل ہیں",
+          "status": "pass"
+        },
+        {
+          "id": 3,
+          "en": "Vibration sensors calibrated on bearing 1 through 4",
+          "ur": "بیرنگ 1 تا 4 پر وائبریشن سینسرز فعال ہیں",
+          "status": "pass"
+        },
+        {
+          "id": 4,
+          "en": "Generator hydrogen / seal oil pressure differential verified",
+          "ur": "جنریٹر سیل آئل پریشر ڈفرینشل تصدیق شدہ ہے",
+          "status": "pass"
+        }
+      ]
+    }
+  ],
+  "hazards": [
+    {
+      "id": "HAZ-309",
+      "title": "Steam Flange Weeping (FV-14)",
+      "zone": "Boiler House Unit-1",
+      "severity": "High",
+      "probability": 4,
+      "score": 16,
+      "reporter": "Muhammad Tariq (CPL-EMP-1042)",
+      "status": "Open",
+      "time": "12m ago",
+      "coords": "31.7204° N, 72.9791° E",
+      "correctiveAction": "Depressurize line and replace graphite gasket during night shift",
+      "assignedTo": "Engr. Asif (Mechanical Maintenance)"
+    },
+    {
+      "id": "HAZ-308",
+      "title": "Bagasse Conveyor Belt Guard Loose",
+      "zone": "Bagasse & Coal Yard",
+      "severity": "Critical",
+      "probability": 5,
+      "score": 25,
+      "reporter": "Zeeshan Ahmed (CPL-EMP-1088)",
+      "status": "In Progress",
+      "time": "1h ago",
+      "coords": "31.7195° N, 72.9802° E",
+      "correctiveAction": "Isolate belt power and bolt security mesh tightly",
+      "assignedTo": "Muhammad Tariq (CPL-EMP-1042)"
+    },
+    {
+      "id": "HAZ-307",
+      "title": "Switchyard Earth Pit Resistance > 2 Ohms",
+      "zone": "132kV Grid Switchyard",
+      "severity": "Moderate",
+      "probability": 3,
+      "score": 9,
+      "reporter": "Usman Ghani (CPL-EMP-1015)",
+      "status": "Resolved",
+      "time": "4h ago",
+      "coords": "31.7208° N, 72.9780° E",
+      "correctiveAction": "Treated earth pit with salt and bentonite chemical slurry",
+      "assignedTo": "Electrical Team"
+    }
+  ],
+  "permits": [
+    {
+      "id": "PTW-842",
+      "type": "Hot Work",
+      "zone": "Boiler House Unit-1",
+      "receiver": "Muhammad Tariq",
+      "expiry": "04h 12m left",
+      "status": "Active",
+      "lotoCount": 4,
+      "gasTelemetry": "O2: 20.9% • LEL: 0.0%",
+      "approvedBy": "Asim Raza (CPL-EMP-1002)",
+      "coords": "31.7204° N, 72.9791° E"
+    },
+    {
+      "id": "PTW-841",
+      "type": "Electrical LOTO",
+      "zone": "132kV Grid Switchyard",
+      "receiver": "Usman Ghani",
+      "expiry": "01h 45m left",
+      "status": "Active",
+      "lotoCount": 6,
+      "gasTelemetry": "0.00 kV Verified",
+      "approvedBy": "Asim Raza (CPL-EMP-1002)",
+      "coords": "31.7208° N, 72.9780° E"
+    },
+    {
+      "id": "PTW-840",
+      "type": "Confined Space",
+      "zone": "Cooling Tower Basin",
+      "receiver": "Kamran Siddiqui",
+      "expiry": "Pending Approval",
+      "status": "Pending",
+      "lotoCount": 2,
+      "gasTelemetry": "H2S: 0 ppm • CO: 0 ppm",
+      "approvedBy": null,
+      "coords": "31.7192° N, 72.9795° E"
+    }
+  ],
+  "roster": [
+    {
+      "empId": "CPL-EMP-1042",
+      "name": "Muhammad Tariq",
+      "role": "Safety Officer",
+      "zone": "Boiler House Unit-1",
+      "helmet": true,
+      "shoes": true,
+      "gloves": true,
+      "ear": false
+    },
+    {
+      "empId": "CPL-EMP-1088",
+      "name": "Zeeshan Ahmed",
+      "role": "Conveyor Operator",
+      "zone": "Bagasse & Coal Yard",
+      "helmet": true,
+      "shoes": true,
+      "gloves": true,
+      "ear": true
+    },
+    {
+      "empId": "CPL-EMP-1015",
+      "name": "Usman Ghani",
+      "role": "Electrical Tech",
+      "zone": "132kV Switchyard",
+      "helmet": true,
+      "shoes": true,
+      "gloves": false,
+      "ear": true
+    },
+    {
+      "empId": "CPL-EMP-1104",
+      "name": "Kamran Siddiqui",
+      "role": "Turbine Specialist",
+      "zone": "Steam Turbine Hall",
+      "helmet": true,
+      "shoes": true,
+      "gloves": true,
+      "ear": true
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "LOG-1794507919558-192",
+      "actorId": "CPL-EMP-1042",
+      "actorRole": "inspector",
+      "action": "EMERGENCY_ALARM_ACTIVATED",
+      "targetResource": "ALM-9556",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T18:25:19.558Z",
+      "details": "Plant emergency siren triggered: \"PLANT-WIDE SIREN TEST\". Automatic email dispatches sent to Rescue 1122 and plant executives."
+    },
+    {
+      "id": "LOG-1794507625472-640",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "admin",
+      "action": "USER_LOGIN",
+      "targetResource": "Plant Headquarters",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T18:20:25.472Z",
+      "details": "Employee CP-EMP-1001 authenticated successfully via PIN."
+    },
+    {
+      "id": "LOG-1794505839360-829",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "admin",
+      "action": "USER_LOGIN",
+      "targetResource": "Plant Headquarters",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T17:50:39.360Z",
+      "details": "Employee CP-EMP-1001 authenticated successfully via PIN."
+    },
+    {
+      "id": "LOG-INIT-01",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "admin",
+      "action": "SYSTEM_BOOTSTRAP",
+      "targetResource": "PLANT_UNIT_1",
+      "timestamp": "2026-11-12T17:50:09.097Z",
+      "coords": "31.7204° N, 72.9791° E",
+      "details": "Initial CPL 62.4 MW Power Plant master database provisioned."
+    }
+  ],
+  "alarms": [
+    {
+      "id": "ALM-9556",
+      "title": "PLANT-WIDE SIREN TEST",
+      "zone": "Plant-Wide (Boiler & Grid)",
+      "severity": "critical",
+      "triggeredBy": "CPL-EMP-1042",
+      "timestamp": "2026-11-12T18:25:19.556Z",
+      "coords": "31.7204° N, 72.9791° E",
+      "isAcknowledged": false
+    }
+  ],
+  "emailLogs": [
+    {
+      "id": "EML-556-51",
+      "to": "rescue1122.chiniot@punjab.gov.pk",
+      "subject": "[CRITICAL SIREN ALERT] PLANT-WIDE SIREN TEST at Plant-Wide (Boiler & Grid)",
+      "status": "Sent (SMTP Intranet Gateway)",
+      "timestamp": "2026-11-12T18:25:19.556Z"
+    },
+    {
+      "id": "EML-556-14",
+      "to": "hse.head@chiniotpower.com",
+      "subject": "[CRITICAL SIREN ALERT] PLANT-WIDE SIREN TEST at Plant-Wide (Boiler & Grid)",
+      "status": "Sent (SMTP Intranet Gateway)",
+      "timestamp": "2026-11-12T18:25:19.556Z"
+    },
+    {
+      "id": "EML-556-3",
+      "to": "plant.manager@chiniotpower.com",
+      "subject": "[CRITICAL SIREN ALERT] PLANT-WIDE SIREN TEST at Plant-Wide (Boiler & Grid)",
+      "status": "Sent (SMTP Intranet Gateway)",
+      "timestamp": "2026-11-12T18:25:19.556Z"
+    },
+    {
+      "id": "EML-001",
+      "to": "plant.manager@chiniotpower.com",
+      "subject": "HSE Weekly Compliance Report Digest",
+      "status": "Sent",
+      "timestamp": "2026-11-12T17:50:09.098Z"
+    }
+  ],
+  "activeAlarm": "PLANT-WIDE SIREN TEST"
+}

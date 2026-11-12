@@ -329,3 +329,50 @@ class PendingUserRegistration extends Equatable {
   @override
   List<Object?> get props => [empId, name, cnic, role, shift, status];
 }
+
+class AuditLogItem extends Equatable {
+  final String id;
+  final String actorId;
+  final String actorRole;
+  final String action;
+  final String targetResource;
+  final String timestamp;
+  final String coords;
+  final String details;
+
+  const AuditLogItem({
+    required this.id,
+    required this.actorId,
+    required this.actorRole,
+    required this.action,
+    required this.targetResource,
+    required this.timestamp,
+    required this.coords,
+    required this.details,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'actorId': actorId,
+    'actorRole': actorRole,
+    'action': action,
+    'targetResource': targetResource,
+    'timestamp': timestamp,
+    'coords': coords,
+    'details': details,
+  };
+
+  factory AuditLogItem.fromJson(Map<String, dynamic> json) => AuditLogItem(
+    id: json['id'] as String? ?? '',
+    actorId: json['actorId'] as String? ?? '',
+    actorRole: json['actorRole'] as String? ?? '',
+    action: json['action'] as String? ?? '',
+    targetResource: json['targetResource'] as String? ?? '',
+    timestamp: json['timestamp'] as String? ?? '',
+    coords: json['coords'] as String? ?? '',
+    details: json['details'] is String ? json['details'] as String : (json['details']?.toString() ?? ''),
+  );
+
+  @override
+  List<Object?> get props => [id, actorId, actorRole, action, targetResource, timestamp, coords, details];
+}

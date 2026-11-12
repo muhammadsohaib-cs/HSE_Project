@@ -57,6 +57,61 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
       builder: (context, state) {
         final isUr = state.isUrdu;
 
+        // RBAC Security Check: Enforce Role Guard
+        if (!state.canAccessAdminPanel) {
+          return Scaffold(
+            backgroundColor: CplColors.slate50,
+            appBar: AppBar(
+              backgroundColor: CplColors.slate900,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => context.read<CplSystemCubit>().setScreenIndex(1),
+              ),
+              title: Text(isUr ? 'رسائی محدود ہے' : 'Access Restricted', style: const TextStyle(color: Colors.white)),
+            ),
+            body: Center(
+              child: Container(
+                margin: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: CplColors.slate200),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.lock_person, size: 48, color: CplColors.safety500),
+                    const SizedBox(height: 16),
+                    Text(
+                      isUr ? 'ایڈمن پینل تک رسائی محدود ہے' : 'Role-Based Access Restricted',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      isUr
+                          ? 'آپ کا موجودہ عہدہ: ${state.currentUser.role}۔ صرف مینیجر اور ایگزیکٹو ایڈمن کو اجازت ہے۔'
+                          : 'Your current role: ${state.currentUser.role}.\nThis governance center is restricted to Safety Managers & System Administrators (ISO 45001 Compliance).',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: CplColors.slate600, fontSize: 13),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () => context.read<CplSystemCubit>().setScreenIndex(1),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: CplColors.safety500,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      ),
+                      child: Text(isUr ? 'ڈیش بورڈ پر واپس جائیں' : 'Return to Dashboard'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
         return Scaffold(
           backgroundColor: CplColors.slate50,
           appBar: AppBar(

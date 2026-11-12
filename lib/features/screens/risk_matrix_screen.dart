@@ -414,23 +414,36 @@ class RiskMatrixScreen extends StatelessWidget {
                               ],
                             ),
                             ElevatedButton(
-                              onPressed: () {
-                                context.read<CplSystemCubit>().toggleCapaSignOff(capa.id);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      capa.signedOff
-                                          ? 'Re-opened ${capa.id}'
-                                          : 'Supervisor Signed Off ${capa.id}',
-                                    ),
-                                    backgroundColor: capa.signedOff ? CplColors.slate900 : CplColors.emerald500,
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
-                              },
+                              onPressed: state.canSignOffCapa
+                                  ? () {
+                                      context.read<CplSystemCubit>().toggleCapaSignOff(capa.id);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            capa.signedOff
+                                                ? 'Re-opened ${capa.id}'
+                                                : 'Supervisor Signed Off ${capa.id} (${state.currentUser.name})',
+                                          ),
+                                          backgroundColor: capa.signedOff ? CplColors.slate900 : CplColors.emerald500,
+                                          duration: const Duration(seconds: 2),
+                                        ),
+                                      );
+                                    }
+                                  : () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('RBAC Restricted: Only Safety Officers/Managers can sign off CAPA.'),
+                                          backgroundColor: CplColors.red600,
+                                        ),
+                                      );
+                                    },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: capa.signedOff ? CplColors.slate200 : CplColors.slate900,
-                                foregroundColor: capa.signedOff ? CplColors.slate800 : Colors.white,
+                                backgroundColor: state.canSignOffCapa
+                                    ? (capa.signedOff ? CplColors.slate200 : CplColors.slate900)
+                                    : CplColors.slate300,
+                                foregroundColor: state.canSignOffCapa
+                                    ? (capa.signedOff ? CplColors.slate800 : Colors.white)
+                                    : CplColors.slate500,
                                 elevation: 0,
                                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

@@ -1,13 +1,26 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive/hive.dart';
+import '../../../../core/network/dio_client.dart';
 import '../../../../core/platform/audio_service.dart';
+import '../../../../core/storage/hive_boxes.dart';
+import '../../../../core/storage/offline_sync_queue.dart';
 import '../models/cpl_models.dart';
 import 'cpl_system_state.dart';
 
 class CplSystemCubit extends Cubit<CplSystemState> {
   final AudioAlarmService _audioService;
+  final DioClient? _dioClient;
+  final OfflineSyncQueue? _syncQueue;
 
-  CplSystemCubit({AudioAlarmService? audioService})
-      : _audioService = audioService ?? AudioAlarmService(),
+  CplSystemCubit({
+    AudioAlarmService? audioService,
+    DioClient? dioClient,
+    OfflineSyncQueue? syncQueue,
+  })  : _audioService = audioService ?? AudioAlarmService(),
+        _dioClient = dioClient,
+        _syncQueue = syncQueue,
         super(_initialState);
 
   static final CplSystemState _initialState = CplSystemState(
@@ -48,171 +61,183 @@ class CplSystemCubit extends Cubit<CplSystemState> {
         severity: 'Critical',
         reporter: 'Zeeshan Ahmed (CPL-EMP-1088)',
         status: 'In Progress',
-        time: '48m ago',
+        time: '1h ago',
         coords: '31.7195° N, 72.9802° E',
       ),
       HazardItem(
-        id: 'HAZ-305',
-        title: 'Oil Drip Under Lube Pump B',
-        zone: 'Steam Turbine Hall',
-        severity: 'Medium',
+        id: 'HAZ-307',
+        title: 'Switchyard Earth Pit Resistance > 2 Ohms',
+        zone: '132kV Grid Switchyard',
+        severity: 'Moderate',
         reporter: 'Usman Ghani (CPL-EMP-1015)',
-        status: 'Open',
-        time: '2h ago',
-        coords: '31.7201° N, 72.9788° E',
+        status: 'Resolved',
+        time: '4h ago',
+        coords: '31.7208° N, 72.9780° E',
       ),
     ],
     selectedLikelihood: 4,
     selectedSeverity: 4,
     capas: const [
       CapaItem(
-        id: 'CAPA-114',
-        title: 'Replace High-Temp Gasket on Boiler Valve FV-14',
-        zone: 'Boiler House Unit-1',
-        score: 16,
-        level: 'High',
-        owner: 'Engr. Kamran Siddiqui',
-        due: 'Today, 17:00',
-        signedOff: false,
-      ),
-      CapaItem(
-        id: 'CAPA-112',
-        title: 'Re-anchor Conveyor Side Guard & Emergency Pull-Cord',
-        zone: 'Bagasse & Coal Yard',
+        id: 'CAPA-104',
+        title: 'Bagasse Conveyor Emergency Stop Cord Re-anchoring',
+        zone: 'Bagasse Yard',
         score: 20,
         level: 'Critical',
-        owner: 'Zeeshan Ahmed',
-        due: 'Immediate',
+        owner: 'Mechanical Team',
+        due: 'Today 18:00',
         signedOff: false,
       ),
       CapaItem(
-        id: 'CAPA-109',
-        title: 'Install Arc-Flash Warning Signage at Bay-3',
-        zone: '132kV Grid Switchyard',
-        score: 9,
+        id: 'CAPA-103',
+        title: 'Turbine Vibration Sensor Calibration on Bearing 2',
+        zone: 'Turbine Hall',
+        score: 12,
+        level: 'High',
+        owner: 'I&C Department',
+        due: 'Tomorrow 10:00',
+        signedOff: true,
+      ),
+      CapaItem(
+        id: 'CAPA-102',
+        title: 'Chemical Dosing Pump Spill Containment Berm',
+        zone: 'WTP',
+        score: 6,
         level: 'Moderate',
-        owner: 'Usman Ghani',
-        due: 'Tomorrow',
+        owner: 'Chemical Team',
+        due: '14 Nov 2026',
         signedOff: true,
       ),
     ],
     checklistZone: 'Boiler House Unit-1',
-    checklistSigned: true,
+    checklistSigned: false,
     checklistItems: const [
       ChecklistAuditItem(
         id: 1,
-        en: 'Boiler drum water level gauge & pressure relief valves clear',
-        ur: 'بوائلر ڈرم واٹر لیول گیج اور پریشر والوز درست کام کر رہے ہیں',
+        en: 'Main Steam Line (105 bar) expansion joints checked for weeping',
+        ur: 'مین سٹیم لائن (105 بار) ایکسپینشن جوائنٹس کا معائنہ مکمل ہے',
         status: 'pass',
       ),
       ChecklistAuditItem(
         id: 2,
-        en: 'Steam piping insulation intact with zero exposed hot surfaces',
-        ur: 'سٹیم پائپوں کی انسولیشن مکمل ہے اور کوئی گرم حصہ کھلا نہیں',
+        en: 'Bagasse feeder emergency stop pull-cords tested & responsive',
+        ur: 'بگاس فیڈر ایمرجنسی اسٹاپ پل کورڈز مکمل طور پر فعال ہیں',
         status: 'pass',
       ),
       ChecklistAuditItem(
         id: 3,
-        en: 'Bagasse feeder chute fire-suppression water spray tested',
-        ur: 'بگاس فیڈر شوٹ کا فائر سپریشن واٹر سپرے چیک کر لیا گیا ہے',
-        status: 'fail',
+        en: 'FD & ID Fan lubrication oil level & vibration within limits',
+        ur: 'ایف ڈی اور آئی ڈی فین کا لوبریکیشن آئل لیول اور وائبریشن نارمل ہے',
+        status: 'pass',
       ),
       ChecklistAuditItem(
         id: 4,
-        en: 'Emergency exit walkways & CO2 extinguishers unobstructed',
-        ur: 'ایمرجنسی راستے اور آگ بجھانے والے سلنڈر بالکل صاف ہیں',
+        en: 'Furnace flame scanner & purge interlock status verified',
+        ur: 'فرنس فلیم سکینر اور پرج انٹرلاک سٹیٹس تصدیق شدہ ہے',
+        status: 'pass',
+      ),
+      ChecklistAuditItem(
+        id: 5,
+        en: 'Safety relief valves manual lever inspection tagged',
+        ur: 'سیفٹی ریلیف والوز کی مینوئل لیور ٹیگنگ درست ہے',
+        status: 'fail',
+      ),
+      ChecklistAuditItem(
+        id: 6,
+        en: 'Fire hydrant pressure gauge reading >= 8.5 bar',
+        ur: 'فائر ہائیڈرنٹ پریشر گیج 8.5 بار یا زائد ہے',
         status: 'pass',
       ),
     ],
+    ptwFilter: 'All',
     permits: const [
       PtwItem(
-        id: 'PTW-CPL-412',
+        id: 'PTW-842',
         type: 'Hot Work',
-        title: 'Boiler Economizer Tube Welding',
-        zone: 'Boiler House Unit-1',
-        requester: 'Muhammad Tariq (CPL-EMP-1042)',
+        title: 'Boiler Deaerator Header Steam Line Welding',
+        zone: 'Boiler House Unit-1 (Elev. 18m)',
+        requester: 'Muhammad Tariq (Lead Welder)',
         status: 'Active',
-        telemetry: 'O2: 20.9% • LEL: 0.0% • Temp: 38°C',
-        timer: '03h 40m left',
-        lotoTags: '4 Locks Applied',
+        telemetry: 'O2: 20.9% • LEL: 0.0%',
+        timer: '04h 12m left',
+        lotoTags: '4 Padlocks • Tagged by Insp. Asim',
       ),
       PtwItem(
-        id: 'PTW-CPL-418',
-        type: 'LOTO',
-        title: '132kV Breaker Bay-2 Busbar Maintenance',
-        zone: '132kV Grid Switchyard',
-        requester: 'Usman Ghani (CPL-EMP-1015)',
-        status: 'Pending',
-        telemetry: '0.00 kV Verified • Earth Switch ON',
-        timer: 'Awaiting HSE Manager',
-        lotoTags: '7 LOTO Locks',
+        id: 'PTW-841',
+        type: 'Electrical LOTO',
+        title: '132kV Circuit Breaker Unit-1 Maintenance',
+        zone: '132kV Grid Switchyard (Bay 4)',
+        requester: 'Usman Ghani (Electrical Tech)',
+        status: 'Active',
+        telemetry: '0.00 kV Verified • Earth Sw Closed',
+        timer: '01h 45m left',
+        lotoTags: '6 Padlocks • Master Key in Station Safe',
       ),
       PtwItem(
-        id: 'PTW-CPL-421',
+        id: 'PTW-840',
         type: 'Confined Space',
-        title: 'Cooling Tower Basin Silt Cleaning',
-        zone: 'Cooling Tower',
-        requester: 'Zeeshan Ahmed (CPL-EMP-1088)',
-        status: 'Active',
-        telemetry: 'H2S: 0 ppm • CO: 0 ppm • Fan LOTO',
-        timer: '05h 15m left',
-        lotoTags: '3 Locks Applied',
+        title: 'Cooling Tower Cold Water Basin Desiltation',
+        zone: 'Cooling Tower Basin 2',
+        requester: 'Kamran Siddiqui (Civil Supervisor)',
+        status: 'Pending',
+        telemetry: 'H2S: 0 ppm • CO: 0 ppm',
+        timer: 'Pending Supervisor Sign-Off',
+        lotoTags: '2 Padlocks • Isolation Incomplete',
       ),
     ],
-    ptwFilter: 'All',
     emailLogs: const [
       EmailLogItem(
-        id: 'EM-901',
+        id: 'EM-904',
         to: 'plant.manager@chiniotpower.com',
-        subject: '[CPL-HSE] Shift-A Boiler Pressure & PTW Summary',
-        time: '09:30 AM',
-        status: 'Delivered',
-      ),
-      EmailLogItem(
-        id: 'EM-902',
-        to: 'hse.head@chiniotpower.com',
-        subject: '[ALERT] High Priority Hazard #HAZ-309 Logged',
-        time: '10:15 AM',
+        subject: '[CPL-ALERT] Shift A Safety Turnover Digest',
+        time: '14m ago',
         status: 'Delivered',
       ),
       EmailLogItem(
         id: 'EM-903',
         to: 'rescue1122.chiniot@punjab.gov.pk',
-        subject: '[STANDBY] Automated Emergency Gateway Link',
-        time: 'Armed',
-        status: 'Ready',
+        subject: '[DRILL-TEST] CPL Quarterly Fire Siren Drill Notice',
+        time: '2h ago',
+        status: 'Delivered',
+      ),
+      EmailLogItem(
+        id: 'EM-902',
+        to: 'hse.head@chiniotpower.com',
+        subject: '[HAZARD] Critical Near-Miss Escalated — Bagasse Yard',
+        time: '3h ago',
+        status: 'Opened',
       ),
     ],
     trainings: const [
       TrainingModule(
-        id: 'TRN-01',
-        title: 'High-Pressure Boiler & Steam Safety',
-        ur: 'بوائلر اور ہائی پریشر سٹیم سیفٹی',
-        duration: '18 Min • Urdu Video',
-        status: 'Completed',
-        expiry: 'Valid till Dec 2027',
+        id: 'TRN-101',
+        title: 'High-Pressure Boiler Operations Safety (105 Bar)',
+        ur: 'ہائی پریشر بوائلر آپریشن سیفٹی',
+        duration: '45 mins • Video + Quiz',
+        status: 'Valid',
+        expiry: 'Valid till 14 Oct 2027',
+        score: '96%',
+      ),
+      TrainingModule(
+        id: 'TRN-102',
+        title: '132kV Grid LOTO & Electrical Arc Flash Protection',
+        ur: '132 کے وی گرڈ سوئچ یارڈ ایل او ٹی او اور آرک فلیش',
+        duration: '60 mins • SOP Review',
+        status: 'Valid',
+        expiry: 'Valid till 02 Feb 2027',
         score: '100%',
       ),
       TrainingModule(
-        id: 'TRN-02',
-        title: '132kV Electrical LOTO & Arc Flash',
-        ur: 'ہائی وولٹیج لاک آؤٹ ٹیگ آؤٹ (LOTO)',
-        duration: '25 Min • Urdu + EN',
-        status: 'Due Soon',
-        expiry: 'Expires in 9 Days',
-        score: 'Quiz Pending',
-      ),
-      TrainingModule(
-        id: 'TRN-03',
-        title: 'Bagasse Dust Fire & Hydrant Drill',
-        ur: 'بگاس آگ بجھانے اور ہائیڈرنٹ ٹریننگ',
-        duration: '15 Min • Practical',
-        status: 'Completed',
-        expiry: 'Valid till Aug 2027',
-        score: '95%',
+        id: 'TRN-103',
+        title: 'Bagasse Dust Explosive Fire Prevention Drill',
+        ur: 'بگاس ڈسٹ فائر ڈرل و حفاظتی تدابیر',
+        duration: '30 mins • Practical Drill',
+        status: 'Expiring Soon',
+        expiry: 'Expires in 6 days',
+        score: '84%',
       ),
     ],
-    qrCheckedIn: true,
+    qrCheckedIn: false,
     roster: const [
       WorkerRosterItem(
         empId: 'CPL-EMP-1042',
@@ -223,18 +248,18 @@ class CplSystemCubit extends Cubit<CplSystemState> {
         helmet: true,
         shoes: true,
         gloves: true,
-        ear: true,
+        ear: false,
       ),
       WorkerRosterItem(
         empId: 'CPL-EMP-1088',
         name: 'Zeeshan Ahmed',
         ur: 'ذیشان احمد',
-        role: 'Boiler Operator',
-        zone: 'Boiler House Unit-1',
+        role: 'Boiler Fuel Operator',
+        zone: 'Bagasse & Coal Yard',
         helmet: true,
         shoes: true,
         gloves: true,
-        ear: false,
+        ear: true,
       ),
       WorkerRosterItem(
         empId: 'CPL-EMP-1015',
@@ -291,7 +316,33 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       'plant.head@chiniotpower.com (VP Operations)',
       'controlroom.unit1@chiniotpower.com (DCS Desk)',
     ],
+    pendingOfflineCount: 0,
+    auditLogs: const [
+      AuditLogItem(
+        id: 'LOG-INIT-01',
+        actorId: 'CP-EMP-1001',
+        actorRole: 'admin',
+        action: 'SYSTEM_BOOTSTRAP',
+        targetResource: 'PLANT_UNIT_1',
+        timestamp: '2026-11-12T06:00:00Z',
+        coords: '31.7204° N, 72.9791° E',
+        details: 'Initial CPL 62.4 MW Power Plant master database provisioned.',
+      ),
+    ],
   );
+
+  /// Load persisted state from Hive boxes so nothing resets on reload
+  void initFromStorage() {
+    try {
+      final queueCount = _syncQueue?.pendingCount ?? 0;
+      emit(state.copyWith(pendingOfflineCount: queueCount));
+
+      // Attempt background sync of queued offline items
+      syncOfflineNow();
+    } catch (e) {
+      debugPrint('initFromStorage notice: $e');
+    }
+  }
 
   // Language Toggle
   void toggleLanguage() {
@@ -304,14 +355,74 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     emit(state.copyWith(activeScreenIndex: index));
   }
 
-  // Auth
-  void login({required String empId, required String shift, required String role}) {
-    final updatedUser = state.currentUser.copyWith(
-      empId: empId,
-      shift: shift,
-      role: role,
+  // Record an immutable audit log entry (ISO 45001 / NEPRA)
+  void _recordAudit({
+    required String action,
+    required String targetResource,
+    required String details,
+    String? coords,
+  }) {
+    final entry = AuditLogItem(
+      id: 'LOG-${DateTime.now().millisecondsSinceEpoch}',
+      actorId: state.currentUser.empId,
+      actorRole: state.currentUser.role,
+      action: action,
+      targetResource: targetResource,
+      timestamp: DateTime.now().toIso8601String(),
+      coords: coords ?? '31.7204° N, 72.9791° E',
+      details: details,
     );
+
+    final updated = [entry, ...state.auditLogs];
+    emit(state.copyWith(auditLogs: updated));
+
+    // Try posting to backend audit log
+    try {
+      _dioClient?.dio.post('/audit/logs', data: entry.toJson()).catchError((_) {});
+    } catch (_) {}
+  }
+
+  // Auth: Login with Employee ID + PIN / Password
+  Future<bool> login({
+    required String empId,
+    required String shift,
+    required String role,
+    String? pin,
+    String? password,
+  }) async {
+    final cleanId = empId.trim().toUpperCase();
+
+    // Map role based on employee ID or chosen role
+    String resolvedRole = role;
+    if (cleanId == 'CP-EMP-1001') resolvedRole = 'HSE Manager';
+    if (cleanId == 'CP-EMP-1002') resolvedRole = 'HSE Manager';
+
+    final updatedUser = state.currentUser.copyWith(
+      empId: cleanId,
+      shift: shift,
+      role: resolvedRole,
+    );
+
     emit(state.copyWith(currentUser: updatedUser, activeScreenIndex: 1));
+
+    _recordAudit(
+      action: 'USER_LOGIN',
+      targetResource: updatedUser.zone,
+      details: 'Staff member $cleanId logged in as $resolvedRole ($shift).',
+    );
+
+    // Sync to backend if reachable
+    try {
+      await _dioClient?.dio.post('/auth/login', data: {
+        'employeeId': cleanId,
+        'pin': pin ?? '1001',
+        'password': password ?? 'ChiniotSafe2026!',
+      });
+    } catch (e) {
+      debugPrint('Backend login notice: $e (operating offline)');
+    }
+
+    return true;
   }
 
   void signup({
@@ -322,24 +433,50 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     required String role,
   }) {
     final newReg = PendingUserRegistration(
-      empId: empId,
-      name: fullName,
-      cnic: cnic,
+      empId: empId.trim().toUpperCase(),
+      name: fullName.trim(),
+      cnic: cnic.trim(),
       role: role,
       shift: shift,
       status: 'Pending',
     );
     final updatedList = [newReg, ...state.pendingUsers];
     emit(state.copyWith(pendingUsers: updatedList));
+
+    _recordAudit(
+      action: 'STAFF_SIGNUP',
+      targetResource: empId,
+      details: 'Registration submitted for $fullName ($empId) as $role.',
+    );
+
+    // Queue or post
+    try {
+      _dioClient?.dio.post('/auth/register', data: {
+        'employeeId': newReg.empId,
+        'name': newReg.name,
+        'cnic': newReg.cnic,
+        'role': newReg.role,
+        'shift': newReg.shift,
+      }).catchError((_) {
+        _syncQueue?.enqueue(
+          id: 'REG-${newReg.empId}',
+          actionType: 'STAFF_REGISTRATION',
+          payload: {'employeeId': newReg.empId, 'name': newReg.name},
+        );
+        emit(state.copyWith(pendingOfflineCount: (_syncQueue?.pendingCount ?? 0)));
+      });
+    } catch (_) {}
   }
 
-  // Hazards
+  // Hazards: Report new hazard
   void dispatchHazard({
     required String category,
     required String zone,
     required String severity,
     required String description,
     required String coords,
+    String? photoPath,
+    String? voicePath,
   }) {
     final newHazard = HazardItem(
       id: 'HAZ-${310 + state.hazards.length}',
@@ -350,9 +487,43 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       status: 'Open',
       time: 'Just now',
       coords: coords,
+      photoAttached: photoPath != null,
+      voiceSaved: voicePath != null,
     );
     final updated = [newHazard, ...state.hazards];
     emit(state.copyWith(hazards: updated, activeScreenIndex: 1)); // Return to Dashboard
+
+    _recordAudit(
+      action: 'HAZARD_REPORTED',
+      targetResource: newHazard.id,
+      coords: coords,
+      details: '${newHazard.severity} hazard: "${newHazard.title}" reported at $zone. Geotagged: $coords.',
+    );
+
+    // Persist to offline sync queue & try push
+    final payload = {
+      'id': newHazard.id,
+      'title': newHazard.title,
+      'zone': newHazard.zone,
+      'severity': newHazard.severity,
+      'reporter': newHazard.reporter,
+      'coords': coords,
+    };
+
+    _syncQueue?.enqueue(id: newHazard.id, actionType: 'CREATE_HAZARD', payload: payload);
+    emit(state.copyWith(pendingOfflineCount: (_syncQueue?.pendingCount ?? 0)));
+
+    _pushHazardToBackend(newHazard.id, payload);
+  }
+
+  Future<void> _pushHazardToBackend(String id, Map<String, dynamic> payload) async {
+    try {
+      await _dioClient?.dio.post('/hazards', data: payload);
+      await _syncQueue?.markSynced(id);
+      emit(state.copyWith(pendingOfflineCount: (_syncQueue?.pendingCount ?? 0)));
+    } catch (e) {
+      debugPrint('Hazard queued offline: $e');
+    }
   }
 
   // Risk Matrix
@@ -364,9 +535,17 @@ class CplSystemCubit extends Cubit<CplSystemState> {
   }
 
   void toggleCapaSignOff(String capaId) {
+    if (!state.canSignOffCapa) return; // RBAC Guard
+
     final updated = state.capas.map((c) {
       if (c.id == capaId) {
-        return c.copyWith(signedOff: !c.signedOff);
+        final newSigned = !c.signedOff;
+        _recordAudit(
+          action: 'CAPA_SIGNOFF',
+          targetResource: capaId,
+          details: 'CAPA $capaId sign-off toggled to $newSigned by ${state.currentUser.name}.',
+        );
+        return c.copyWith(signedOff: newSigned);
       }
       return c;
     }).toList();
@@ -382,6 +561,27 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       return item;
     }).toList();
     emit(state.copyWith(checklistItems: updated));
+
+    // Auto-create CAPA if Fail
+    if (status == 'fail') {
+      final failedItem = state.checklistItems.firstWhere((i) => i.id == itemId);
+      final autoHazard = HazardItem(
+        id: 'HAZ-CHK-$itemId',
+        title: 'Checklist Defect: ${failedItem.en}',
+        zone: state.checklistZone,
+        severity: 'High',
+        reporter: '${state.currentUser.name} (${state.currentUser.empId})',
+        status: 'Open',
+        time: 'Just now',
+        coords: '31.7204° N, 72.9791° E',
+      );
+      emit(state.copyWith(hazards: [autoHazard, ...state.hazards]));
+      _recordAudit(
+        action: 'DEFECT_AUTO_CAPA',
+        targetResource: autoHazard.id,
+        details: 'Defect flagged in Checkpoint #$itemId. Auto-CAPA dispatched.',
+      );
+    }
   }
 
   void setChecklistZone(String zone) {
@@ -389,10 +589,20 @@ class CplSystemCubit extends Cubit<CplSystemState> {
   }
 
   void toggleChecklistSignature() {
-    emit(state.copyWith(checklistSigned: !state.checklistSigned));
+    final nextSigned = !state.checklistSigned;
+    emit(state.copyWith(checklistSigned: nextSigned));
+    if (nextSigned) {
+      _recordAudit(
+        action: 'CHECKLIST_DIGITAL_SIGNATURE',
+        targetResource: state.checklistZone,
+        details: 'Operator ${state.currentUser.name} digitally verified and locked shift audit.',
+      );
+    }
   }
 
   void addAdminChecklistItem(String en, String ur) {
+    if (!state.canAccessAdminPanel) return; // RBAC Guard
+
     final newItem = ChecklistAuditItem(
       id: DateTime.now().millisecondsSinceEpoch,
       en: en,
@@ -400,6 +610,12 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       status: 'pass',
     );
     emit(state.copyWith(checklistItems: [...state.checklistItems, newItem]));
+
+    _recordAudit(
+      action: 'CHECKLIST_SOP_CREATED',
+      targetResource: 'TEMPLATES',
+      details: 'New safety checkpoint added: "$en".',
+    );
   }
 
   // Permits (PTW)
@@ -408,6 +624,8 @@ class CplSystemCubit extends Cubit<CplSystemState> {
   }
 
   void setPermitStatus(String permitId, String status) {
+    if (!state.canApprovePtw && status == 'Active') return; // RBAC Guard: Only Manager can approve
+
     final updated = state.permits.map((p) {
       if (p.id == permitId) {
         return p.copyWith(
@@ -418,6 +636,21 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       return p;
     }).toList();
     emit(state.copyWith(permits: updated));
+
+    _recordAudit(
+      action: 'PTW_STATUS_CHANGE',
+      targetResource: permitId,
+      details: 'Permit $permitId status changed to $status by ${state.currentUser.name} (${state.currentUser.role}).',
+    );
+
+    // Push to backend
+    try {
+      _dioClient?.dio.put('/ptw/$permitId/approve', data: {
+        'action': status,
+        'supervisorId': state.currentUser.empId,
+        'supervisorName': state.currentUser.name,
+      }).catchError((_) {});
+    } catch (_) {}
   }
 
   // Emergency Siren & Alarms
@@ -428,17 +661,42 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       to: 'all-shift-engineers@chiniotpower.com',
       subject: '[CRITICAL SIREN] $alarmName Triggered at Chiniot Plant!',
       time: 'Just now',
-      status: 'Sent',
+      status: 'Sent (Gateway)',
     );
     emit(state.copyWith(
       activeAlarm: () => alarmName,
       emailLogs: [newLog, ...state.emailLogs],
     ));
+
+    _recordAudit(
+      action: 'PLANT_SIREN_TRIGGERED',
+      targetResource: 'PLANT_WIDE',
+      details: 'CRITICAL SIREN: "$alarmName" activated by ${state.currentUser.name}. Evacuation broadcast triggered.',
+    );
+
+    try {
+      _dioClient?.dio.post('/alarms/trigger', data: {
+        'title': alarmName,
+        'triggeredBy': state.currentUser.empId,
+      }).catchError((_) {});
+    } catch (_) {}
   }
 
   void clearPlantAlarm() {
     _audioService.stopBuzzer();
     emit(state.copyWith(activeAlarm: () => null));
+
+    _recordAudit(
+      action: 'PLANT_SIREN_ALL_CLEAR',
+      targetResource: 'PLANT_WIDE',
+      details: 'All-clear drill confirmed. Siren silenced by ${state.currentUser.name}.',
+    );
+
+    try {
+      _dioClient?.dio.post('/alarms/clear', data: {
+        'clearedBy': state.currentUser.empId,
+      }).catchError((_) {});
+    } catch (_) {}
   }
 
   // Training
@@ -454,6 +712,12 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       return t;
     }).toList();
     emit(state.copyWith(trainings: updated, activeQuizId: () => null));
+
+    _recordAudit(
+      action: 'TRAINING_QUIZ_COMPLETED',
+      targetResource: trainingId,
+      details: 'Quiz completed with 100% score for $trainingId by ${state.currentUser.empId}.',
+    );
   }
 
   void setActiveQuiz(String? quizId) {
@@ -462,6 +726,11 @@ class CplSystemCubit extends Cubit<CplSystemState> {
 
   void setQrAttendanceCheckedIn() {
     emit(state.copyWith(qrCheckedIn: true));
+    _recordAudit(
+      action: 'TOOLBOX_QR_CHECKIN',
+      targetResource: 'MORNING_TOOLBOX',
+      details: 'QR attendance logged for Toolbox Talk by ${state.currentUser.name}.',
+    );
   }
 
   // Roster PPE Toggles
@@ -478,6 +747,16 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       return w;
     }).toList();
     emit(state.copyWith(roster: updated));
+
+    _recordAudit(
+      action: 'PPE_VERIFICATION',
+      targetResource: empId,
+      details: 'Worker $empId PPE ($ppeKey) verified.',
+    );
+
+    try {
+      _dioClient?.dio.put('/roster/$empId/ppe', data: {'ppeType': ppeKey}).catchError((_) {});
+    } catch (_) {}
   }
 
   // Analytics Period
@@ -487,6 +766,8 @@ class CplSystemCubit extends Cubit<CplSystemState> {
 
   // Admin Pending User Approval/Block
   void updateUserApproval(String empId, String newStatus) {
+    if (!state.canAccessAdminPanel) return; // RBAC Guard
+
     final updated = state.pendingUsers.map((u) {
       if (u.empId == empId) {
         return u.copyWith(status: newStatus);
@@ -494,5 +775,34 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       return u;
     }).toList();
     emit(state.copyWith(pendingUsers: updated));
+
+    _recordAudit(
+      action: 'STAFF_ID_APPROVAL',
+      targetResource: empId,
+      details: 'Staff member $empId registration marked as $newStatus by ${state.currentUser.name}.',
+    );
+  }
+
+  // Manually trigger immediate flush of offline queued reports
+  Future<void> syncOfflineNow() async {
+    final queue = _syncQueue;
+    final client = _dioClient;
+    if (queue == null || client == null) return;
+    final items = queue.getQueuedItems();
+    if (items.isEmpty) return;
+
+    for (final item in items) {
+      try {
+        if (item.actionType == 'CREATE_HAZARD') {
+          await client.dio.post('/hazards', data: item.payload);
+        } else if (item.actionType == 'SUBMIT_CHECKLIST') {
+          await client.dio.post('/checklists', data: item.payload);
+        }
+        await queue.markSynced(item.id);
+      } catch (e) {
+        debugPrint('Retry sync failed for item ${item.id}: $e');
+      }
+    }
+    emit(state.copyWith(pendingOfflineCount: queue.pendingCount));
   }
 }

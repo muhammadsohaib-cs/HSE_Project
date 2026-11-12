@@ -322,17 +322,26 @@ class PtwScreen extends StatelessWidget {
                                         children: [
                                           if (ptw.status != 'Active')
                                             ElevatedButton(
-                                              onPressed: () {
-                                                context.read<CplSystemCubit>().setPermitStatus(ptw.id, 'Active');
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text('Permit ${ptw.id} Approved & Live'),
-                                                    backgroundColor: CplColors.emerald500,
-                                                  ),
-                                                );
-                                              },
+                                              onPressed: state.canApprovePtw
+                                                  ? () {
+                                                      context.read<CplSystemCubit>().setPermitStatus(ptw.id, 'Active');
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(
+                                                          content: Text('Permit ${ptw.id} Approved & Live by ${state.currentUser.name}'),
+                                                          backgroundColor: CplColors.emerald500,
+                                                        ),
+                                                      );
+                                                    }
+                                                  : () {
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        const SnackBar(
+                                                          content: Text('RBAC Restricted: Only HSE Managers can approve PTW/LOTO.'),
+                                                          backgroundColor: CplColors.red600,
+                                                        ),
+                                                      );
+                                                    },
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: CplColors.emerald500,
+                                                backgroundColor: state.canApprovePtw ? CplColors.emerald500 : CplColors.slate400,
                                                 foregroundColor: Colors.white,
                                                 elevation: 0,
                                                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
