@@ -1,9 +1,27 @@
+import 'package:flutter/foundation.dart';
+
 class ApiEndpoints {
-  // Configurable base URL with desktop / dev localhost default
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://localhost:5000/api/v1',
-  );
+  static String _activeBaseUrl = getDefaultBaseUrl();
+
+  static String getDefaultBaseUrl() {
+    const envUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
+    if (envUrl.isNotEmpty) return envUrl;
+    if (kIsWeb) return 'http://localhost:5000/api/v1';
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:5000/api/v1';
+    }
+    return 'http://localhost:5000/api/v1';
+  }
+
+  static String get baseUrl => _activeBaseUrl;
+
+  static void setBaseUrl(String newUrl) {
+    var clean = newUrl.trim();
+    if (clean.endsWith('/')) {
+      clean = clean.substring(0, clean.length - 1);
+    }
+    _activeBaseUrl = clean;
+  }
 
   static const Duration connectTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 15);

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { readDb } = require('../config/db');
+const { readDb, addAuditLog } = require('../config/db');
 
 // GET /api/v1/audit/logs (Immutable Audit Trail for NEPRA / ISO 45001)
 router.get('/logs', (req, res) => {
@@ -12,6 +12,24 @@ router.get('/logs', (req, res) => {
     success: true,
     totalLogs: logs.length,
     logs
+  });
+});
+
+// POST /api/v1/audit/logs (Append new immutable audit log)
+router.post('/logs', (req, res) => {
+  const { actorId, actorRole, action, targetResource, coords, details } = req.body;
+  const entry = addAuditLog({
+    actorId,
+    actorRole,
+    action,
+    targetResource,
+    coords,
+    details
+  });
+  return res.status(201).json({
+    success: true,
+    message: 'Audit log appended',
+    entry
   });
 });
 

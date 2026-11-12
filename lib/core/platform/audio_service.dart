@@ -36,6 +36,9 @@ class AudioAlarmService {
     }
   }
 
+  Future<void> playSiren() => playEmergencyBuzzer();
+  Future<void> stopSiren() => stopBuzzer();
+
   /// Stops the emergency buzzer
   Future<void> stopBuzzer() async {
     try {

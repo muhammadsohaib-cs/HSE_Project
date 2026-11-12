@@ -2,11 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/localization/cpl_localizations.dart';
 import '../../core/theme/cpl_theme.dart';
+import '../../core/widgets/cpl_brand_logo.dart';
 import '../cpl_system/cubit/cpl_system_cubit.dart';
 import '../cpl_system/cubit/cpl_system_state.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
+
+  String _getUserInitials(String name) {
+    final clean = name.replaceAll(RegExp(r'^(Engr\.|Dr\.|Mr\.|Ms\.)\s*', caseSensitive: false), '').trim();
+    final parts = clean.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return 'CP';
+    if (parts.length == 1) return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
+    return '${parts[0][0]}${parts[parts.length - 1][0]}'.toUpperCase();
+  }
+
+  String _getDynamicShiftBriefing(CplSystemState state, user, bool isUrdu) {
+    if (state.activeAlarm != null) {
+      return isUrdu
+          ? '⚠️ ایمرجنسی الرٹ: پلانٹ سیفٹی سائرن فعال ہے (${state.activeAlarm})۔ فوری حفاظتی انخلاء اور کنٹرول روم ہدایات پر عمل کریں۔'
+          : '⚠️ EMERGENCY ALERT: Active Siren (${state.activeAlarm}). Follow plant evacuation & control room directives.';
+    }
+    final openHazards = state.hazards.where((h) => h.status.toLowerCase() != 'resolved' && h.status.toLowerCase() != 'closed').toList();
+    final critical = openHazards.where((h) => h.severity.toLowerCase() == 'critical').toList();
+    if (critical.isNotEmpty) {
+      final first = critical.first;
+      return isUrdu
+          ? 'اہم حفاظتی بریفنگ: ${first.zone} میں ${first.title} کی نگرانی جاری ہے۔ احتیاطی تدابیر اور PPE پر سختی سے عمل کریں۔'
+          : 'Critical Safety Briefing: Active attention required at ${first.zone} (${first.title}). Maintain strict PPE.';
+    }
+    final zoneHazards = openHazards.where((h) => h.zone == user.zone).toList();
+    if (zoneHazards.isNotEmpty) {
+      return isUrdu
+          ? 'شفٹ بریفنگ (${user.shift.split(':')[0]}): ${user.zone} میں محتاط رہیں۔ ${zoneHazards.first.title} کا معائنہ کریں۔'
+          : 'Shift Briefing (${user.shift.split(':')[0]}): Heightened caution in ${user.zone}. Verify ${zoneHazards.first.title}.';
+    }
+    return isUrdu
+        ? 'شفٹ بریفنگ (${user.shift.split(':')[0]}): 62.4 میگاواٹ کو-جن پلانٹ بحفاظت فعال ہے۔ تمام زونز میں 100% PPE معائنہ مکمل کریں۔'
+        : 'Shift Briefing (${user.shift.split(':')[0]}): 62.4 MW Co-Gen operating safely. Verify 100% PPE compliance at turnover.';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,11 +50,71 @@ class DashboardScreen extends StatelessWidget {
         final user = state.currentUser;
         final isUrdu = lang == 'ur';
 
+        // Dynamic Calculations
+        final initials = _getUserInitials(user.name);
+        final briefingText = _getDynamicShiftBriefing(state, user, isUrdu);
+
+        // Safe days derived from plant commissioning milestone
+        final streakDays = (DateTime.now().difference(DateTime(2025, 4, 1)).inDays).clamp(1, 9999);
+        final recordDays = streakDays + 32;
+
+        // Live PPE Compliance from Roster
+        final totalWorkers = state.roster.isNotEmpty ? state.roster.length : 148;
+        final compliantWorkers = state.roster.isNotEmpty
+            ? state.roster.where((w) => w.isFullPpe).length
+            : 144;
+        final compliancePct = (compliantWorkers / totalWorkers * 100).toStringAsFixed(1);
+
+        // Live Open & Critical Hazards
+        final openHazards = state.hazards.where((h) => h.status.toLowerCase() != 'resolved' && h.status.toLowerCase() != 'closed').toList();
+        final criticalHazards = openHazards.where((h) => h.severity.toLowerCase() == 'critical').toList();
+        final criticalSubText = criticalHazards.isNotEmpty
+            ? '${criticalHazards.length} Critical (${criticalHazards.first.zone.split(' ').take(2).join(' ')})'
+            : (openHazards.isNotEmpty ? '${openHazards.length} Active Hazards' : (isUrdu ? 'تمام خطرات کلیئر' : 'All Clear (Zero Defect)'));
+
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // 0. CPL Brand Identity & Logout Header Strip
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const CplBrandLogo(
+                    height: 28,
+                    showSubtitle: true,
+                    isDark: false,
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.refresh, size: 18, color: CplColors.slate600),
+                        tooltip: 'Sync Latest Records',
+                        onPressed: () {
+                          context.read<CplSystemCubit>().loadLiveData();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Refreshing live CPL records from gateway...'),
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.logout, size: 18, color: CplColors.red600),
+                        tooltip: 'Logout Staff Session',
+                        onPressed: () {
+                          context.read<CplSystemCubit>().logout();
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
               // 1. Staff & Plant Live Header
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -82,7 +176,7 @@ class DashboardScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('MT', style: CplTypography.displayHeading(fontSize: 11, color: Colors.white)),
+                          Text(initials, style: CplTypography.displayHeading(fontSize: 11, color: Colors.white)),
                           Text('CPL', style: CplTypography.mono(fontSize: 8, color: CplColors.safety400)),
                         ],
                       ),
@@ -116,7 +210,7 @@ class DashboardScreen extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        CplLocalizations.tr('shiftBriefing', lang),
+                        briefingText,
                         style: isUrdu
                             ? CplTypography.urdu(fontSize: 11, color: CplColors.amber950)
                             : CplTypography.body(fontSize: 11, fontWeight: FontWeight.w600, color: CplColors.amber950),
@@ -175,7 +269,7 @@ class DashboardScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.baseline,
                           textBaseline: TextBaseline.alphabetic,
                           children: [
-                            Text('218', style: CplTypography.displayHeading(fontSize: 38, color: Colors.white)),
+                            Text('$streakDays', style: CplTypography.displayHeading(fontSize: 38, color: Colors.white)),
                             const SizedBox(width: 8),
                             Text(CplLocalizations.tr('safeDaysLabel', lang), style: CplTypography.body(fontSize: 12, fontWeight: FontWeight.bold, color: CplColors.slate200)),
                           ],
@@ -196,7 +290,7 @@ class DashboardScreen extends StatelessWidget {
                     const Divider(color: Colors.white12, height: 1),
                     const SizedBox(height: 8),
                     Text(
-                      CplLocalizations.tr('safeDaysSub', lang),
+                      isUrdu ? 'پلانٹ ریکارڈ: $recordDays دن • یونٹ-1 اور بوائلر محفوظ' : 'Plant Record: $recordDays Days • Unit-1 & Boiler Safe',
                       style: CplTypography.body(fontSize: 10, color: CplColors.slate300),
                     ),
                   ],
@@ -289,8 +383,8 @@ class DashboardScreen extends StatelessWidget {
                           children: [
                             Text(CplLocalizations.tr('compliance', lang), style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
                             const SizedBox(height: 2),
-                            Text('97.2%', style: CplTypography.displayHeading(fontSize: 22, color: CplColors.emerald600)),
-                            Text('148/148 PPE Verified', style: CplTypography.body(fontSize: 10, color: CplColors.slate500)),
+                            Text('$compliancePct%', style: CplTypography.displayHeading(fontSize: 22, color: CplColors.emerald600)),
+                            Text('$compliantWorkers/$totalWorkers PPE Verified', style: CplTypography.body(fontSize: 10, color: CplColors.slate500)),
                           ],
                         ),
                       ),
@@ -313,8 +407,15 @@ class DashboardScreen extends StatelessWidget {
                           children: [
                             Text(CplLocalizations.tr('openHazards', lang), style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
                             const SizedBox(height: 2),
-                            Text('${state.hazards.length}', style: CplTypography.displayHeading(fontSize: 22, color: CplColors.safety500)),
-                            Text('1 Critical (Bagasse Yard)', style: CplTypography.body(fontSize: 10, color: CplColors.red600, fontWeight: FontWeight.w600)),
+                            Text('${openHazards.length}', style: CplTypography.displayHeading(fontSize: 22, color: CplColors.safety500)),
+                            Text(
+                              criticalSubText,
+                              style: CplTypography.body(
+                                fontSize: 10,
+                                color: criticalHazards.isNotEmpty ? CplColors.red600 : CplColors.emerald600,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ],
                         ),
                       ),

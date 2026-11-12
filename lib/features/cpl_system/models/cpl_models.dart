@@ -39,6 +39,26 @@ class UserSession extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    'empId': empId,
+    'name': name,
+    'urduName': urduName,
+    'role': role,
+    'shift': shift,
+    'cnic': cnic,
+    'zone': zone,
+  };
+
+  factory UserSession.fromJson(Map<String, dynamic> json) => UserSession(
+    empId: json['empId'] ?? json['employeeId'] ?? 'CPL-EMP-XXXX',
+    name: json['name'] ?? 'CPL Staff',
+    urduName: json['urduName'] ?? json['name'] ?? 'سٹاف',
+    role: json['role'] ?? 'Plant Worker',
+    shift: json['shift'] ?? 'Shift A: Morning (06:00 - 14:00)',
+    cnic: json['cnic'] ?? '33202-0000000-0',
+    zone: json['zone'] ?? json['plantZone'] ?? 'Boiler House Unit-1',
+  );
+
   @override
   List<Object?> get props => [empId, name, urduName, role, shift, cnic, zone];
 }
@@ -73,6 +93,8 @@ class HazardItem extends Equatable {
   final String coords;
   final bool photoAttached;
   final bool voiceSaved;
+  final String? photoUrl;
+  final String? voiceNoteUrl;
 
   const HazardItem({
     required this.id,
@@ -85,10 +107,42 @@ class HazardItem extends Equatable {
     required this.coords,
     this.photoAttached = true,
     this.voiceSaved = true,
+    this.photoUrl,
+    this.voiceNoteUrl,
   });
 
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'zone': zone,
+    'severity': severity,
+    'reporter': reporter,
+    'status': status,
+    'time': time,
+    'coords': coords,
+    'photoAttached': photoAttached,
+    'voiceSaved': voiceSaved,
+    'photoUrl': photoUrl,
+    'voiceNoteUrl': voiceNoteUrl,
+  };
+
+  factory HazardItem.fromJson(Map<String, dynamic> json) => HazardItem(
+    id: json['id'] as String? ?? 'HAZ-${DateTime.now().millisecondsSinceEpoch}',
+    title: json['title'] as String? ?? 'Safety Hazard',
+    zone: json['zone'] as String? ?? 'Boiler House Unit-1',
+    severity: json['severity'] as String? ?? 'Moderate',
+    reporter: json['reporter'] as String? ?? 'Plant Worker',
+    status: json['status'] as String? ?? 'Open',
+    time: json['time'] as String? ?? 'Just now',
+    coords: json['coords'] as String? ?? '31.7204° N, 72.9791° E',
+    photoAttached: json['photoAttached'] as bool? ?? (json['photoUrl'] != null),
+    voiceSaved: json['voiceSaved'] as bool? ?? (json['voiceNoteUrl'] != null),
+    photoUrl: json['photoUrl'] as String?,
+    voiceNoteUrl: json['voiceNoteUrl'] as String?,
+  );
+
   @override
-  List<Object?> get props => [id, title, zone, severity, reporter, status, time, coords, photoAttached, voiceSaved];
+  List<Object?> get props => [id, title, zone, severity, reporter, status, time, coords, photoAttached, voiceSaved, photoUrl, voiceNoteUrl];
 }
 
 class CapaItem extends Equatable {
@@ -305,6 +359,8 @@ class PendingUserRegistration extends Equatable {
   final String role;
   final String shift;
   final String status; // 'Pending', 'Approved', 'Blocked'
+  final String? pin;
+  final String? zone;
 
   const PendingUserRegistration({
     required this.empId,
@@ -313,21 +369,54 @@ class PendingUserRegistration extends Equatable {
     required this.role,
     required this.shift,
     required this.status,
+    this.pin,
+    this.zone,
   });
 
-  PendingUserRegistration copyWith({String? status}) {
+  PendingUserRegistration copyWith({
+    String? status,
+    String? pin,
+    String? zone,
+    String? name,
+    String? role,
+    String? shift,
+  }) {
     return PendingUserRegistration(
       empId: empId,
-      name: name,
+      name: name ?? this.name,
       cnic: cnic,
-      role: role,
-      shift: shift,
+      role: role ?? this.role,
+      shift: shift ?? this.shift,
       status: status ?? this.status,
+      pin: pin ?? this.pin,
+      zone: zone ?? this.zone,
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    'empId': empId,
+    'name': name,
+    'cnic': cnic,
+    'role': role,
+    'shift': shift,
+    'status': status,
+    'pin': pin,
+    'zone': zone,
+  };
+
+  factory PendingUserRegistration.fromJson(Map<String, dynamic> json) => PendingUserRegistration(
+    empId: json['empId'] ?? json['employeeId'] ?? '',
+    name: json['name'] ?? '',
+    cnic: json['cnic'] ?? '',
+    role: json['role'] ?? 'Plant Worker',
+    shift: json['shift'] ?? 'Shift A',
+    status: json['status'] ?? 'Pending',
+    pin: json['pin']?.toString(),
+    zone: json['zone'] ?? json['plantZone'] ?? 'Boiler House Unit-1',
+  );
+
   @override
-  List<Object?> get props => [empId, name, cnic, role, shift, status];
+  List<Object?> get props => [empId, name, cnic, role, shift, status, pin, zone];
 }
 
 class AuditLogItem extends Equatable {

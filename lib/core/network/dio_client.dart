@@ -34,5 +34,10 @@ class DioClient {
       ),
     );
   }
+
+  void updateBaseUrl(String newUrl) {
+    dio.options.baseUrl = newUrl;
+    ApiEndpoints.setBaseUrl(newUrl);
+  }
 }
 

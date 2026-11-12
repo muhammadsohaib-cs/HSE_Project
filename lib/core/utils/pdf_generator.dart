@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -43,6 +44,12 @@ class PdfReportGenerator {
     final dateFormat = DateFormat('yyyy-MM-dd HH:mm');
     final generatedTime = dateFormat.format(DateTime.now());
 
+    Uint8List? logoBytes;
+    try {
+      final byteData = await rootBundle.load('assets/images/cpl_logo.png');
+      logoBytes = byteData.buffer.asUint8List();
+    } catch (_) {}
+
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
@@ -51,34 +58,56 @@ class PdfReportGenerator {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              // Header
+              // Letterhead Header
               pw.Row(
                 mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
                 children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  pw.Row(
                     children: [
-                      pw.Text(
-                        'CHINIOT POWER LIMITED',
-                        style: pw.TextStyle(
-                          fontSize: 20,
-                          fontWeight: pw.FontWeight.bold,
-                          color: PdfColors.blue900,
-                        ),
-                      ),
-                      pw.Text(
-                        'Health, Safety & Environment (HSE) Department',
-                        style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey700),
+                      if (logoBytes != null) ...[
+                        pw.Image(pw.MemoryImage(logoBytes), height: 40),
+                        pw.SizedBox(width: 12),
+                      ],
+                      pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text(
+                            'CHINIOT POWER LIMITED',
+                            style: pw.TextStyle(
+                              fontSize: 17,
+                              fontWeight: pw.FontWeight.bold,
+                              color: PdfColors.blue900,
+                            ),
+                          ),
+                          pw.Text(
+                            '62.4 MW Co-Gen Plant • HSE Department',
+                            style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey700),
+                          ),
+                          pw.Text(
+                            'NEPRA Compliance & ISO 45001:2018 Certified Management System',
+                            style: pw.TextStyle(fontSize: 8.5, color: PdfColors.green800, fontWeight: pw.FontWeight.bold),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                  pw.Text(
-                    'SHIFT TURNOVER REPORT',
-                    style: pw.TextStyle(
-                      fontSize: 14,
-                      fontWeight: pw.FontWeight.bold,
-                      color: PdfColors.red800,
-                    ),
+                  pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                    children: [
+                      pw.Text(
+                        'MASTER AUDIT REPORT',
+                        style: pw.TextStyle(
+                          fontSize: 13,
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.red800,
+                        ),
+                      ),
+                      pw.Text(
+                        'Ref: CPL-NEPRA-${DateTime.now().year}',
+                        style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -202,5 +202,82 @@ void main() {
       expect(restored.details, contains('Approved Hot Work'));
     });
   });
+
+  group('Dynamic Dashboard & Registration Approval Tests', () {
+    String getUserInitials(String name) {
+      final clean = name.replaceAll(RegExp(r'^(Engr\.|Dr\.|Mr\.|Ms\.)\s*', caseSensitive: false), '').trim();
+      final parts = clean.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+      if (parts.isEmpty) return 'CP';
+      if (parts.length == 1) return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
+      return '${parts[0][0]}${parts[parts.length - 1][0]}'.toUpperCase();
+    }
+
+    test('User initials are dynamically computed from name without title', () {
+      expect(getUserInitials('Engr. Tariq Khan'), equals('TK'));
+      expect(getUserInitials('Muhammad Tariq'), equals('MT'));
+      expect(getUserInitials('Bilal Khan'), equals('BK'));
+      expect(getUserInitials('Zeeshan Ahmed'), equals('ZA'));
+      expect(getUserInitials('Muhammad Sohaib'), equals('MS'));
+      expect(getUserInitials('Usman Ghani'), equals('UG'));
+      expect(getUserInitials('Ali'), equals('AL'));
+      expect(getUserInitials(''), equals('CP'));
+    });
+
+    test('PendingUserRegistration serializes and deserializes accurately with PIN and Zone', () {
+      const reg = PendingUserRegistration(
+        empId: 'CPL-EMP-2001',
+        name: 'Bilal Khan',
+        cnic: '33202-9876543-1',
+        role: 'Plant Worker',
+        shift: 'Shift B',
+        status: 'Pending',
+        pin: '2001',
+        zone: 'Boiler House Unit-1',
+      );
+
+      final json = reg.toJson();
+      expect(json['empId'], equals('CPL-EMP-2001'));
+      expect(json['pin'], equals('2001'));
+      expect(json['zone'], equals('Boiler House Unit-1'));
+
+      final restored = PendingUserRegistration.fromJson(json);
+      expect(restored.empId, equals('CPL-EMP-2001'));
+      expect(restored.name, equals('Bilal Khan'));
+      expect(restored.pin, equals('2001'));
+      expect(restored.status, equals('Pending'));
+    });
+
+    test('Live Safety Compliance calculates dynamic percentage from active Roster', () {
+      final roster = [
+        const WorkerRosterItem(empId: '1', name: 'W1', ur: 'ورکر 1', role: 'Worker', zone: 'Z1', helmet: true, shoes: true, gloves: true, ear: true),
+        const WorkerRosterItem(empId: '2', name: 'W2', ur: 'ورکر 2', role: 'Worker', zone: 'Z1', helmet: true, shoes: true, gloves: true, ear: false),
+        const WorkerRosterItem(empId: '3', name: 'W3', ur: 'ورکر 3', role: 'Worker', zone: 'Z1', helmet: true, shoes: true, gloves: true, ear: true),
+        const WorkerRosterItem(empId: '4', name: 'W4', ur: 'ورکر 4', role: 'Worker', zone: 'Z1', helmet: true, shoes: true, gloves: true, ear: true),
+      ];
+
+      final total = roster.length;
+      final compliant = roster.where((w) => w.isFullPpe).length;
+      final complianceRate = ((compliant / total) * 100).toStringAsFixed(1);
+
+      expect(total, equals(4));
+      expect(compliant, equals(3));
+      expect(complianceRate, equals('75.0'));
+    });
+
+    test('Live Open and Critical Hazards calculate dynamic counts from active Hazard list', () {
+      final hazards = [
+        const HazardItem(id: 'H1', title: 'Steam leak', zone: 'Boiler', severity: 'High', reporter: 'R1', status: 'Open', time: '1m', coords: '0,0'),
+        const HazardItem(id: 'H2', title: 'Conveyor guard', zone: 'Yard', severity: 'Critical', reporter: 'R2', status: 'In Progress', time: '2m', coords: '0,0'),
+        const HazardItem(id: 'H3', title: 'Earthing pit', zone: 'Grid', severity: 'Moderate', reporter: 'R3', status: 'Resolved', time: '3m', coords: '0,0'),
+      ];
+
+      final openHazards = hazards.where((h) => h.status != 'Resolved' && h.status != 'Closed').toList();
+      final criticalHazards = openHazards.where((h) => h.severity == 'Critical').toList();
+
+      expect(openHazards.length, equals(2));
+      expect(criticalHazards.length, equals(1));
+      expect(criticalHazards.first.zone, equals('Yard'));
+    });
+  });
 }
 

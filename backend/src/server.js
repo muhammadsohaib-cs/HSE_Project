@@ -12,8 +12,26 @@ const rosterRoutes = require('./routes/roster');
 const analyticsRoutes = require('./routes/analytics');
 const auditRoutes = require('./routes/audit');
 
+const http = require('http');
+const { Server } = require('socket.io');
+
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: { origin: '*' }
+});
+
 const PORT = process.env.PORT || 5000;
+
+// Attach Socket.io to Express App
+app.set('io', io);
+
+io.on('connection', (socket) => {
+  console.log(`[Socket.io] Real-time Plant telemetry client connected: ${socket.id}`);
+  socket.on('disconnect', () => {
+    console.log(`[Socket.io] Client disconnected: ${socket.id}`);
+  });
+});
 
 // Middleware
 app.use(cors({ origin: '*' }));
@@ -30,19 +48,25 @@ app.get('/health', (req, res) => {
     status: 'ONLINE',
     system: 'Chiniot Power Limited (CPL) HSE Management System Backend Gateway',
     timestamp: new Date().toISOString(),
-    unit: 'UNIT-1 62.4 MW Co-Gen Power Plant'
+    unit: 'UNIT-1 62.4 MW Co-Gen Power Plant',
+    socketClients: io.engine.clientsCount
   });
 });
 
-// API Routes
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/hazards', hazardsRoutes);
-app.use('/api/v1/checklists', checklistsRoutes);
-app.use('/api/v1/ptw', ptwRoutes);
-app.use('/api/v1/alarms', alarmsRoutes);
-app.use('/api/v1/roster', rosterRoutes);
-app.use('/api/v1/analytics', analyticsRoutes);
-app.use('/api/v1/audit', auditRoutes);
+// Dual API Route Mount: /api/v1 and /api
+const registerRoutes = (prefix) => {
+  app.use(`${prefix}/auth`, authRoutes);
+  app.use(`${prefix}/hazards`, hazardsRoutes);
+  app.use(`${prefix}/checklists`, checklistsRoutes);
+  app.use(`${prefix}/ptw`, ptwRoutes);
+  app.use(`${prefix}/alarms`, alarmsRoutes);
+  app.use(`${prefix}/roster`, rosterRoutes);
+  app.use(`${prefix}/analytics`, analyticsRoutes);
+  app.use(`${prefix}/audit`, auditRoutes);
+};
+
+registerRoutes('/api/v1');
+registerRoutes('/api');
 
 // Error Handler
 app.use((err, req, res, next) => {
@@ -53,14 +77,15 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`================================================================`);
   console.log(` CPL HSE Backend API Gateway running on port ${PORT}`);
   console.log(` Health Check: http://localhost:${PORT}/health`);
   console.log(` Static Uploads: http://localhost:${PORT}/uploads`);
   console.log(` Target Plant: UNIT-1 62.4 MW (Chiniot, Punjab • 31.7204° N, 72.9791° E)`);
+  console.log(` Socket.io Gateway Active on port ${PORT}`);
   console.log(`================================================================`);
 });
 
-module.exports = app;
+module.exports = { app, server };
 

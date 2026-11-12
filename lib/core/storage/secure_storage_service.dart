@@ -17,6 +17,10 @@ class SecureStorageService {
   static const String _keyEmployeeId = 'cp_user_employee_id';
   static const String _keyUserRole = 'cp_user_role';
   static const String _keyUserJson = 'cp_user_profile_json';
+  static const String _keyServerUrl = 'cp_server_url';
+
+  Future<void> saveServerUrl(String url) async => await _storage.write(key: _keyServerUrl, value: url);
+  Future<String?> getServerUrl() async => await _storage.read(key: _keyServerUrl);
 
   Future<void> saveAuthTokens({
     required String accessToken,

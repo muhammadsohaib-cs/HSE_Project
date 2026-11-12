@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/constants/api_endpoints.dart';
 import '../../core/localization/cpl_localizations.dart';
 import '../../core/platform/biometric_service.dart';
 import '../../core/theme/cpl_theme.dart';
+import '../../core/widgets/cpl_brand_logo.dart';
 import '../cpl_system/cubit/cpl_system_cubit.dart';
 import '../cpl_system/cubit/cpl_system_state.dart';
 
@@ -15,14 +17,14 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
-  final _empIdController = TextEditingController(text: 'CPL-EMP-1042');
-  final _pinController = TextEditingController(text: '1042');
-  final _fullNameController = TextEditingController(text: 'Muhammad Tariq');
-  final _cnicMobileController = TextEditingController(text: '33202-4829104-1 / 0300-8661042');
+  final _empIdController = TextEditingController(text: 'CPL-EMP-1001');
+  final _pinController = TextEditingController(text: '1001');
+  final _fullNameController = TextEditingController(text: 'Engr. Tariq Khan');
+  final _cnicMobileController = TextEditingController(text: '33202-1234567-1 / 0300-8661001');
   final BiometricAuthService _biometricAuth = BiometricAuthService();
 
   String _selectedShift = 'Shift A: Morning';
-  String _selectedRole = 'Safety Officer';
+  String _selectedRole = 'HSE Manager';
 
   final List<String> _shifts = [
     'Shift A: Morning',
@@ -43,6 +45,99 @@ class _AuthScreenState extends State<AuthScreen> {
     _fullNameController.dispose();
     _cnicMobileController.dispose();
     super.dispose();
+  }
+
+  void _fillAccount({required String empId, required String role, required String pin, required String name}) {
+    setState(() {
+      _empIdController.text = empId;
+      _pinController.text = pin;
+      _selectedRole = role;
+      _fullNameController.text = name;
+    });
+  }
+
+  void _showServerSettingsDialog(BuildContext context) {
+    final controller = TextEditingController(text: ApiEndpoints.baseUrl);
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: const [
+            Icon(Icons.settings_ethernet, color: CplColors.energyAmber),
+            SizedBox(width: 8),
+            Text('Plant Server Settings', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Specify CPL Intranet / Backend Gateway URL for synchronizing field data across devices:',
+              style: TextStyle(fontSize: 12, color: CplColors.slate600),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'Backend Gateway URL',
+                hintText: 'http://10.0.2.2:5000/api/v1',
+                prefixIcon: Icon(Icons.dns_outlined, size: 20),
+              ),
+              style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+            ),
+            const SizedBox(height: 12),
+            const Text('Quick Select Preset:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                ActionChip(
+                  label: const Text('Android (10.0.2.2)', style: TextStyle(fontSize: 10)),
+                  onPressed: () => controller.text = 'http://10.0.2.2:5000/api/v1',
+                ),
+                ActionChip(
+                  label: const Text('PC / Web (localhost)', style: TextStyle(fontSize: 10)),
+                  onPressed: () => controller.text = 'http://localhost:5000/api/v1',
+                ),
+                ActionChip(
+                  label: const Text('Physical Wi-Fi (LAN)', style: TextStyle(fontSize: 10)),
+                  onPressed: () => controller.text = 'http://192.168.1.40:5000/api/v1',
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final newUrl = controller.text.trim();
+              if (newUrl.isNotEmpty) {
+                context.read<CplSystemCubit>().updateServerUrl(newUrl);
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Server Gateway updated to: $newUrl'),
+                    backgroundColor: CplColors.renewableGreen,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: CplColors.corporateNavy,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Save & Reconnect'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _handleBiometricLogin() async {
@@ -76,36 +171,50 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
     final cubit = context.read<CplSystemCubit>();
     if (_isLogin) {
-      cubit.login(
+      final success = await cubit.login(
         empId: _empIdController.text.trim(),
         shift: _selectedShift,
         role: _selectedRole,
         pin: _pinController.text.trim(),
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Authenticated ${_empIdController.text.trim()} ($_selectedShift)'),
-          backgroundColor: CplColors.slate900,
-        ),
-      );
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Authenticated ${_empIdController.text.trim()} ($_selectedShift)'),
+              backgroundColor: CplColors.slate900,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Login failed: Account may be pending approval or credentials incorrect.'),
+              backgroundColor: CplColors.red600,
+            ),
+          );
+        }
+      }
     } else {
-      cubit.signup(
+      await cubit.signup(
         empId: _empIdController.text.trim(),
         fullName: _fullNameController.text.trim(),
         cnic: _cnicMobileController.text.trim(),
         shift: _selectedShift,
         role: _selectedRole,
+        pin: _pinController.text.trim(),
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registration submitted! Awaiting HSE Manager approval.'),
-          backgroundColor: CplColors.safety500,
-        ),
-      );
-      setState(() => _isLogin = true);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registration submitted for ${_empIdController.text.trim()}! Awaiting HSE Manager approval.'),
+            backgroundColor: CplColors.safety500,
+          ),
+        );
+        setState(() => _isLogin = true);
+      }
     }
   }
 
@@ -120,16 +229,16 @@ class _AuthScreenState extends State<AuthScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // CPL Plant Branding Header Card
+              // CPL Plant Branding Header Card with Official Logo & Server Settings
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: CplColors.slate900,
+                  color: CplColors.corporateNavy,
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [
                     BoxShadow(
-                      color: CplColors.slate900.withAlpha((0.2 * 255).round()),
-                      blurRadius: 12,
+                      color: CplColors.corporateNavy.withAlpha((0.25 * 255).round()),
+                      blurRadius: 14,
                       offset: const Offset(0, 4),
                     ),
                   ],
@@ -139,45 +248,79 @@ class _AuthScreenState extends State<AuthScreen> {
                   children: [
                     Row(
                       children: [
-                        Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: CplColors.safety500,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            'CPL',
-                            style: CplTypography.displayHeading(fontSize: 14, color: Colors.white),
+                        Expanded(
+                          child: CplBrandLogo(
+                            height: 38,
+                            isDark: true,
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                CplLocalizations.tr('plantName', lang),
-                                style: CplTypography.displayHeading(fontSize: 15, color: Colors.white),
-                              ),
-                              Text(
-                                CplLocalizations.tr('plantSub', lang),
-                                style: CplTypography.body(fontSize: 11, color: CplColors.slate300),
-                              ),
-                            ],
-                          ),
+                        IconButton(
+                          icon: const Icon(Icons.settings_ethernet, color: CplColors.energyAmber, size: 22),
+                          tooltip: 'Plant Server Settings',
+                          onPressed: () => _showServerSettingsDialog(context),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Text(
-                      _isLogin ? CplLocalizations.tr('loginTitle', lang) : CplLocalizations.tr('signupTitle', lang),
-                      style: CplTypography.body(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: CplColors.safety400,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _isLogin ? CplLocalizations.tr('loginTitle', lang) : CplLocalizations.tr('signupTitle', lang),
+                          style: CplTypography.body(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: CplColors.energyAmber,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            ApiEndpoints.baseUrl.contains('10.0.2.2') ? 'Emulator Mode' : 'Live Gateway',
+                            style: const TextStyle(fontSize: 10, color: Colors.white70, fontFamily: 'monospace'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Fast Switch Demo Account Chips
+              Row(
+                children: const [
+                  Text('PRESET ROLES • فوری کردار منتخب کریں:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: CplColors.slate600)),
+                ],
+              ),
+              const SizedBox(height: 6),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    ActionChip(
+                      avatar: const Icon(Icons.admin_panel_settings, size: 14, color: Colors.white),
+                      label: const Text('CPL-EMP-1001 (Manager)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
+                      backgroundColor: CplColors.corporateNavy,
+                      onPressed: () => _fillAccount(empId: 'CPL-EMP-1001', role: 'HSE Manager', pin: '1001', name: 'Engr. Tariq Khan'),
+                    ),
+                    const SizedBox(width: 6),
+                    ActionChip(
+                      avatar: const Icon(Icons.verified_user, size: 14, color: Colors.white),
+                      label: const Text('CPL-EMP-1042 (Safety)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
+                      backgroundColor: CplColors.safety500,
+                      onPressed: () => _fillAccount(empId: 'CPL-EMP-1042', role: 'Safety Officer', pin: '1042', name: 'Muhammad Tariq'),
+                    ),
+                    const SizedBox(width: 6),
+                    ActionChip(
+                      avatar: const Icon(Icons.person, size: 14, color: Colors.white),
+                      label: const Text('CPL-EMP-1088 (Worker)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
+                      backgroundColor: CplColors.slate700,
+                      onPressed: () => _fillAccount(empId: 'CPL-EMP-1088', role: 'Plant Worker', pin: '1088', name: 'Zeeshan Ahmed'),
                     ),
                   ],
                 ),
@@ -276,11 +419,11 @@ class _AuthScreenState extends State<AuthScreen> {
                     TextField(
                       controller: _pinController,
                       obscureText: true,
-                      keyboardType: TextInputType.number,
+                      keyboardType: TextInputType.text,
                       style: CplTypography.mono(fontSize: 13, fontWeight: FontWeight.bold),
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.lock_outline, size: 18),
-                        hintText: '4-digit PIN (e.g. 1042, 1001)',
+                        hintText: '4-digit PIN (e.g. 1001, 1042) or admin123',
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -363,9 +506,9 @@ class _AuthScreenState extends State<AuthScreen> {
                               child: Container(
                                 padding: const EdgeInsets.symmetric(vertical: 8),
                                 decoration: BoxDecoration(
-                                  color: isSelected ? CplColors.slate900 : CplColors.slate50,
+                                  color: isSelected ? CplColors.corporateNavy : CplColors.slate50,
                                   borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: isSelected ? CplColors.slate900 : CplColors.slate200),
+                                  border: Border.all(color: isSelected ? CplColors.corporateNavy : CplColors.slate200),
                                 ),
                                 alignment: Alignment.center,
                                 child: Text(
@@ -391,7 +534,8 @@ class _AuthScreenState extends State<AuthScreen> {
               ElevatedButton(
                 onPressed: _handleSubmit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: CplColors.safety500,
+                  backgroundColor: CplColors.corporateNavy,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
@@ -425,3 +569,4 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 }
+

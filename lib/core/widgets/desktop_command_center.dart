@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../theme/cpl_theme.dart';
 import '../utils/pdf_generator.dart';
 import '../utils/csv_exporter.dart';
+import '../widgets/cpl_brand_logo.dart';
 import '../../features/cpl_system/cubit/cpl_system_cubit.dart';
 import '../../features/cpl_system/cubit/cpl_system_state.dart';
 import '../../features/screens/auth_screen.dart';
@@ -73,49 +74,14 @@ class DesktopCommandCenter extends StatelessWidget {
                   children: [
                     // Brand Header
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       decoration: const BoxDecoration(
                         border: Border(bottom: BorderSide(color: CplColors.slate800)),
                       ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: CplColors.safety500,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              'CPL',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 16,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'Chiniot Power',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                Text(
-                                  '62.4 MW Co-Gen HSE',
-                                  style: TextStyle(color: CplColors.slate400, fontSize: 11),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                      child: const CplBrandLogo(
+                        height: 36,
+                        isDark: true,
+                        showSubtitle: true,
                       ),
                     ),
                     // Navigation List

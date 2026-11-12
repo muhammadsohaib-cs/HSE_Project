@@ -142,6 +142,7 @@ void main() async {
             audioService: audioAlarmService,
             dioClient: dioClient,
             syncQueue: syncQueue,
+            secureStorage: secureStorage,
           )..initFromStorage(),
         ),
         BlocProvider<AuthCubit>(

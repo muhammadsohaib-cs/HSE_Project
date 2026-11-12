@@ -2,17 +2,23 @@ const express = require('express');
 const router = express.Router();
 const { readDb, writeDb, addAuditLog } = require('../config/db');
 
-// GET /api/v1/roster
+// GET /api/v1/roster (Dynamic Muster Roll & Live PPE Compliance)
 router.get('/', (req, res) => {
   const db = readDb();
-  const totalAccounted = db.roster.length;
+  if (!db.roster) db.roster = [];
+  
+  const totalOnSite = db.roster.length;
+  const compliantCount = db.roster.filter(w => w.helmet && w.shoes && w.gloves && w.ear).length;
+  const complianceRate = totalOnSite > 0 ? ((compliantCount / totalOnSite) * 100).toFixed(1) + '%' : '100.0%';
+
   return res.json({
     success: true,
     musterRoll: {
-      totalSafe: 148,
-      totalOnSite: 148,
-      complianceRate: '97.2%'
+      totalSafe: compliantCount,
+      totalOnSite: totalOnSite,
+      complianceRate: complianceRate
     },
+    roster: db.roster,
     workers: db.roster
   });
 });
@@ -23,6 +29,7 @@ router.put('/:empId/ppe', (req, res) => {
   const { ppeType } = req.body; // 'helmet', 'shoes', 'gloves', 'ear'
 
   const db = readDb();
+  if (!db.roster) db.roster = [];
   const index = db.roster.findIndex(w => w.empId.toUpperCase() === empId.toUpperCase());
   if (index === -1) {
     return res.status(404).json({ success: false, message: 'Worker not found on roster.' });
@@ -51,4 +58,3 @@ router.put('/:empId/ppe', (req, res) => {
 });
 
 module.exports = router;
-

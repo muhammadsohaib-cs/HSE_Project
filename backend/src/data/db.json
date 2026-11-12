@@ -109,6 +109,59 @@
       "cnic": "33202-9182736-1",
       "plantZone": "Bagasse & Coal Yard",
       "isActive": true
+    },
+    {
+      "id": "u-1794511861670",
+      "employeeId": "CPL-EMP-1002",
+      "name": "Muhammad Sohaib",
+      "urduName": "Muhammad Sohaib",
+      "email": "cpl-emp-1002@chiniotpower.com.pk",
+      "passwordHash": "$2a$10$/net1OfgkZUnQM7fNahDDeTgy.D02cBydYUoVlF2l6elcndUfxKvu",
+      "pin": "1234",
+      "role": "HSE Manager",
+      "department": "Operations & Maintenance",
+      "shift": "Shift A: Morning",
+      "cnic": "33202-1234567-5 / 0300-8661002",
+      "plantZone": "Boiler House Unit-1",
+      "isActive": true
+    },
+    {
+      "id": "u-1794513836700",
+      "employeeId": "CPL-EMP-2001",
+      "name": "Bilal Khan",
+      "urduName": "Bilal Khan",
+      "email": "cpl-emp-2001@chiniotpower.com.pk",
+      "passwordHash": "$2a$10$PJK1CNaJd7Xs4DaViTngOelYIPAHu2Yrh0M6hnRrfqZouQlBfnfgC",
+      "pin": "2001",
+      "role": "Plant Worker",
+      "department": "Operations & Maintenance",
+      "shift": "Shift B: Evening (14:00 - 22:00)",
+      "cnic": "33202-9876543-1",
+      "plantZone": "Boiler House Unit-1",
+      "isActive": true,
+      "status": "Approved",
+      "createdAt": "2026-11-12T20:03:56.764Z",
+      "approvedBy": "Engr. Tariq Khan",
+      "approvedAt": "2026-11-12T20:03:56.785Z"
+    },
+    {
+      "id": "u-1794514257117",
+      "employeeId": "CPL-EMP-1006",
+      "name": "Muhammad Sohaib 2",
+      "urduName": "Muhammad Sohaib 2",
+      "email": "cpl-emp-1006@chiniotpower.com.pk",
+      "passwordHash": "$2a$10$haddV.Pm/HRP1vDs.mFFWOAro3zm1PmodlvzaYw7mJpxe37mfT.5q",
+      "pin": "0001",
+      "role": "HSE Manager",
+      "department": "Operations & Maintenance",
+      "shift": "Shift B: Evening",
+      "cnic": "33202-1234567-1 / 0300-8661001",
+      "plantZone": "Boiler House Unit-1",
+      "isActive": true,
+      "status": "Approved",
+      "createdAt": "2026-11-12T20:10:57.182Z",
+      "approvedBy": "Engr. Tariq Khan",
+      "approvedAt": "2026-11-12T20:11:07.552Z"
     }
   ],
   "checklistTemplates": [
@@ -309,9 +362,231 @@
       "shoes": true,
       "gloves": true,
       "ear": true
+    },
+    {
+      "empId": "CPL-EMP-2001",
+      "name": "Bilal Khan",
+      "ur": "Bilal Khan",
+      "role": "Plant Worker",
+      "zone": "Boiler House Unit-1",
+      "helmet": true,
+      "shoes": true,
+      "gloves": true,
+      "ear": true
+    },
+    {
+      "empId": "CPL-EMP-1006",
+      "name": "Muhammad Sohaib 2",
+      "ur": "Muhammad Sohaib 2",
+      "role": "HSE Manager",
+      "zone": "Boiler House Unit-1",
+      "helmet": true,
+      "shoes": true,
+      "gloves": true,
+      "ear": true
     }
   ],
   "auditLogs": [
+    {
+      "id": "LOG-1794514299327-794",
+      "actorId": "CPL-EMP-1003",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGIN_OFFLINE",
+      "targetResource": "Boiler House Unit-1",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T20:11:39.327Z",
+      "details": "Staff member CPL-EMP-1003 (CPL Staff) logged in offline as HSE Manager (Shift B: Evening)."
+    },
+    {
+      "id": "LOG-1794514267548-778",
+      "actorId": "CPL-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "STAFF_ID_APPROVAL",
+      "targetResource": "CPL-EMP-1006",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T20:11:07.548Z",
+      "details": "Staff member CPL-EMP-1006 (Muhammad Sohaib 2) registration marked as Approved by Engr. Tariq Khan (CPL-EMP-1001). Credentials activated."
+    },
+    {
+      "id": "LOG-1794514257183-74",
+      "actorId": "CPL-EMP-1006",
+      "actorRole": "HSE Manager",
+      "action": "STAFF_REGISTRATION_SUBMITTED",
+      "targetResource": "Boiler House Unit-1",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T20:10:57.183Z",
+      "details": "New staff registration submitted for Muhammad Sohaib 2 (CPL-EMP-1006) as HSE Manager. Awaiting HSE Manager approval."
+    },
+    {
+      "id": "LOG-1794514257109-125",
+      "actorId": "CPL-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "STAFF_SIGNUP",
+      "targetResource": "CPL-EMP-1006",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T20:10:57.109Z",
+      "details": "Registration submitted for Muhammad Sohaib 2 (CPL-EMP-1006) as HSE Manager. Awaiting HSE Manager approval."
+    },
+    {
+      "id": "LOG-1794513836804-579",
+      "actorId": "CPL-EMP-2001",
+      "actorRole": "Plant Worker",
+      "action": "USER_LOGIN",
+      "targetResource": "Boiler House Unit-1",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T20:03:56.804Z",
+      "details": "Employee CPL-EMP-2001 (Bilal Khan - Plant Worker) authenticated successfully via PIN."
+    },
+    {
+      "id": "LOG-1794513836767-310",
+      "actorId": "CPL-EMP-2001",
+      "actorRole": "Plant Worker",
+      "action": "STAFF_REGISTRATION_SUBMITTED",
+      "targetResource": "Boiler House Unit-1",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T20:03:56.767Z",
+      "details": "New staff registration submitted for Bilal Khan (CPL-EMP-2001) as Plant Worker. Awaiting HSE Manager approval."
+    },
+    {
+      "id": "LOG-1794511953409-716",
+      "actorId": "CPL-EMP-1002",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGIN_OFFLINE",
+      "targetResource": "Plant Headquarters",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:32:33.409Z",
+      "details": "Staff member CPL-EMP-1002 logged in offline as HSE Manager (Shift A: Morning)."
+    },
+    {
+      "id": "LOG-1794511894637-414",
+      "actorId": "CPL-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "STAFF_ID_APPROVAL",
+      "targetResource": "CPL-EMP-1002",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:31:34.637Z",
+      "details": "Staff member CPL-EMP-1002 registration marked as Approved by Engr. Tariq Khan."
+    },
+    {
+      "id": "LOG-1794511861739-863",
+      "actorId": "CPL-EMP-1002",
+      "actorRole": "HSE Manager",
+      "action": "STAFF_REGISTRATION",
+      "targetResource": "Boiler House Unit-1",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:31:01.739Z",
+      "details": "New staff member Muhammad Sohaib (CPL-EMP-1002) registered."
+    },
+    {
+      "id": "LOG-1794511861667-821",
+      "actorId": "CPL-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "STAFF_SIGNUP",
+      "targetResource": "CPL-EMP-1002",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:31:01.667Z",
+      "details": "Registration submitted for Muhammad Sohaib (CPL-EMP-1002) as HSE Manager."
+    },
+    {
+      "id": "LOG-1794511811397-561",
+      "actorId": "CPL-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "CHECKLIST_DIGITAL_SIGNATURE",
+      "targetResource": "Boiler House Unit-1",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:30:11.397Z",
+      "details": "Operator Engr. Tariq Khan digitally verified and locked shift audit."
+    },
+    {
+      "id": "LOG-1794511789438-653",
+      "actorId": "CPL-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "CHECKLIST_SOP_CREATED",
+      "targetResource": "TEMPLATES",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:29:49.438Z",
+      "details": "New safety checkpoint added: \"Test Pipeline\"."
+    },
+    {
+      "id": "LOG-1794511745694-256",
+      "actorId": "CPL-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "STAFF_ID_APPROVAL",
+      "targetResource": "CPL-EMP-1134",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:29:05.694Z",
+      "details": "Staff member CPL-EMP-1134 registration marked as Blocked by Engr. Tariq Khan."
+    },
+    {
+      "id": "LOG-1794511744158-771",
+      "actorId": "CPL-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "STAFF_ID_APPROVAL",
+      "targetResource": "CPL-EMP-1129",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:29:04.158Z",
+      "details": "Staff member CPL-EMP-1129 registration marked as Blocked by Engr. Tariq Khan."
+    },
+    {
+      "id": "LOG-1794511429515-579",
+      "actorId": "CPL-EMP-1088",
+      "actorRole": "worker",
+      "action": "USER_LOGIN",
+      "targetResource": "Bagasse & Coal Yard",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:23:49.515Z",
+      "details": "Employee CPL-EMP-1088 (Plant Worker) authenticated successfully via PIN."
+    },
+    {
+      "id": "LOG-1794511413929-397",
+      "actorId": "CPL-EMP-1042",
+      "actorRole": "inspector",
+      "action": "USER_LOGIN",
+      "targetResource": "Boiler House Unit-1",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:23:33.929Z",
+      "details": "Employee CPL-EMP-1042 (Safety Officer) authenticated successfully via PIN."
+    },
+    {
+      "id": "LOG-1794511401456-711",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "admin",
+      "action": "USER_LOGIN",
+      "targetResource": "Plant Headquarters",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:23:21.456Z",
+      "details": "Employee CP-EMP-1001 (HSE Manager) authenticated successfully via Password."
+    },
+    {
+      "id": "LOG-1794511389697-646",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "worker",
+      "action": "VERIFY_INTEGRATION",
+      "targetResource": "GENERAL",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:23:09.697Z",
+      "details": "Automated full-stack verification completed."
+    },
+    {
+      "id": "LOG-1794511208475-490",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "admin",
+      "action": "EMERGENCY_ALARM_ALL_CLEAR",
+      "targetResource": "PLANT_WIDE",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:20:08.475Z",
+      "details": "All-Clear Drill issued. Active siren \"TEST STEAM FLANGE BLOWOUT\" silenced. Site inspected and declared safe."
+    },
+    {
+      "id": "LOG-1794511179024-238",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "inspector",
+      "action": "EMERGENCY_ALARM_ACTIVATED",
+      "targetResource": "ALM-9022",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T19:19:39.024Z",
+      "details": "Plant emergency siren triggered: \"TEST STEAM FLANGE BLOWOUT\". Automatic email dispatches sent to Rescue 1122 and plant executives."
+    },
     {
       "id": "LOG-1794507919558-192",
       "actorId": "CPL-EMP-1042",
@@ -355,6 +630,16 @@
   ],
   "alarms": [
     {
+      "id": "ALM-9022",
+      "title": "TEST STEAM FLANGE BLOWOUT",
+      "zone": "Boiler House Unit-1",
+      "severity": "critical",
+      "triggeredBy": "CP-EMP-1001",
+      "timestamp": "2026-11-12T19:19:39.022Z",
+      "coords": "31.7204° N, 72.9791° E",
+      "isAcknowledged": false
+    },
+    {
       "id": "ALM-9556",
       "title": "PLANT-WIDE SIREN TEST",
       "zone": "Plant-Wide (Boiler & Grid)",
@@ -366,6 +651,27 @@
     }
   ],
   "emailLogs": [
+    {
+      "id": "EML-023-42",
+      "to": "rescue1122.chiniot@punjab.gov.pk",
+      "subject": "[CRITICAL SIREN ALERT] TEST STEAM FLANGE BLOWOUT at Boiler House Unit-1",
+      "status": "Sent (SMTP Intranet Gateway)",
+      "timestamp": "2026-11-12T19:19:39.023Z"
+    },
+    {
+      "id": "EML-023-16",
+      "to": "hse.head@chiniotpower.com",
+      "subject": "[CRITICAL SIREN ALERT] TEST STEAM FLANGE BLOWOUT at Boiler House Unit-1",
+      "status": "Sent (SMTP Intranet Gateway)",
+      "timestamp": "2026-11-12T19:19:39.023Z"
+    },
+    {
+      "id": "EML-023-20",
+      "to": "plant.manager@chiniotpower.com",
+      "subject": "[CRITICAL SIREN ALERT] TEST STEAM FLANGE BLOWOUT at Boiler House Unit-1",
+      "status": "Sent (SMTP Intranet Gateway)",
+      "timestamp": "2026-11-12T19:19:39.023Z"
+    },
     {
       "id": "EML-556-51",
       "to": "rescue1122.chiniot@punjab.gov.pk",
@@ -395,5 +701,53 @@
       "timestamp": "2026-11-12T17:50:09.098Z"
     }
   ],
-  "activeAlarm": "PLANT-WIDE SIREN TEST"
+  "activeAlarm": null,
+  "pendingUsers": [
+    {
+      "empId": "CPL-EMP-1006",
+      "name": "Muhammad Sohaib 2",
+      "urduName": "Muhammad Sohaib 2",
+      "cnic": "33202-1234567-1 / 0300-8661001",
+      "role": "HSE Manager",
+      "shift": "Shift B: Evening",
+      "pin": "0001",
+      "zone": "Boiler House Unit-1",
+      "status": "Approved",
+      "createdAt": "2026-11-12T20:10:57.182Z",
+      "approvedBy": "Engr. Tariq Khan",
+      "approvedAt": "2026-11-12T20:11:07.552Z"
+    },
+    {
+      "empId": "CPL-EMP-2001",
+      "name": "Bilal Khan",
+      "urduName": "Bilal Khan",
+      "cnic": "33202-9876543-1",
+      "role": "Plant Worker",
+      "shift": "Shift B: Evening (14:00 - 22:00)",
+      "pin": "2001",
+      "zone": "Boiler House Unit-1",
+      "status": "Approved",
+      "createdAt": "2026-11-12T20:03:56.764Z",
+      "approvedBy": "Engr. Tariq Khan",
+      "approvedAt": "2026-11-12T20:03:56.785Z"
+    },
+    {
+      "empId": "CPL-EMP-1042",
+      "name": "Muhammad Tariq",
+      "cnic": "33202-7741290-3",
+      "role": "Safety Officer",
+      "shift": "Shift C",
+      "status": "Pending",
+      "zone": "Boiler House Unit-1"
+    },
+    {
+      "empId": "CPL-EMP-1088",
+      "name": "Zeeshan Ahmed",
+      "cnic": "33202-5512098-1",
+      "role": "Plant Worker",
+      "shift": "Shift A",
+      "status": "Approved",
+      "zone": "Bagasse & Coal Yard"
+    }
+  ]
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../theme/cpl_theme.dart';
+import 'cpl_brand_logo.dart';
 import '../../features/cpl_system/cubit/cpl_system_cubit.dart';
 import '../../features/cpl_system/cubit/cpl_system_state.dart';
 import '../../features/screens/auth_screen.dart';
@@ -164,22 +165,11 @@ class ResponsiveShell extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        // CPL Badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: CplColors.safety500,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'CPL',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13,
-                              letterSpacing: 1.1,
-                            ),
-                          ),
+                        // CPL Official Brand Logo
+                        const CplBrandLogo(
+                          height: 26,
+                          isDark: true,
+                          showSubtitle: false,
                         ),
                         const SizedBox(width: 8),
 

@@ -116,99 +116,113 @@ class AnalyticsScreen extends StatelessWidget {
                 // Top KPI Grid: 96.2% CAPA Closure & 218 Safe Days
                 Row(
                   children: [
-                    // CAPA Closure Gauge Card
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: CplColors.slate200),
-                        ),
-                        child: Column(
+                      // Dynamic CAPA and Safe Streak calculations
+                      () {
+                        final totalCapas = state.capas.length;
+                        final closedCapas = state.capas.where((c) => c.signedOff).length;
+                        final capaRate = totalCapas > 0 ? (closedCapas / totalCapas) : 0.96;
+                        final capaDisplay = (capaRate * 100).toStringAsFixed(1);
+                        final streakDays = (DateTime.now().difference(DateTime(2025, 4, 1)).inDays).clamp(1, 9999);
+                        final safeManHours = ((streakDays * 17600) / 1000000).toStringAsFixed(2);
+
+                        return Row(
                           children: [
-                            Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 72,
-                                  height: 72,
-                                  child: CircularProgressIndicator(
-                                    value: 0.962,
-                                    strokeWidth: 8,
-                                    backgroundColor: CplColors.slate100,
-                                    valueColor: const AlwaysStoppedAnimation<Color>(CplColors.emerald500),
-                                  ),
+                            // CAPA Closure Gauge Card
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: CplColors.slate200),
                                 ),
-                                const Text(
-                                  '96.2%',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w900,
-                                    fontFamily: 'monospace',
-                                  ),
+                                child: Column(
+                                  children: [
+                                    Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 72,
+                                          height: 72,
+                                          child: CircularProgressIndicator(
+                                            value: capaRate,
+                                            strokeWidth: 8,
+                                            backgroundColor: CplColors.slate100,
+                                            valueColor: const AlwaysStoppedAnimation<Color>(CplColors.emerald500),
+                                          ),
+                                        ),
+                                        Text(
+                                          '$capaDisplay%',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w900,
+                                            fontFamily: 'monospace',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      isUr ? 'سی اے پی اے حل کی شرح' : 'CAPA Resolution Rate',
+                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    Text(
+                                      'Target: >95.0%',
+                                      style: TextStyle(fontSize: 10.5, color: CplColors.emerald500, fontWeight: FontWeight.w600),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
-                            const SizedBox(height: 10),
-                            Text(
-                              isUr ? 'سی اے پی اے حل کی شرح' : 'CAPA Resolution Rate',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                              textAlign: TextAlign.center,
-                            ),
-                            Text(
-                              'Target: >95.0%',
-                              style: TextStyle(fontSize: 10.5, color: CplColors.emerald500, fontWeight: FontWeight.w600),
+                            const SizedBox(width: 12),
+                            // Safe Work Days Card
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: CplColors.slate900,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: CplColors.safety500,
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        'ZERO LTI',
+                                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      '$streakDays',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 32,
+                                        fontWeight: FontWeight.w900,
+                                        fontFamily: 'monospace',
+                                      ),
+                                    ),
+                                    Text(
+                                      isUr ? 'محفوظ کام کے دن' : 'Safe Work Days',
+                                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      '$safeManHours Million Safe Man-Hours',
+                                      style: TextStyle(color: CplColors.slate400, fontSize: 10),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Safe Work Days Card
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: CplColors.slate900,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: CplColors.safety500,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: const Text(
-                                'ZERO LTI',
-                                style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            const Text(
-                              '218',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 32,
-                                fontWeight: FontWeight.w900,
-                                fontFamily: 'monospace',
-                              ),
-                            ),
-                            Text(
-                              isUr ? 'محفوظ کام کے دن' : 'Safe Work Days',
-                              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              '3.84 Million Safe Man-Hours',
-                              style: TextStyle(color: CplColors.slate400, fontSize: 10),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                        );
+                      }(),
                   ],
                 ),
                 const SizedBox(height: 18),

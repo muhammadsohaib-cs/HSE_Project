@@ -54,6 +54,13 @@ router.post('/trigger', (req, res) => {
 
   writeDb(db);
 
+  // Broadcast real-time alarm to all connected Flutter clients via Socket.io
+  const io = req.app.get('io');
+  if (io) {
+    io.emit('alarm:triggered', alarmRecord);
+    console.log(`[Socket.io Broadcast] Emitted 'alarm:triggered': ${alarmRecord.title}`);
+  }
+
   addAuditLog({
     actorId: triggeredBy,
     actorRole: 'inspector',
@@ -79,6 +86,13 @@ router.post('/clear', (req, res) => {
   const previousAlarm = db.activeAlarm;
   db.activeAlarm = null;
   writeDb(db);
+
+  // Broadcast All-Clear to all connected Flutter clients via Socket.io
+  const io = req.app.get('io');
+  if (io) {
+    io.emit('alarm:cleared', { clearedBy, previousAlarm });
+    console.log(`[Socket.io Broadcast] Emitted 'alarm:cleared' by ${clearedBy}`);
+  }
 
   addAuditLog({
     actorId: clearedBy,

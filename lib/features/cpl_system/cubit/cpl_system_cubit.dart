@@ -1,11 +1,15 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
+import '../../../../core/constants/api_endpoints.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/platform/audio_service.dart';
 import '../../../../core/storage/hive_boxes.dart';
 import '../../../../core/storage/offline_sync_queue.dart';
+import '../../../../core/storage/secure_storage_service.dart';
 import '../models/cpl_models.dart';
 import 'cpl_system_state.dart';
 
@@ -13,27 +17,31 @@ class CplSystemCubit extends Cubit<CplSystemState> {
   final AudioAlarmService _audioService;
   final DioClient? _dioClient;
   final OfflineSyncQueue? _syncQueue;
+  final SecureStorageService? _secureStorage;
+  IO.Socket? _socket;
 
   CplSystemCubit({
     AudioAlarmService? audioService,
     DioClient? dioClient,
     OfflineSyncQueue? syncQueue,
+    SecureStorageService? secureStorage,
   })  : _audioService = audioService ?? AudioAlarmService(),
         _dioClient = dioClient,
         _syncQueue = syncQueue,
+        _secureStorage = secureStorage,
         super(_initialState);
 
   static final CplSystemState _initialState = CplSystemState(
     language: 'en',
     activeScreenIndex: 1, // Default to Dashboard (Screen 02)
     currentUser: const UserSession(
-      empId: 'CPL-EMP-1042',
-      name: 'Muhammad Tariq',
-      urduName: 'محمد طارق',
-      role: 'Safety Officer',
+      empId: 'CPL-EMP-1001',
+      name: 'Engr. Tariq Khan',
+      urduName: 'انجینئر طارق خان',
+      role: 'HSE Manager',
       shift: 'Shift A: Morning (06:00 - 14:00)',
-      cnic: '33202-4829104-1',
-      zone: 'Boiler House Unit-1',
+      cnic: '33202-1234567-1',
+      zone: 'Plant Headquarters',
     ),
     zones: const [
       PlantZone(id: 'Z1', name: 'Boiler House Unit-1', ur: 'بوائلر ہاؤس یونٹ-1', coords: '31.7204° N, 72.9791° E', workers: 34),
@@ -100,12 +108,12 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       ),
       CapaItem(
         id: 'CAPA-102',
-        title: 'Chemical Dosing Pump Spill Containment Berm',
-        zone: 'WTP',
-        score: 6,
+        title: 'Deaerator Pressure Relief Valve Recertification',
+        zone: 'Boiler House Unit-1',
+        score: 9,
         level: 'Moderate',
-        owner: 'Chemical Team',
-        due: '14 Nov 2026',
+        owner: 'Operations Shift Lead',
+        due: '14 Nov 14:00',
         signedOff: true,
       ),
     ],
@@ -159,73 +167,85 @@ class CplSystemCubit extends Cubit<CplSystemState> {
         requester: 'Muhammad Tariq (Lead Welder)',
         status: 'Active',
         telemetry: 'O2: 20.9% • LEL: 0.0%',
-        timer: '04h 12m left',
-        lotoTags: '4 Padlocks • Tagged by Insp. Asim',
+        timer: '03:42:18 Remaining',
+        lotoTags: 'LOTO-14 (Padlock #42 Applied)',
       ),
       PtwItem(
         id: 'PTW-841',
-        type: 'Electrical LOTO',
-        title: '132kV Circuit Breaker Unit-1 Maintenance',
-        zone: '132kV Grid Switchyard (Bay 4)',
-        requester: 'Usman Ghani (Electrical Tech)',
+        type: 'Confined Space',
+        title: 'Furnace Grate Chamber Internal Ash Inspection',
+        zone: 'Boiler Furnace Chamber',
+        requester: 'Zeeshan Ahmed (Boiler Tech)',
         status: 'Active',
-        telemetry: '0.00 kV Verified • Earth Sw Closed',
-        timer: '01h 45m left',
-        lotoTags: '6 Padlocks • Master Key in Station Safe',
+        telemetry: 'CO: 2 ppm • Temp: 38°C',
+        timer: '01:14:05 Remaining',
+        lotoTags: 'LOTO-12 (Mechanical Blind Applied)',
       ),
       PtwItem(
         id: 'PTW-840',
-        type: 'Confined Space',
-        title: 'Cooling Tower Cold Water Basin Desiltation',
-        zone: 'Cooling Tower Basin 2',
-        requester: 'Kamran Siddiqui (Civil Supervisor)',
+        type: 'Electrical HV',
+        title: '132kV Bus-Coupler Circuit Breaker Annual Overhaul',
+        zone: '132kV Grid Switchyard',
+        requester: 'Usman Ghani (Grid Engineer)',
+        status: 'Hold',
+        telemetry: '0.00 kV (Discharged & Earthed)',
+        timer: 'Expired / Review',
+        lotoTags: 'LOTO-08 (Dual Key Trapped Lock)',
+      ),
+      PtwItem(
+        id: 'PTW-839',
+        type: 'Working at Height',
+        title: 'Chimney Flue Gas Emission Continuous Analyzer Sensor',
+        zone: 'Boiler Stack (Elev. 65m)',
+        requester: 'Bilal Mahmood (I&C Tech)',
         status: 'Pending',
-        telemetry: 'H2S: 0 ppm • CO: 0 ppm',
-        timer: 'Pending Supervisor Sign-Off',
-        lotoTags: '2 Padlocks • Isolation Incomplete',
+        telemetry: 'Wind: 14 km/h (Permissible)',
+        timer: 'Pending Shift Eng Approval',
+        lotoTags: 'Full Body Harness & Lifeline Rigged',
       ),
     ],
+    activeAlarm: null,
     emailLogs: const [
       EmailLogItem(
         id: 'EM-904',
-        to: 'plant.manager@chiniotpower.com',
-        subject: '[CPL-ALERT] Shift A Safety Turnover Digest',
+        to: 'plant.head@chiniotpower.com',
+        subject: '[DISPATCH] Boiler Header Steam Flange Weeping Alert',
         time: '14m ago',
         status: 'Delivered',
       ),
       EmailLogItem(
         id: 'EM-903',
-        to: 'rescue1122.chiniot@punjab.gov.pk',
-        subject: '[DRILL-TEST] CPL Quarterly Fire Siren Drill Notice',
-        time: '2h ago',
+        to: 'safety.board@chiniotpower.com',
+        subject: '[NEPRA] Shift A Daily HSE Turnover Log Signed Off',
+        time: '1h ago',
         status: 'Delivered',
       ),
       EmailLogItem(
         id: 'EM-902',
-        to: 'hse.head@chiniotpower.com',
-        subject: '[HAZARD] Critical Near-Miss Escalated — Bagasse Yard',
+        to: 'rescue1122.chiniot@punjab.gov.pk',
+        subject: '[DRILL] CPL Unit-1 Emergency Evacuation Routine Confirmation',
         time: '3h ago',
-        status: 'Opened',
+        status: 'Acknowledged',
       ),
     ],
     trainings: const [
       TrainingModule(
         id: 'TRN-101',
-        title: 'High-Pressure Boiler Operations Safety (105 Bar)',
-        ur: 'ہائی پریشر بوائلر آپریشن سیفٹی',
-        duration: '45 mins • Video + Quiz',
-        status: 'Valid',
-        expiry: 'Valid till 14 Oct 2027',
+        title: 'High Pressure Steam Safety & Scald Mitigation',
+        ur: 'ہائی پریشر سٹیم سیفٹی اور جلنے سے بچاؤ',
+        duration: '45 mins • Practical On-Site',
+        status: 'Certified',
+        expiry: 'Valid until 12 Oct 2027',
         score: '96%',
       ),
       TrainingModule(
         id: 'TRN-102',
-        title: '132kV Grid LOTO & Electrical Arc Flash Protection',
-        ur: '132 کے وی گرڈ سوئچ یارڈ ایل او ٹی او اور آرک فلیش',
-        duration: '60 mins • SOP Review',
-        status: 'Valid',
-        expiry: 'Valid till 02 Feb 2027',
-        score: '100%',
+        title: '132kV Switchyard High Voltage ARC Flash Protection',
+        ur: '132 کے وی گرڈ آرک فلیش حفاظتی طریقہ کار',
+        duration: '60 mins • High Voltage Safety',
+        status: 'Certified',
+        expiry: 'Valid until 18 Dec 2026',
+        score: '92%',
       ),
       TrainingModule(
         id: 'TRN-103',
@@ -331,17 +351,222 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     ],
   );
 
-  /// Load persisted state from Hive boxes so nothing resets on reload
-  void initFromStorage() {
+  /// Load persisted state, restore JWT session, connect Socket.io, and fetch dynamic API records
+  Future<void> initFromStorage() async {
     try {
+      final storage = _secureStorage;
+      if (storage != null) {
+        // 1. Restore configured server URL
+        final savedUrl = await storage.getServerUrl();
+        if (savedUrl != null && savedUrl.isNotEmpty) {
+          ApiEndpoints.setBaseUrl(savedUrl);
+          _dioClient?.updateBaseUrl(savedUrl);
+        }
+
+        // 2. Hydrate user session from storage
+        final token = await storage.getAccessToken();
+        final userJson = await storage.getUserJson();
+        if (token != null && token.isNotEmpty && userJson != null) {
+          try {
+            final userMap = jsonDecode(userJson) as Map<String, dynamic>;
+            final user = UserSession.fromJson(userMap);
+            emit(state.copyWith(currentUser: user, activeScreenIndex: 1));
+          } catch (_) {}
+        }
+      }
+
       final queueCount = _syncQueue?.pendingCount ?? 0;
       emit(state.copyWith(pendingOfflineCount: queueCount));
 
-      // Attempt background sync of queued offline items
+      // 3. Connect real-time alert gateway via Socket.io
+      _initSocketIo();
+
+      // 4. Fetch dynamic operational records from backend REST API
+      await loadLiveData();
+
+      // 5. Attempt background sync of queued offline items
       syncOfflineNow();
     } catch (e) {
       debugPrint('initFromStorage notice: $e');
     }
+  }
+
+  /// Change backend server URL and reconnect gateway
+  Future<void> updateServerUrl(String newUrl) async {
+    ApiEndpoints.setBaseUrl(newUrl);
+    _dioClient?.updateBaseUrl(newUrl);
+    await _secureStorage?.saveServerUrl(newUrl);
+    _initSocketIo();
+    await loadLiveData();
+  }
+
+  /// Initialize real-time WebSocket / Socket.io plant alert connection
+  void _initSocketIo() {
+    try {
+      final baseUrl = ApiEndpoints.baseUrl;
+      final uri = Uri.parse(baseUrl);
+      final socketUri = '${uri.scheme}://${uri.host}:${uri.port}';
+      _socket?.disconnect();
+      _socket?.dispose();
+
+      _socket = IO.io(
+        socketUri,
+        IO.OptionBuilder()
+            .setTransports(['websocket', 'polling'])
+            .disableAutoConnect()
+            .build(),
+      );
+      _socket?.connect();
+
+      _socket?.on('connect', (_) {
+        debugPrint('[Socket.io Client] Connected to CPL Alert Gateway: $socketUri');
+      });
+
+      _socket?.on('alarm:triggered', (data) {
+        debugPrint('[Socket.io Client] Real-time Plant Siren Triggered: $data');
+        final title = data is Map ? (data['title']?.toString() ?? 'PLANT EMERGENCY SIREN') : data.toString();
+        emit(state.copyWith(activeAlarm: () => title));
+        _audioService.playSiren();
+        _recordAudit(
+          action: 'REALTIME_ALARM_RECEIVED',
+          targetResource: 'SIREN_BROADCAST',
+          details: 'Real-time emergency siren broadcast received from server: "$title".',
+        );
+      });
+
+      _socket?.on('alarm:cleared', (data) {
+        debugPrint('[Socket.io Client] Real-time All-Clear Drill Cleared: $data');
+        emit(state.copyWith(activeAlarm: () => null));
+        _audioService.stopSiren();
+      });
+    } catch (e) {
+      debugPrint('Socket.io client notice: $e');
+    }
+  }
+
+  /// Fetch dynamic live data from backend REST endpoints with offline Hive fallback
+  Future<void> loadLiveData() async {
+    final client = _dioClient;
+    if (client == null) return;
+
+    // 1. Fetch Hazards
+    try {
+      final res = await client.dio.get('/hazards');
+      if (res.statusCode == 200 && res.data['hazards'] != null) {
+        final list = (res.data['hazards'] as List)
+            .map((h) => HazardItem.fromJson(Map<String, dynamic>.from(h as Map)))
+            .toList();
+        final box = Hive.box(HiveBoxes.hazardsBox);
+        await box.put('hazards_cache', list.map((h) => h.toJson()).toList());
+        emit(state.copyWith(hazards: list));
+      }
+    } catch (_) {
+      try {
+        final box = Hive.box(HiveBoxes.hazardsBox);
+        final cached = box.get('hazards_cache');
+        if (cached is List) {
+          final list = cached
+              .map((c) => HazardItem.fromJson(Map<String, dynamic>.from(c as Map)))
+              .toList();
+          emit(state.copyWith(hazards: list));
+        }
+      } catch (_) {}
+    }
+
+    // 2. Fetch Checklists
+    try {
+      final res = await client.dio.get('/checklists/templates');
+      if (res.statusCode == 200 && res.data['templates'] != null) {
+        final tpls = res.data['templates'] as List;
+        if (tpls.isNotEmpty && tpls.first['items'] != null) {
+          final items = (tpls.first['items'] as List)
+              .map((it) => ChecklistAuditItem(
+                    id: it['id'] is int ? it['id'] : int.tryParse(it['id'].toString()) ?? 1,
+                    en: it['en'] ?? '',
+                    ur: it['ur'] ?? '',
+                    status: 'pass',
+                  ))
+              .toList();
+          emit(state.copyWith(checklistItems: items));
+        }
+      }
+    } catch (_) {}
+
+    // 3. Fetch PTW
+    try {
+      final res = await client.dio.get('/ptw');
+      if (res.statusCode == 200 && res.data['permits'] != null) {
+        final permits = (res.data['permits'] as List)
+            .map((p) => PtwItem(
+                  id: p['id'] ?? 'PTW-000',
+                  type: p['type'] ?? 'General',
+                  title: p['title'] ?? 'Work Permit',
+                  zone: p['zone'] ?? 'Unit-1',
+                  requester: p['requester'] ?? 'CPL Lead',
+                  status: p['status'] ?? 'Active',
+                  telemetry: p['telemetry'] ?? 'Nominal',
+                  timer: p['timer'] ?? '04:00:00',
+                  lotoTags: p['lotoTags'] ?? 'LOTO Tagged',
+                ))
+            .toList();
+        emit(state.copyWith(permits: permits));
+      }
+    } catch (_) {}
+
+    // 4. Fetch Roster
+    try {
+      final res = await client.dio.get('/roster');
+      if (res.statusCode == 200) {
+        final rawList = res.data['roster'] ?? res.data['workers'];
+        if (rawList is List) {
+          final roster = rawList
+              .map((r) => WorkerRosterItem(
+                    empId: r['empId'] ?? 'CPL-EMP-000',
+                    name: r['name'] ?? '',
+                    ur: r['ur'] ?? r['name'] ?? '',
+                    role: r['role'] ?? 'Worker',
+                    zone: r['zone'] ?? 'Unit-1',
+                    helmet: r['helmet'] ?? true,
+                    shoes: r['shoes'] ?? true,
+                    gloves: r['gloves'] ?? true,
+                    ear: r['ear'] ?? true,
+                  ))
+              .toList();
+          emit(state.copyWith(roster: roster));
+        }
+      }
+    } catch (_) {}
+
+    // 5. Fetch Alarms
+    try {
+      final res = await client.dio.get('/alarms');
+      if (res.statusCode == 200) {
+        final active = res.data['activeAlarm'] as String?;
+        emit(state.copyWith(activeAlarm: () => active));
+      }
+    } catch (_) {}
+
+    // 6. Fetch Pending User Registrations
+    try {
+      final res = await client.dio.get('/auth/pending-users');
+      if (res.statusCode == 200 && res.data['pendingUsers'] != null) {
+        final list = (res.data['pendingUsers'] as List)
+            .map((p) => PendingUserRegistration.fromJson(Map<String, dynamic>.from(p as Map)))
+            .toList();
+        emit(state.copyWith(pendingUsers: list));
+      }
+    } catch (_) {}
+
+    // 7. Fetch Immutable Audit Logs (NEPRA / ISO 45001)
+    try {
+      final res = await client.dio.get('/audit/logs');
+      if (res.statusCode == 200 && res.data['logs'] != null) {
+        final list = (res.data['logs'] as List)
+            .map((l) => AuditLogItem.fromJson(Map<String, dynamic>.from(l as Map)))
+            .toList();
+        emit(state.copyWith(auditLogs: list));
+      }
+    } catch (_) {}
   }
 
   // Language Toggle
@@ -376,7 +601,6 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     final updated = [entry, ...state.auditLogs];
     emit(state.copyWith(auditLogs: updated));
 
-    // Try posting to backend audit log
     try {
       _dioClient?.dio.post('/audit/logs', data: entry.toJson()).catchError((_) {});
     } catch (_) {}
@@ -391,84 +615,175 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     String? password,
   }) async {
     final cleanId = empId.trim().toUpperCase();
+    final cleanPin = pin?.trim() ?? '1001';
 
-    // Map role based on employee ID or chosen role
+    // 1. Try backend API login
+    try {
+      final res = await _dioClient?.dio.post('/auth/login', data: {
+        'employeeId': cleanId,
+        'pin': cleanPin,
+        'password': password ?? cleanPin,
+      });
+
+      if (res != null && res.statusCode == 200 && res.data['success'] == true) {
+        final token = res.data['token'] as String?;
+        final refreshToken = res.data['refreshToken'] as String?;
+        if (token != null && refreshToken != null) {
+          await _secureStorage?.saveAuthTokens(accessToken: token, refreshToken: refreshToken);
+        }
+
+        final userMap = res.data['user'] as Map<String, dynamic>?;
+        if (userMap != null) {
+          final session = UserSession.fromJson(userMap);
+          await _secureStorage?.saveUserSession(
+            employeeId: session.empId,
+            role: session.role,
+            userJson: jsonEncode(session.toJson()),
+          );
+          final userBox = Hive.box(HiveBoxes.userBox);
+          await userBox.put('currentUser', session.toJson());
+          emit(state.copyWith(currentUser: session, activeScreenIndex: 1));
+        }
+
+        _recordAudit(
+          action: 'USER_LOGIN',
+          targetResource: state.currentUser.zone,
+          details: 'Staff member $cleanId (${state.currentUser.name}) authenticated via CPL Backend Gateway.',
+        );
+
+        await loadLiveData();
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Backend login notice: $e (checking local/offline validation)');
+    }
+
+    // 2. Offline / Local fallback: Dynamically resolve name and details
+    String resolvedName = 'CPL Staff';
+    String resolvedUrdu = 'سٹاف ممبر';
     String resolvedRole = role;
-    if (cleanId == 'CP-EMP-1001') resolvedRole = 'HSE Manager';
-    if (cleanId == 'CP-EMP-1002') resolvedRole = 'HSE Manager';
+    String resolvedZone = 'Boiler House Unit-1';
+    String resolvedCnic = '33202-0000000-1';
 
-    final updatedUser = state.currentUser.copyWith(
+    // Check pendingUsers
+    final pending = state.pendingUsers.where((u) => u.empId.toUpperCase() == cleanId).firstOrNull;
+    if (pending != null) {
+      resolvedName = pending.name;
+      resolvedUrdu = pending.name;
+      resolvedRole = pending.role;
+      resolvedZone = pending.zone ?? 'Boiler House Unit-1';
+      resolvedCnic = pending.cnic;
+    } else {
+      // Check roster
+      final worker = state.roster.where((w) => w.empId.toUpperCase() == cleanId).firstOrNull;
+      if (worker != null) {
+        resolvedName = worker.name;
+        resolvedUrdu = worker.ur;
+        resolvedRole = worker.role;
+        resolvedZone = worker.zone;
+      } else if (cleanId == 'CP-EMP-1001' || cleanId == 'CPL-EMP-1001') {
+        resolvedName = 'Engr. Tariq Khan';
+        resolvedUrdu = 'انجینئر طارق خان';
+        resolvedRole = 'HSE Manager';
+        resolvedZone = 'Plant Headquarters';
+      } else if (cleanId == 'CP-EMP-1002' || cleanId == 'CPL-EMP-1002') {
+        resolvedName = 'Asim Raza';
+        resolvedUrdu = 'عاصم رضا';
+        resolvedRole = 'HSE Manager';
+        resolvedZone = 'Safety & Compliance';
+      } else if (cleanId == 'CPL-EMP-1042') {
+        resolvedName = 'Muhammad Tariq';
+        resolvedUrdu = 'محمد طارق';
+        resolvedRole = 'Safety Officer';
+        resolvedZone = 'Boiler House Unit-1';
+      } else if (cleanId == 'CPL-EMP-1088') {
+        resolvedName = 'Zeeshan Ahmed';
+        resolvedUrdu = 'ذیشان احمد';
+        resolvedRole = 'Plant Worker';
+        resolvedZone = 'Bagasse & Coal Yard';
+      }
+    }
+
+    final updatedUser = UserSession(
       empId: cleanId,
-      shift: shift,
+      name: resolvedName,
+      urduName: resolvedUrdu,
       role: resolvedRole,
+      shift: shift,
+      cnic: resolvedCnic,
+      zone: resolvedZone,
     );
 
     emit(state.copyWith(currentUser: updatedUser, activeScreenIndex: 1));
 
     _recordAudit(
-      action: 'USER_LOGIN',
+      action: 'USER_LOGIN_OFFLINE',
       targetResource: updatedUser.zone,
-      details: 'Staff member $cleanId logged in as $resolvedRole ($shift).',
+      details: 'Staff member $cleanId ($resolvedName) logged in offline as $resolvedRole ($shift).',
     );
-
-    // Sync to backend if reachable
-    try {
-      await _dioClient?.dio.post('/auth/login', data: {
-        'employeeId': cleanId,
-        'pin': pin ?? '1001',
-        'password': password ?? 'ChiniotSafe2026!',
-      });
-    } catch (e) {
-      debugPrint('Backend login notice: $e (operating offline)');
-    }
 
     return true;
   }
 
-  void signup({
+  // Logout & clear secure session
+  Future<void> logout() async {
+    await _secureStorage?.clearSession();
+    try {
+      final userBox = Hive.box(HiveBoxes.userBox);
+      await userBox.delete('currentUser');
+    } catch (_) {}
+    emit(state.copyWith(activeScreenIndex: 0));
+  }
+
+  Future<void> signup({
     required String empId,
     required String fullName,
     required String cnic,
     required String shift,
     required String role,
-  }) {
+    String? pin,
+  }) async {
+    final cleanId = empId.trim().toUpperCase();
+    final cleanPin = (pin != null && pin.isNotEmpty) ? pin.trim() : '1234';
     final newReg = PendingUserRegistration(
-      empId: empId.trim().toUpperCase(),
+      empId: cleanId,
       name: fullName.trim(),
       cnic: cnic.trim(),
       role: role,
       shift: shift,
       status: 'Pending',
+      pin: cleanPin,
+      zone: 'Boiler House Unit-1',
     );
-    final updatedList = [newReg, ...state.pendingUsers];
+
+    final updatedList = [
+      newReg,
+      ...state.pendingUsers.where((u) => u.empId.toUpperCase() != cleanId),
+    ];
     emit(state.copyWith(pendingUsers: updatedList));
 
     _recordAudit(
       action: 'STAFF_SIGNUP',
-      targetResource: empId,
-      details: 'Registration submitted for $fullName ($empId) as $role.',
+      targetResource: cleanId,
+      details: 'Registration submitted for $fullName ($cleanId) as $role. Awaiting HSE Manager approval.',
     );
 
-    // Queue or post
     try {
-      _dioClient?.dio.post('/auth/register', data: {
+      await _dioClient?.dio.post('/auth/register', data: {
         'employeeId': newReg.empId,
         'name': newReg.name,
         'cnic': newReg.cnic,
         'role': newReg.role,
         'shift': newReg.shift,
-      }).catchError((_) {
-        _syncQueue?.enqueue(
-          id: 'REG-${newReg.empId}',
-          actionType: 'STAFF_REGISTRATION',
-          payload: {'employeeId': newReg.empId, 'name': newReg.name},
-        );
-        emit(state.copyWith(pendingOfflineCount: (_syncQueue?.pendingCount ?? 0)));
+        'pin': cleanPin,
+        'plantZone': newReg.zone,
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('Error posting registration to backend: $e');
+    }
   }
 
-  // Hazards: Report new hazard
+  // Hazards: Report new hazard with real multipart photo and voice note upload
   void dispatchHazard({
     required String category,
     required String zone,
@@ -500,25 +815,51 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       details: '${newHazard.severity} hazard: "${newHazard.title}" reported at $zone. Geotagged: $coords.',
     );
 
-    // Persist to offline sync queue & try push
     final payload = {
       'id': newHazard.id,
       'title': newHazard.title,
       'zone': newHazard.zone,
       'severity': newHazard.severity,
       'reporter': newHazard.reporter,
+      'reporterId': state.currentUser.empId,
       'coords': coords,
+      'description': description,
     };
 
     _syncQueue?.enqueue(id: newHazard.id, actionType: 'CREATE_HAZARD', payload: payload);
     emit(state.copyWith(pendingOfflineCount: (_syncQueue?.pendingCount ?? 0)));
 
-    _pushHazardToBackend(newHazard.id, payload);
+    _pushHazardToBackend(newHazard.id, payload, photoPath: photoPath, voicePath: voicePath);
   }
 
-  Future<void> _pushHazardToBackend(String id, Map<String, dynamic> payload) async {
+  Future<void> _pushHazardToBackend(
+    String id,
+    Map<String, dynamic> payload, {
+    String? photoPath,
+    String? voicePath,
+  }) async {
+    final client = _dioClient;
+    if (client == null) return;
+
     try {
-      await _dioClient?.dio.post('/hazards', data: payload);
+      if (photoPath != null || voicePath != null) {
+        final formMap = Map<String, dynamic>.from(payload);
+        if (photoPath != null && photoPath.isNotEmpty && !kIsWeb) {
+          formMap['photo'] = await MultipartFile.fromFile(photoPath, filename: 'incident_photo.jpg');
+        }
+        if (voicePath != null && voicePath.isNotEmpty && !kIsWeb) {
+          formMap['voiceNote'] = await MultipartFile.fromFile(voicePath, filename: 'urdu_voice.m4a');
+        }
+        final formData = FormData.fromMap(formMap);
+        final res = await client.dio.post('/hazards', data: formData);
+        if (res.statusCode == 201 && res.data['hazard'] != null) {
+          final serverHazard = HazardItem.fromJson(Map<String, dynamic>.from(res.data['hazard'] as Map));
+          final updated = state.hazards.map((h) => h.id == id ? serverHazard : h).toList();
+          emit(state.copyWith(hazards: updated));
+        }
+      } else {
+        await client.dio.post('/hazards', data: payload);
+      }
       await _syncQueue?.markSynced(id);
       emit(state.copyWith(pendingOfflineCount: (_syncQueue?.pendingCount ?? 0)));
     } catch (e) {
@@ -552,7 +893,7 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     emit(state.copyWith(capas: updated));
   }
 
-  // Checklist
+  // Daily Safety Checklist
   void setChecklistItemStatus(int itemId, String status) {
     final updated = state.checklistItems.map((item) {
       if (item.id == itemId) {
@@ -562,11 +903,11 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     }).toList();
     emit(state.copyWith(checklistItems: updated));
 
-    // Auto-create CAPA if Fail
+    // If failed, auto-dispatch a high-severity hazard
     if (status == 'fail') {
       final failedItem = state.checklistItems.firstWhere((i) => i.id == itemId);
       final autoHazard = HazardItem(
-        id: 'HAZ-CHK-$itemId',
+        id: 'HAZ-AUTO-${DateTime.now().millisecondsSinceEpoch % 1000}',
         title: 'Checklist Defect: ${failedItem.en}',
         zone: state.checklistZone,
         severity: 'High',
@@ -618,44 +959,63 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     );
   }
 
-  // Permits (PTW)
+  // PTW & LOTO
   void setPtwFilter(String filter) {
     emit(state.copyWith(ptwFilter: filter));
   }
 
-  void setPermitStatus(String permitId, String status) {
-    if (!state.canApprovePtw && status == 'Active') return; // RBAC Guard: Only Manager can approve
+  void approvePtw(String ptwId) {
+    if (!state.canApprovePtw) return; // RBAC Guard
 
     final updated = state.permits.map((p) {
-      if (p.id == permitId) {
-        return p.copyWith(
-          status: status,
-          timer: status == 'Active' ? '06h 00m left' : 'On Hold (LOTO)',
+      if (p.id == ptwId) {
+        final newStatus = p.status == 'Pending' ? 'Active' : (p.status == 'Active' ? 'Closed' : 'Active');
+        _recordAudit(
+          action: 'PTW_APPROVAL',
+          targetResource: ptwId,
+          details: 'PTW $ptwId transitioned to $newStatus by ${state.currentUser.name}.',
         );
+        return p.copyWith(status: newStatus);
       }
       return p;
     }).toList();
     emit(state.copyWith(permits: updated));
 
-    _recordAudit(
-      action: 'PTW_STATUS_CHANGE',
-      targetResource: permitId,
-      details: 'Permit $permitId status changed to $status by ${state.currentUser.name} (${state.currentUser.role}).',
-    );
-
-    // Push to backend
     try {
-      _dioClient?.dio.put('/ptw/$permitId/approve', data: {
-        'action': status,
+      _dioClient?.dio.put('/ptw/$ptwId/approve', data: {
+        'status': 'Active',
         'supervisorId': state.currentUser.empId,
-        'supervisorName': state.currentUser.name,
       }).catchError((_) {});
     } catch (_) {}
   }
 
-  // Emergency Siren & Alarms
+  void setPermitStatus(String ptwId, String newStatus) {
+    if (!state.canApprovePtw) return; // RBAC Guard
+
+    final updated = state.permits.map((p) {
+      if (p.id == ptwId) {
+        _recordAudit(
+          action: 'PTW_STATUS_CHANGE',
+          targetResource: ptwId,
+          details: 'PTW $ptwId status transitioned to $newStatus by ${state.currentUser.name}.',
+        );
+        return p.copyWith(status: newStatus);
+      }
+      return p;
+    }).toList();
+    emit(state.copyWith(permits: updated));
+
+    try {
+      _dioClient?.dio.put('/ptw/$ptwId/approve', data: {
+        'status': newStatus,
+        'supervisorId': state.currentUser.empId,
+      }).catchError((_) {});
+    } catch (_) {}
+  }
+
+  // Emergency Siren Center
   void triggerPlantAlarm(String alarmName) {
-    _audioService.playEmergencyBuzzer();
+    _audioService.playSiren();
     final newLog = EmailLogItem(
       id: 'EM-${905 + state.emailLogs.length}',
       to: 'all-shift-engineers@chiniotpower.com',
@@ -699,14 +1059,42 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     } catch (_) {}
   }
 
-  // Training
+  // Training & QR
+  void scanQrPass() {
+    final next = !state.qrCheckedIn;
+    emit(state.copyWith(qrCheckedIn: next));
+
+    _recordAudit(
+      action: 'QR_TOOLBOX_ATTENDANCE',
+      targetResource: 'TRN-TOOLBOX-SHIFT-A',
+      details: 'Worker ${state.currentUser.name} marked attendance via dynamic QR token.',
+    );
+  }
+
+  void setQrAttendanceCheckedIn() {
+    emit(state.copyWith(qrCheckedIn: true));
+    _recordAudit(
+      action: 'QR_TOOLBOX_ATTENDANCE',
+      targetResource: 'TRN-TOOLBOX-SHIFT-A',
+      details: 'Worker ${state.currentUser.name} verified TBT attendance via dynamic QR code.',
+    );
+  }
+
+  void openTrainingQuiz(String quizId) {
+    emit(state.copyWith(activeQuizId: () => quizId));
+  }
+
+  void closeTrainingQuiz() {
+    emit(state.copyWith(activeQuizId: () => null));
+  }
+
   void completeTrainingQuiz(String trainingId) {
     final updated = state.trainings.map((t) {
       if (t.id == trainingId) {
         return t.copyWith(
-          status: 'Completed',
-          expiry: 'Valid till Nov 2027',
+          status: 'Certified',
           score: '100%',
+          expiry: 'Valid until Nov 2027',
         );
       }
       return t;
@@ -714,34 +1102,25 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     emit(state.copyWith(trainings: updated, activeQuizId: () => null));
 
     _recordAudit(
-      action: 'TRAINING_QUIZ_COMPLETED',
+      action: 'SAFETY_QUIZ_COMPLETED',
       targetResource: trainingId,
-      details: 'Quiz completed with 100% score for $trainingId by ${state.currentUser.empId}.',
+      details: 'Safety training quiz $trainingId completed with 100% score by ${state.currentUser.name}.',
     );
   }
 
-  void setActiveQuiz(String? quizId) {
-    emit(state.copyWith(activeQuizId: () => quizId));
-  }
-
-  void setQrAttendanceCheckedIn() {
-    emit(state.copyWith(qrCheckedIn: true));
-    _recordAudit(
-      action: 'TOOLBOX_QR_CHECKIN',
-      targetResource: 'MORNING_TOOLBOX',
-      details: 'QR attendance logged for Toolbox Talk by ${state.currentUser.name}.',
-    );
-  }
-
-  // Roster PPE Toggles
-  void toggleWorkerPpe(String empId, String ppeKey) {
+  // Worker Roster PPE Toggle
+  void togglePpe(String empId, String ppeKey) {
     final updated = state.roster.map((w) {
       if (w.empId == empId) {
         switch (ppeKey) {
-          case 'helmet': return w.copyWith(helmet: !w.helmet);
-          case 'shoes': return w.copyWith(shoes: !w.shoes);
-          case 'gloves': return w.copyWith(gloves: !w.gloves);
-          case 'ear': return w.copyWith(ear: !w.ear);
+          case 'helmet':
+            return w.copyWith(helmet: !w.helmet);
+          case 'shoes':
+            return w.copyWith(shoes: !w.shoes);
+          case 'gloves':
+            return w.copyWith(gloves: !w.gloves);
+          case 'ear':
+            return w.copyWith(ear: !w.ear);
         }
       }
       return w;
@@ -759,28 +1138,64 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     } catch (_) {}
   }
 
+  void toggleWorkerPpe(String empId, String ppeKey) => togglePpe(empId, ppeKey);
+
   // Analytics Period
   void setAnalyticsPeriod(String period) {
     emit(state.copyWith(analyticsPeriod: period));
   }
 
   // Admin Pending User Approval/Block
-  void updateUserApproval(String empId, String newStatus) {
+  Future<void> updateUserApproval(String empId, String newStatus) async {
     if (!state.canAccessAdminPanel) return; // RBAC Guard
 
+    final cleanId = empId.trim().toUpperCase();
+    PendingUserRegistration? targetUser;
+
     final updated = state.pendingUsers.map((u) {
-      if (u.empId == empId) {
-        return u.copyWith(status: newStatus);
+      if (u.empId.toUpperCase() == cleanId) {
+        targetUser = u.copyWith(status: newStatus);
+        return targetUser!;
       }
       return u;
     }).toList();
-    emit(state.copyWith(pendingUsers: updated));
+
+    // If approved, synchronize into local plant roster
+    List<WorkerRosterItem> updatedRoster = List.from(state.roster);
+    if (newStatus == 'Approved' && targetUser != null) {
+      final alreadyInRoster = updatedRoster.any((w) => w.empId.toUpperCase() == cleanId);
+      if (!alreadyInRoster) {
+        updatedRoster.add(WorkerRosterItem(
+          empId: cleanId,
+          name: targetUser!.name,
+          ur: targetUser!.name,
+          role: targetUser!.role,
+          zone: targetUser!.zone ?? 'Boiler House Unit-1',
+          helmet: true,
+          shoes: true,
+          gloves: true,
+          ear: true,
+        ));
+      }
+    }
+
+    emit(state.copyWith(pendingUsers: updated, roster: updatedRoster));
 
     _recordAudit(
-      action: 'STAFF_ID_APPROVAL',
-      targetResource: empId,
-      details: 'Staff member $empId registration marked as $newStatus by ${state.currentUser.name}.',
+      action: newStatus == 'Approved' ? 'STAFF_ID_APPROVAL' : 'STAFF_ID_BLOCKED',
+      targetResource: cleanId,
+      details: 'Staff member $cleanId (${targetUser?.name ?? ""}) registration marked as $newStatus by ${state.currentUser.name} (${state.currentUser.empId}). Credentials ${newStatus == 'Approved' ? 'activated' : 'deactivated'}.',
     );
+
+    try {
+      await _dioClient?.dio.put('/auth/users/$cleanId/approve', data: {
+        'status': newStatus,
+        'approverId': state.currentUser.empId,
+        'approverName': state.currentUser.name,
+      });
+    } catch (e) {
+      debugPrint('Error updating user approval on backend: $e');
+    }
   }
 
   // Manually trigger immediate flush of offline queued reports
@@ -804,5 +1219,12 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       }
     }
     emit(state.copyWith(pendingOfflineCount: queue.pendingCount));
+  }
+
+  @override
+  Future<void> close() {
+    _socket?.disconnect();
+    _socket?.dispose();
+    return super.close();
   }
 }

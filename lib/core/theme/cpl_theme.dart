@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CplColors {
+  // Chiniot Power Limited (CPL) Corporate Identity Colors
+  static const Color corporateNavy = Color(0xFF0B1F3A); // Deep Power Navy
+  static const Color energyAmber = Color(0xFFF59E0B); // Co-Gen Energy Amber / Gold
+  static const Color renewableGreen = Color(0xFF059669); // Bagasse Renewable Green (#006837/#059669)
+
   // Canvas & Backgrounds
   static const Color canvas = Color(0xFFF1F5F9); // Slate 100
   static const Color surface = Color(0xFFF8FAFC); // Slate 50
   static const Color card = Color(0xFFFFFFFF); // Pure White Card
 
-  // Industrial Slate Scale
+  // Industrial Slate Scale (Primary dark aligned to Corporate Navy)
   static const Color slate50 = Color(0xFFF8FAFC);
   static const Color slate100 = Color(0xFFF1F5F9);
   static const Color slate200 = Color(0xFFE2E8F0);
@@ -17,7 +22,7 @@ class CplColors {
   static const Color slate600 = Color(0xFF475569);
   static const Color slate700 = Color(0xFF334155);
   static const Color slate800 = Color(0xFF1E293B);
-  static const Color slate900 = Color(0xFF0F172A); // Industrial Dark
+  static const Color slate900 = Color(0xFF0B1F3A); // CPL Deep Corporate Navy
 
   // Safety Amber (CPL Primary Accent)
   static const Color safety50 = Color(0xFFFFF7ED);

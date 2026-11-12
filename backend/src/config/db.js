@@ -1,8 +1,33 @@
 const fs = require('fs');
 const path = require('path');
+const { Pool } = require('pg');
 
 const DB_FILE = path.join(__dirname, '../data/db.json');
 const SEED_FILE = path.join(__dirname, '../data/seed.json');
+
+// PostgreSQL Pool configuration with automatic JSON fallback
+let pgPool = null;
+let isPgActive = false;
+
+try {
+  const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/chiniot_power_hse';
+  pgPool = new Pool({
+    connectionString,
+    connectionTimeoutMillis: 2000,
+  });
+
+  pgPool.query('SELECT 1', (err) => {
+    if (err) {
+      console.log('[Database] PostgreSQL offline/unreachable. Operating on CPL Local Persistent File Storage (db.json)');
+      isPgActive = false;
+    } else {
+      console.log('[Database] Connected to PostgreSQL 15+ database (chiniot_power_hse)');
+      isPgActive = true;
+    }
+  });
+} catch (e) {
+  isPgActive = false;
+}
 
 // Initialize database with seed data if db.json does not exist
 function initDb() {

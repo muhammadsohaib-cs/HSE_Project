@@ -24,6 +24,21 @@
       "isActive": true
     },
     {
+      "id": "u-1001-cpl",
+      "employeeId": "CPL-EMP-1001",
+      "name": "Engr. Tariq Khan (HSE Manager)",
+      "urduName": "انجینئر طارق خان",
+      "email": "hse.manager@chiniotpower.com.pk",
+      "passwordHash": "$2a$10$vI8aWBnW3fID.ZQ4/zo1G.qH1q8vTqPzVwz60Vw3K5sJqUu8O1b9y",
+      "pin": "1001",
+      "role": "manager",
+      "department": "Safety & Compliance Management",
+      "shift": "Shift A: Morning (06:00 - 14:00)",
+      "cnic": "33202-1234567-1",
+      "plantZone": "Plant Headquarters",
+      "isActive": true
+    },
+    {
       "id": "u-1002",
       "employeeId": "CP-EMP-1002",
       "name": "Asim Raza",
