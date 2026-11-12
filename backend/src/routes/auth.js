@@ -5,80 +5,7 @@ const jwt = require('jsonwebtoken');
 const { readDb, writeDb, addAuditLog } = require('../config/db');
 const { generateTokens, authenticateToken, JWT_REFRESH_SECRET } = require('../middleware/auth');
 
-// POST /api/v1/auth/login (supports Employee ID + Password or PIN)
-router.post('/login', (req, res) => {
-  const { employeeId, password, pin } = req.body;
-
-  if (!employeeId) {
-    return res.status(400).json({ success: false, message: 'Employee ID is required.' });
-  }
-
-  const cleanInputId = employeeId.trim().toUpperCase();
-  const db = readDb();
-  if (!db.users) db.users = [];
-
-  // Match user by exact ID or CP- / CPL- prefix
-  const user = db.users.find(u => {
-    const uId = u.employeeId.toUpperCase();
-    return (
-      uId === cleanInputId ||
-      uId.replace('CP-', 'CPL-') === cleanInputId ||
-      uId.replace('CPL-', 'CP-') === cleanInputId
-    );
-  });
-
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials or staff ID not found.' });
-  }
-
-  // Check if account is active or pending approval
-  if (!user.isActive) {
-    return res.status(403).json({
-      success: false,
-      message: 'Account pending HSE Manager approval. Please contact administrator.'
-    });
-  }
-
-  // Verify PIN if supplied
-  let isVerified = false;
-  const inputPin = pin ? pin.toString().trim() : null;
-  const inputPwd = password ? password.toString().trim() : null;
-
-  if (inputPin && user.pin) {
-    isVerified = user.pin.toString().trim() === inputPin;
-  }
-  
-  if (!isVerified && (inputPwd || inputPin)) {
-    const testVal = inputPwd || inputPin;
-    if (
-      testVal === user.pin ||
-      testVal === 'admin123' ||
-      testVal === 'safety123' ||
-      testVal === 'worker123' ||
-      testVal === 'admin' ||
-      testVal === '123456' ||
-      testVal === 'ChiniotSafe2026!'
-    ) {
-      isVerified = true;
-    } else if (user.passwordHash) {
-      try {
-        isVerified = bcrypt.compareSync(testVal, user.passwordHash);
-      } catch (_) {}
-    }
-  }
-
-  // Rapid field mode fallback if no password provided for active verified personnel
-  if (!isVerified && !inputPin && !inputPwd) {
-    isVerified = true;
-  }
-
-  if (!isVerified) {
-    return res.status(401).json({ success: false, message: 'Incorrect security PIN or password.' });
-  }
-
-  const tokens = generateTokens(user);
-
-  // Map role to standard CPL System Display Roles
+function formatUserResponse(user) {
   let displayRole = user.role || 'Plant Worker';
   if (user.role === 'admin' || user.role === 'manager' || user.role === 'HSE Manager') {
     displayRole = 'HSE Manager';
@@ -88,77 +15,159 @@ router.post('/login', (req, res) => {
     displayRole = 'Plant Worker';
   }
 
+  const assignedZone = user.assignedZone || user.plantZone || user.zone || 'Boiler House Unit-1';
+  const fullName = user.fullName || user.name || 'CPL Staff';
+
+  return {
+    id: user.id,
+    empId: user.employeeId,
+    employeeId: user.employeeId,
+    fullName,
+    name: fullName,
+    urduName: user.urduName || fullName,
+    role: displayRole,
+    department: user.department || 'Operations & Maintenance',
+    shift: user.shift || 'Shift A: Morning',
+    cnic: user.cnic || '33202-0000000-1',
+    assignedZone,
+    zone: assignedZone,
+    status: user.status || (user.isActive ? 'Approved' : 'Pending')
+  };
+}
+
+// POST /api/auth/login & /api/v1/auth/login
+router.post('/login', (req, res) => {
+  const rawEmpId = req.body.empId || req.body.employeeId;
+  const rawSecret = req.body.password !== undefined ? req.body.password : req.body.pin;
+
+  if (!rawEmpId || !rawEmpId.toString().trim()) {
+    return res.status(400).json({ success: false, message: 'Employee ID is required.' });
+  }
+
+  if (rawSecret === undefined || rawSecret === null || !rawSecret.toString().trim()) {
+    return res.status(400).json({ success: false, message: 'Password or Security PIN is required.' });
+  }
+
+  const cleanInputId = rawEmpId.toString().trim().toUpperCase();
+  const secret = rawSecret.toString().trim();
+  const db = readDb();
+  if (!db.users) db.users = [];
+
+  // Exact case-insensitive match first, then CP- <-> CPL- prefix fallback
+  let user = db.users.find(u => u.employeeId && u.employeeId.toUpperCase() === cleanInputId);
+  if (!user) {
+    user = db.users.find(u => {
+      if (!u.employeeId) return false;
+      const uId = u.employeeId.toUpperCase();
+      return (
+        uId.replace('CP-', 'CPL-') === cleanInputId ||
+        uId.replace('CPL-', 'CP-') === cleanInputId
+      );
+    });
+  }
+
+  if (!user) {
+    return res.status(401).json({ success: false, message: `Employee ID ${cleanInputId} is not registered.` });
+  }
+
+  if (user.status === 'Blocked') {
+    return res.status(403).json({
+      success: false,
+      message: 'This Employee ID has been blocked by HSE Administration.'
+    });
+  }
+
+  // Strictly verify Password / PIN
+  let isVerified = false;
+  if (user.pin && user.pin.toString().trim() === secret) {
+    isVerified = true;
+  } else if (user.passwordHash) {
+    try {
+      isVerified = bcrypt.compareSync(secret, user.passwordHash);
+    } catch (_) {
+      isVerified = false;
+    }
+  }
+
+  if (!isVerified) {
+    return res.status(401).json({ success: false, message: 'Incorrect Password or Security PIN.' });
+  }
+
+  const tokens = generateTokens(user);
+  const formattedUser = formatUserResponse(user);
+
   addAuditLog({
-    actorId: user.employeeId,
-    actorRole: user.role,
+    actorId: formattedUser.empId,
+    actorRole: formattedUser.role,
     action: 'USER_LOGIN',
-    targetResource: user.plantZone || 'PORTAL',
-    details: `Employee ${user.employeeId} (${user.name} - ${displayRole}) authenticated successfully via ${inputPin ? 'PIN' : 'Credentials'}.`
+    targetResource: formattedUser.assignedZone,
+    details: `Employee ${formattedUser.empId} (${formattedUser.fullName} - ${formattedUser.role}) authenticated successfully.`
   });
 
   return res.json({
     success: true,
     message: 'Authentication successful',
-    token: tokens.token,
+    token: tokens.accessToken,
     refreshToken: tokens.refreshToken,
-    user: {
-      id: user.id,
-      empId: user.employeeId,
-      employeeId: user.employeeId,
-      name: user.name,
-      urduName: user.urduName || user.name,
-      role: displayRole,
-      department: user.department || 'Operations & Maintenance',
-      shift: user.shift || 'Shift A: Morning (06:00 - 14:00)',
-      cnic: user.cnic || '33202-0000000-1',
-      zone: user.plantZone || 'Boiler House Unit-1'
-    },
-    ...tokens
+    user: formattedUser
   });
 });
 
-// POST /api/v1/auth/register (Worker registration pending manager approval)
+// POST /api/auth/register & /api/v1/auth/register
+// Immediately saves with status: "Approved" (no lockout) and returns 201 with { success: true, token, user }
 router.post('/register', (req, res) => {
-  const { employeeId, name, urduName, email, pin, cnic, shift, role, plantZone } = req.body;
+  const rawEmpId = req.body.empId || req.body.employeeId;
+  const rawFullName = req.body.fullName || req.body.name;
+  const rawSecret = req.body.password !== undefined ? req.body.password : req.body.pin;
+  const { urduName, email, cnic, shift, role, assignedZone, plantZone, zone } = req.body;
 
-  if (!employeeId || !name) {
+  if (!rawEmpId || !rawEmpId.toString().trim() || !rawFullName || !rawFullName.toString().trim()) {
     return res.status(400).json({ success: false, message: 'Employee ID and Full Name are required.' });
   }
 
-  const cleanId = employeeId.trim().toUpperCase();
+  if (!rawSecret || !rawSecret.toString().trim()) {
+    return res.status(400).json({ success: false, message: 'Password or Security PIN is required for registration.' });
+  }
+
+  const cleanId = rawEmpId.toString().trim().toUpperCase();
+  const cleanName = rawFullName.toString().trim();
+  const assignedSecret = rawSecret.toString().trim();
+  const assignedRole = (role && role.toString().trim().length > 0) ? role.toString().trim() : 'Plant Worker';
+  const assignedShift = shift || 'Shift A: Morning';
+  const resolvedZone = assignedZone || plantZone || zone || 'Boiler House Unit-1';
+  const cleanCnic = cnic ? cnic.toString().trim() : '33202-0000000-1';
+
   const db = readDb();
   if (!db.users) db.users = [];
   if (!db.pendingUsers) db.pendingUsers = [];
+  if (!db.roster) db.roster = [];
 
-  const existing = db.users.find(u => u.employeeId.toUpperCase() === cleanId);
+  const existing = db.users.find(u => u.employeeId && u.employeeId.toUpperCase() === cleanId);
   if (existing) {
-    if (existing.isActive) {
-      return res.status(409).json({ success: false, message: `Employee ID ${cleanId} is already registered and active.` });
-    } else {
-      return res.status(409).json({ success: false, message: `Registration for ${cleanId} already submitted. Awaiting manager approval.` });
-    }
+    return res.status(409).json({
+      success: false,
+      message: `Employee ID ${cleanId} is already registered. Please sign in.`
+    });
   }
-
-  const assignedPin = (pin ? pin.toString().trim() : '1234');
-  const assignedRole = role || 'Plant Worker';
-  const assignedShift = shift || 'Shift A: Morning (06:00 - 14:00)';
-  const assignedZone = plantZone || 'Boiler House Unit-1';
 
   const newUser = {
     id: `u-${Date.now()}`,
     employeeId: cleanId,
-    name: name.trim(),
-    urduName: urduName || name.trim(),
+    empId: cleanId,
+    fullName: cleanName,
+    name: cleanName,
+    urduName: urduName || cleanName,
     email: email || `${cleanId.toLowerCase()}@chiniotpower.com.pk`,
-    passwordHash: bcrypt.hashSync(assignedPin, 10),
-    pin: assignedPin,
+    passwordHash: bcrypt.hashSync(assignedSecret, 10),
+    pin: assignedSecret,
     role: assignedRole,
     department: 'Operations & Maintenance',
     shift: assignedShift,
-    cnic: cnic ? cnic.trim() : '33202-0000000-1',
-    plantZone: assignedZone,
-    isActive: false, // Must be approved by HSE Manager/Admin
-    status: 'Pending',
+    cnic: cleanCnic,
+    plantZone: resolvedZone,
+    assignedZone: resolvedZone,
+    isActive: true,
+    status: 'Approved',
     createdAt: new Date().toISOString()
   };
 
@@ -166,74 +175,74 @@ router.post('/register', (req, res) => {
 
   const pendingEntry = {
     empId: cleanId,
-    name: newUser.name,
+    name: cleanName,
+    fullName: cleanName,
     urduName: newUser.urduName,
-    cnic: newUser.cnic,
+    cnic: cleanCnic,
     role: assignedRole,
     shift: assignedShift,
-    pin: assignedPin,
-    zone: assignedZone,
-    status: 'Pending',
-    createdAt: new Date().toISOString()
+    pin: assignedSecret,
+    zone: resolvedZone,
+    assignedZone: resolvedZone,
+    status: 'Approved',
+    createdAt: newUser.createdAt
   };
-
-  // Add to beginning of pendingUsers list
   db.pendingUsers.unshift(pendingEntry);
+
+  // Sync to active roster if not already present
+  if (!db.roster.some(w => w.empId && w.empId.toUpperCase() === cleanId)) {
+    db.roster.push({
+      empId: cleanId,
+      name: cleanName,
+      ur: newUser.urduName,
+      role: assignedRole,
+      zone: resolvedZone,
+      helmet: true,
+      shoes: true,
+      gloves: true,
+      ear: true
+    });
+  }
+
   writeDb(db);
 
   addAuditLog({
-    actorId: newUser.employeeId,
-    actorRole: newUser.role,
-    action: 'STAFF_REGISTRATION_SUBMITTED',
-    targetResource: assignedZone,
-    details: `New staff registration submitted for ${newUser.name} (${cleanId}) as ${assignedRole}. Awaiting HSE Manager approval.`
+    actorId: cleanId,
+    actorRole: assignedRole,
+    action: 'STAFF_REGISTRATION',
+    targetResource: resolvedZone,
+    details: `Employee ${cleanName} (${cleanId}) registered as ${assignedRole} (${resolvedZone}) with immediate Approved status.`
   });
+
+  const tokens = generateTokens(newUser);
+  const formattedUser = formatUserResponse(newUser);
 
   return res.status(201).json({
     success: true,
-    message: 'Registration submitted successfully! Awaiting HSE Manager approval.',
-    user: newUser,
+    message: `Account Registered for ${cleanId}!`,
+    token: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+    user: formattedUser,
     pendingUser: pendingEntry
   });
 });
 
-// GET /api/v1/auth/pending-users (List all pending / approved user registrations)
+// GET /api/auth/pending-users & /api/v1/auth/pending-users
 router.get('/pending-users', (req, res) => {
   const db = readDb();
   if (!db.pendingUsers) {
-    db.pendingUsers = [
-      {
-        empId: 'CPL-EMP-1042',
-        name: 'Muhammad Tariq',
-        cnic: '33202-7741290-3',
-        role: 'Safety Officer',
-        shift: 'Shift C',
-        status: 'Pending',
-        zone: 'Boiler House Unit-1'
-      },
-      {
-        empId: 'CPL-EMP-1088',
-        name: 'Zeeshan Ahmed',
-        cnic: '33202-5512098-1',
-        role: 'Boiler Operator',
-        shift: 'Shift A',
-        status: 'Approved',
-        zone: 'Bagasse & Coal Yard'
-      }
-    ];
-    writeDb(db);
+    db.pendingUsers = [];
   }
-
   return res.json({
     success: true,
     pendingUsers: db.pendingUsers
   });
 });
 
-// PUT /api/v1/auth/users/:empId/approve (Approve or Block a user registration)
+// PUT /api/auth/users/:empId/approve & /api/v1/auth/users/:empId/approve
 router.put('/users/:empId/approve', (req, res) => {
   const { empId } = req.params;
-  const { status, approverId, approverName } = req.body; // status: 'Approved' or 'Blocked'
+  const { status, approverId, approverName } = req.body;
   const newStatus = status || 'Approved';
   const cleanId = empId.trim().toUpperCase();
   const db = readDb();
@@ -242,68 +251,29 @@ router.put('/users/:empId/approve', (req, res) => {
   if (!db.users) db.users = [];
   if (!db.roster) db.roster = [];
 
-  // Update in pendingUsers
-  let pending = db.pendingUsers.find(p => p.empId.toUpperCase() === cleanId);
+  const pending = db.pendingUsers.find(p => p.empId && p.empId.toUpperCase() === cleanId);
   if (pending) {
     pending.status = newStatus;
     pending.approvedBy = approverName || approverId || 'HSE Manager';
     pending.approvedAt = new Date().toISOString();
-  } else {
-    pending = {
-      empId: cleanId,
-      name: 'Plant Staff',
-      cnic: '33202-0000000-0',
-      role: 'Plant Worker',
-      shift: 'Shift A',
-      status: newStatus,
-      approvedBy: approverName || approverId || 'HSE Manager',
-      approvedAt: new Date().toISOString()
-    };
-    db.pendingUsers.unshift(pending);
   }
 
-  // Update in users
-  let user = db.users.find(u => {
-    const uId = u.employeeId.toUpperCase();
-    return uId === cleanId || uId.replace('CP-', 'CPL-') === cleanId || uId.replace('CPL-', 'CP-') === cleanId;
-  });
-
+  const user = db.users.find(u => u.employeeId && u.employeeId.toUpperCase() === cleanId);
   if (user) {
     user.isActive = (newStatus === 'Approved');
     user.status = newStatus;
     user.approvedBy = approverName || approverId || 'HSE Manager';
     user.approvedAt = new Date().toISOString();
-  } else {
-    // If user registered before, build user record
-    user = {
-      id: `u-${Date.now()}`,
-      employeeId: cleanId,
-      name: pending.name,
-      urduName: pending.urduName || pending.name,
-      email: `${cleanId.toLowerCase()}@chiniotpower.com.pk`,
-      pin: pending.pin || '1234',
-      passwordHash: bcrypt.hashSync(pending.pin || '1234', 10),
-      role: pending.role || 'Plant Worker',
-      department: 'Operations & Maintenance',
-      shift: pending.shift || 'Shift A: Morning (06:00 - 14:00)',
-      cnic: pending.cnic || '33202-0000000-1',
-      plantZone: pending.zone || 'Boiler House Unit-1',
-      isActive: (newStatus === 'Approved'),
-      status: newStatus
-    };
-    db.users.push(user);
   }
 
-  // If approved, synchronize with plant roster
-  if (newStatus === 'Approved') {
-    const existingWorker = db.roster.find(w => w.empId.toUpperCase() === cleanId);
-    if (!existingWorker) {
+  if (newStatus === 'Approved' && user) {
+    if (!db.roster.some(w => w.empId && w.empId.toUpperCase() === cleanId)) {
       db.roster.push({
         empId: cleanId,
         name: user.name,
         ur: user.urduName || user.name,
         role: user.role,
-        zone: user.plantZone || 'Boiler House Unit-1',
+        zone: user.assignedZone || user.plantZone || 'Boiler House Unit-1',
         helmet: true,
         shoes: true,
         gloves: true,
@@ -312,29 +282,25 @@ router.put('/users/:empId/approve', (req, res) => {
     }
   }
 
-  // Record tamper-proof audit trail for ISO 45001 & NEPRA
-  const auditAction = newStatus === 'Approved' ? 'STAFF_ID_APPROVAL' : 'STAFF_ID_BLOCKED';
-  const approver = approverName ? `${approverName} (${approverId || 'ADMIN'})` : (approverId || 'CP-EMP-1001 (HSE Manager)');
-  
   addAuditLog({
-    actorId: approverId || 'CP-EMP-1001',
+    actorId: approverId || 'CPL-EMP-1001',
     actorRole: 'admin',
-    action: auditAction,
+    action: newStatus === 'Approved' ? 'STAFF_ID_APPROVAL' : 'STAFF_ID_BLOCKED',
     targetResource: cleanId,
-    details: `Staff member ${cleanId} (${user.name}) registration marked as ${newStatus} by ${approver}. Login credentials ${newStatus === 'Approved' ? 'activated' : 'deactivated'}.`
+    details: `Staff member ${cleanId} marked as ${newStatus} by ${approverName || approverId || 'HSE Manager'}.`
   });
 
   writeDb(db);
 
   return res.json({
     success: true,
-    message: `Staff member ${cleanId} registration marked as ${newStatus}.`,
-    user,
+    message: `Staff member ${cleanId} marked as ${newStatus}.`,
+    user: user ? formatUserResponse(user) : null,
     pending
   });
 });
 
-// POST /api/v1/auth/refresh
+// POST /api/auth/refresh
 router.post('/refresh', (req, res) => {
   const { refreshToken } = req.body;
   if (!refreshToken) {
@@ -357,7 +323,7 @@ router.post('/refresh', (req, res) => {
   });
 });
 
-// GET /api/v1/auth/me
+// GET /api/auth/me
 router.get('/me', authenticateToken, (req, res) => {
   const db = readDb();
   const user = db.users.find(u => u.id === req.user.id);
@@ -365,17 +331,7 @@ router.get('/me', authenticateToken, (req, res) => {
 
   return res.json({
     success: true,
-    user: {
-      id: user.id,
-      employeeId: user.employeeId,
-      name: user.name,
-      urduName: user.urduName,
-      role: user.role,
-      department: user.department,
-      shift: user.shift,
-      cnic: user.cnic,
-      zone: user.plantZone
-    }
+    user: formatUserResponse(user)
   });
 });
 

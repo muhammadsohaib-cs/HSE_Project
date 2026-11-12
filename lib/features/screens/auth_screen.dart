@@ -25,6 +25,10 @@ class _AuthScreenState extends State<AuthScreen> {
 
   String _selectedShift = 'Shift A: Morning';
   String _selectedRole = 'HSE Manager';
+  String _selectedZone = 'Boiler House Unit-1';
+  String? _errorMessage;
+  String? _successMessage;
+  bool _isSubmitting = false;
 
   final List<String> _shifts = [
     'Shift A: Morning',
@@ -36,6 +40,16 @@ class _AuthScreenState extends State<AuthScreen> {
     'Plant Worker',
     'Safety Officer',
     'HSE Manager',
+  ];
+
+  final List<String> _zones = [
+    'Boiler House Unit-1',
+    'Steam Turbine Hall',
+    'Bagasse & Coal Yard',
+    '132kV Grid Switchyard',
+    'Water Treatment Plant',
+    'Cooling Tower',
+    'Plant Headquarters',
   ];
 
   @override
@@ -53,7 +67,10 @@ class _AuthScreenState extends State<AuthScreen> {
       _pinController.text = pin;
       _selectedRole = role;
       _fullNameController.text = name;
+      _errorMessage = null;
+      _successMessage = null;
     });
+    context.read<CplSystemCubit>().clearAuthError();
   }
 
   void _showServerSettingsDialog(BuildContext context) {
@@ -173,47 +190,81 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<void> _handleSubmit() async {
     final cubit = context.read<CplSystemCubit>();
+    final cleanEmpId = _empIdController.text.trim().toUpperCase();
+    final cleanSecret = _pinController.text.trim();
+    final cleanName = _fullNameController.text.trim();
+
+    setState(() {
+      _errorMessage = null;
+      _successMessage = null;
+    });
+
+    if (cleanEmpId.isEmpty) {
+      setState(() => _errorMessage = 'Please enter your Employee ID (e.g., CPL-EMP-1042).');
+      return;
+    }
+    if (cleanSecret.isEmpty) {
+      setState(() => _errorMessage = 'Please enter your Password or Security PIN.');
+      return;
+    }
+
     if (_isLogin) {
+      setState(() => _isSubmitting = true);
       final success = await cubit.login(
-        empId: _empIdController.text.trim(),
+        empId: cleanEmpId,
         shift: _selectedShift,
         role: _selectedRole,
-        pin: _pinController.text.trim(),
+        pin: cleanSecret,
+        password: cleanSecret,
       );
       if (mounted) {
+        setState(() => _isSubmitting = false);
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Authenticated ${_empIdController.text.trim()} ($_selectedShift)'),
+              content: Text('Authenticated $cleanEmpId ($_selectedShift)'),
               backgroundColor: CplColors.slate900,
             ),
           );
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Login failed: Account may be pending approval or credentials incorrect.'),
-              backgroundColor: CplColors.red600,
-            ),
-          );
+          setState(() {
+            _errorMessage = cubit.state.lastAuthError ??
+                'Invalid Employee ID or Password/PIN. Please check your credentials.';
+          });
         }
       }
     } else {
-      await cubit.signup(
-        empId: _empIdController.text.trim(),
-        fullName: _fullNameController.text.trim(),
+      if (cleanName.isEmpty) {
+        setState(() => _errorMessage = 'Please enter your Full Name.');
+        return;
+      }
+      setState(() => _isSubmitting = true);
+      final success = await cubit.signup(
+        empId: cleanEmpId,
+        fullName: cleanName,
         cnic: _cnicMobileController.text.trim(),
         shift: _selectedShift,
         role: _selectedRole,
-        pin: _pinController.text.trim(),
+        pin: cleanSecret,
+        password: cleanSecret,
+        assignedZone: _selectedZone,
       );
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Registration submitted for ${_empIdController.text.trim()}! Awaiting HSE Manager approval.'),
-            backgroundColor: CplColors.safety500,
-          ),
-        );
-        setState(() => _isLogin = true);
+        setState(() => _isSubmitting = false);
+        if (success) {
+          setState(() {
+            _isLogin = true;
+            _empIdController.text = cleanEmpId;
+            _pinController.text = cleanSecret;
+            _successMessage = 'Account Registered for $cleanEmpId! Please sign in.';
+            _errorMessage = null;
+          });
+        } else {
+          setState(() {
+            _errorMessage = cubit.state.lastAuthError ??
+                'Registration failed for $cleanEmpId. Please try again.';
+          });
+        }
       }
     }
   }
@@ -338,7 +389,10 @@ class _AuthScreenState extends State<AuthScreen> {
                   children: [
                     Expanded(
                       child: InkWell(
-                        onTap: () => setState(() => _isLogin = true),
+                        onTap: () => setState(() {
+                          _isLogin = true;
+                          _errorMessage = null;
+                        }),
                         borderRadius: BorderRadius.circular(10),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -363,7 +417,18 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     Expanded(
                       child: InkWell(
-                        onTap: () => setState(() => _isLogin = false),
+                        onTap: () => setState(() {
+                          _isLogin = false;
+                          _errorMessage = null;
+                          _successMessage = null;
+                          if (_empIdController.text.trim() == 'CPL-EMP-1001' &&
+                              _fullNameController.text.trim() == 'Engr. Tariq Khan') {
+                            _empIdController.clear();
+                            _pinController.clear();
+                            _fullNameController.clear();
+                            _cnicMobileController.clear();
+                          }
+                        }),
                         borderRadius: BorderRadius.circular(10),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -389,7 +454,65 @@ class _AuthScreenState extends State<AuthScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
+
+              // Inline Green Confirmation Banner (Registration -> Login)
+              if (_successMessage != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: CplColors.emerald50,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: CplColors.emerald500),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, color: CplColors.emerald600, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _successMessage!,
+                          style: CplTypography.body(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: CplColors.emerald700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              // Inline Red Validation Error Banner
+              if ((_errorMessage ?? state.lastAuthError) != null) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: CplColors.red50,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: CplColors.red600),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error_outline, color: CplColors.red600, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          (_errorMessage ?? state.lastAuthError)!,
+                          style: CplTypography.body(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: CplColors.red700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
 
               // Form Inputs Container
               Container(
@@ -438,6 +561,25 @@ class _AuthScreenState extends State<AuthScreen> {
                           prefixIcon: Icon(Icons.person_outline, size: 18),
                           hintText: 'e.g. Bilal Mahmood',
                         ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      Text('ASSIGNED PLANT ZONE • پلانٹ زون', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
+                      const SizedBox(height: 6),
+                      DropdownButtonFormField<String>(
+                        value: _selectedZone,
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.location_on_outlined, size: 18),
+                        ),
+                        items: _zones
+                            .map((z) => DropdownMenuItem<String>(
+                                  value: z,
+                                  child: Text(z, style: CplTypography.body(fontSize: 12, fontWeight: FontWeight.w600)),
+                                ))
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _selectedZone = val);
+                        },
                       ),
                       const SizedBox(height: 14),
                     ],
@@ -532,17 +674,23 @@ class _AuthScreenState extends State<AuthScreen> {
 
               // Submit Button
               ElevatedButton(
-                onPressed: _handleSubmit,
+                onPressed: _isSubmitting ? null : _handleSubmit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: CplColors.corporateNavy,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
-                child: Text(
-                  _isLogin ? '${CplLocalizations.tr('signInBtn', lang)} →' : '${CplLocalizations.tr('registerBtn', lang)} →',
-                  style: CplTypography.displayHeading(fontSize: 13, color: Colors.white),
-                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : Text(
+                        _isLogin ? '${CplLocalizations.tr('signInBtn', lang)} →' : '${CplLocalizations.tr('registerBtn', lang)} →',
+                        style: CplTypography.displayHeading(fontSize: 13, color: Colors.white),
+                      ),
               ),
 
               if (_isLogin) ...[

@@ -39,24 +39,29 @@ class UserSession extends Equatable {
     );
   }
 
+  String get fullName => name;
+  String get assignedZone => zone;
+
   Map<String, dynamic> toJson() => {
     'empId': empId,
+    'fullName': name,
     'name': name,
     'urduName': urduName,
     'role': role,
     'shift': shift,
     'cnic': cnic,
+    'assignedZone': zone,
     'zone': zone,
   };
 
   factory UserSession.fromJson(Map<String, dynamic> json) => UserSession(
-    empId: json['empId'] ?? json['employeeId'] ?? 'CPL-EMP-XXXX',
-    name: json['name'] ?? 'CPL Staff',
-    urduName: json['urduName'] ?? json['name'] ?? 'سٹاف',
+    empId: (json['empId'] ?? json['employeeId'] ?? 'CPL-EMP-XXXX').toString().toUpperCase(),
+    name: json['fullName'] ?? json['name'] ?? 'CPL Staff',
+    urduName: json['urduName'] ?? json['fullName'] ?? json['name'] ?? 'سٹاف',
     role: json['role'] ?? 'Plant Worker',
-    shift: json['shift'] ?? 'Shift A: Morning (06:00 - 14:00)',
+    shift: json['shift'] ?? 'Shift A: Morning',
     cnic: json['cnic'] ?? '33202-0000000-0',
-    zone: json['zone'] ?? json['plantZone'] ?? 'Boiler House Unit-1',
+    zone: json['assignedZone'] ?? json['zone'] ?? json['plantZone'] ?? 'Boiler House Unit-1',
   );
 
   @override
@@ -405,14 +410,14 @@ class PendingUserRegistration extends Equatable {
   };
 
   factory PendingUserRegistration.fromJson(Map<String, dynamic> json) => PendingUserRegistration(
-    empId: json['empId'] ?? json['employeeId'] ?? '',
-    name: json['name'] ?? '',
+    empId: (json['empId'] ?? json['employeeId'] ?? '').toString().toUpperCase(),
+    name: json['fullName'] ?? json['name'] ?? '',
     cnic: json['cnic'] ?? '',
     role: json['role'] ?? 'Plant Worker',
     shift: json['shift'] ?? 'Shift A',
     status: json['status'] ?? 'Pending',
     pin: json['pin']?.toString(),
-    zone: json['zone'] ?? json['plantZone'] ?? 'Boiler House Unit-1',
+    zone: json['assignedZone'] ?? json['zone'] ?? json['plantZone'] ?? 'Boiler House Unit-1',
   );
 
   @override

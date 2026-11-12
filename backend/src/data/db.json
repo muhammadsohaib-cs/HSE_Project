@@ -162,6 +162,46 @@
       "createdAt": "2026-11-12T20:10:57.182Z",
       "approvedBy": "Engr. Tariq Khan",
       "approvedAt": "2026-11-12T20:11:07.552Z"
+    },
+    {
+      "id": "u-1794516960299",
+      "employeeId": "CPL-EMP-2055",
+      "empId": "CPL-EMP-2055",
+      "fullName": "Engr. Hamza Ali",
+      "name": "Engr. Hamza Ali",
+      "urduName": "Engr. Hamza Ali",
+      "email": "cpl-emp-2055@chiniotpower.com.pk",
+      "passwordHash": "$2a$10$IDKBQkpFGuiEdHiuDiFGM.1dAFPuk3pIpAdFDD8ZRdvQ6c.Ko0mF6",
+      "pin": "Pin@2055",
+      "role": "Safety Inspector",
+      "department": "Operations & Maintenance",
+      "shift": "Morning Shift (06:00 - 14:00)",
+      "cnic": "33202-1234567-1",
+      "plantZone": "Boiler House Unit-1",
+      "assignedZone": "Boiler House Unit-1",
+      "isActive": true,
+      "status": "Approved",
+      "createdAt": "2026-11-12T20:56:00.364Z"
+    },
+    {
+      "id": "u-1794517050707",
+      "employeeId": "CPL-EMP-2056",
+      "empId": "CPL-EMP-2056",
+      "fullName": "Engr. Bilal Tariq",
+      "name": "Engr. Bilal Tariq",
+      "urduName": "Engr. Bilal Tariq",
+      "email": "cpl-emp-2056@chiniotpower.com.pk",
+      "passwordHash": "$2a$10$dSWmDFdWJ0WQXFS1b4TwtuV2407sTksFlS6lnJVcx/BDwICgEM1CS",
+      "pin": "Pin@2056",
+      "role": "Safety Inspector",
+      "department": "Operations & Maintenance",
+      "shift": "Evening Shift (14:00 - 22:00)",
+      "cnic": "33202-7654321-3",
+      "plantZone": "Turbine Hall",
+      "assignedZone": "Turbine Hall",
+      "isActive": true,
+      "status": "Approved",
+      "createdAt": "2026-11-12T20:57:30.772Z"
     }
   ],
   "checklistTemplates": [
@@ -384,9 +424,71 @@
       "shoes": true,
       "gloves": true,
       "ear": true
+    },
+    {
+      "empId": "CPL-EMP-2055",
+      "name": "Engr. Hamza Ali",
+      "ur": "Engr. Hamza Ali",
+      "role": "Safety Inspector",
+      "zone": "Boiler House Unit-1",
+      "helmet": true,
+      "shoes": true,
+      "gloves": true,
+      "ear": true
+    },
+    {
+      "empId": "CPL-EMP-2056",
+      "name": "Engr. Bilal Tariq",
+      "ur": "Engr. Bilal Tariq",
+      "role": "Safety Inspector",
+      "zone": "Turbine Hall",
+      "helmet": true,
+      "shoes": true,
+      "gloves": true,
+      "ear": true
     }
   ],
   "auditLogs": [
+    {
+      "id": "LOG-1794517050868-839",
+      "actorId": "CPL-EMP-2056",
+      "actorRole": "Safety Inspector",
+      "action": "USER_LOGIN",
+      "targetResource": "Turbine Hall",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T20:57:30.868Z",
+      "details": "Employee CPL-EMP-2056 (Engr. Bilal Tariq - Safety Inspector) authenticated successfully."
+    },
+    {
+      "id": "LOG-1794517050775-8",
+      "actorId": "CPL-EMP-2056",
+      "actorRole": "Safety Inspector",
+      "action": "STAFF_REGISTRATION",
+      "targetResource": "Turbine Hall",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T20:57:30.775Z",
+      "details": "Employee Engr. Bilal Tariq (CPL-EMP-2056) registered as Safety Inspector (Turbine Hall) with immediate Approved status."
+    },
+    {
+      "id": "LOG-1794516960461-859",
+      "actorId": "CPL-EMP-2055",
+      "actorRole": "Safety Inspector",
+      "action": "USER_LOGIN",
+      "targetResource": "Boiler House Unit-1",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T20:56:00.461Z",
+      "details": "Employee CPL-EMP-2055 (Engr. Hamza Ali - Safety Inspector) authenticated successfully."
+    },
+    {
+      "id": "LOG-1794516960367-374",
+      "actorId": "CPL-EMP-2055",
+      "actorRole": "Safety Inspector",
+      "action": "STAFF_REGISTRATION",
+      "targetResource": "Boiler House Unit-1",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-12T20:56:00.367Z",
+      "details": "Employee Engr. Hamza Ali (CPL-EMP-2055) registered as Safety Inspector (Boiler House Unit-1) with immediate Approved status."
+    },
     {
       "id": "LOG-1794514299327-794",
       "actorId": "CPL-EMP-1003",
@@ -703,6 +805,34 @@
   ],
   "activeAlarm": null,
   "pendingUsers": [
+    {
+      "empId": "CPL-EMP-2056",
+      "name": "Engr. Bilal Tariq",
+      "fullName": "Engr. Bilal Tariq",
+      "urduName": "Engr. Bilal Tariq",
+      "cnic": "33202-7654321-3",
+      "role": "Safety Inspector",
+      "shift": "Evening Shift (14:00 - 22:00)",
+      "pin": "Pin@2056",
+      "zone": "Turbine Hall",
+      "assignedZone": "Turbine Hall",
+      "status": "Approved",
+      "createdAt": "2026-11-12T20:57:30.772Z"
+    },
+    {
+      "empId": "CPL-EMP-2055",
+      "name": "Engr. Hamza Ali",
+      "fullName": "Engr. Hamza Ali",
+      "urduName": "Engr. Hamza Ali",
+      "cnic": "33202-1234567-1",
+      "role": "Safety Inspector",
+      "shift": "Morning Shift (06:00 - 14:00)",
+      "pin": "Pin@2055",
+      "zone": "Boiler House Unit-1",
+      "assignedZone": "Boiler House Unit-1",
+      "status": "Approved",
+      "createdAt": "2026-11-12T20:56:00.364Z"
+    },
     {
       "empId": "CPL-EMP-1006",
       "name": "Muhammad Sohaib 2",

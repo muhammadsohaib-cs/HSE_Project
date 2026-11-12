@@ -9,6 +9,7 @@ class HiveBoxes {
   static const String rosterBox = 'roster_box';
   static const String permitsBox = 'permits_box';
   static const String userBox = 'user_box';
+  static const String registeredUsersBox = 'registered_users';
   static const String zonesBox = 'zones_box';
 }
 

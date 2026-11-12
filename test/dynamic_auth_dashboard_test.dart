@@ -2,47 +2,61 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:chiniot_power_hse/features/cpl_system/cubit/cpl_system_cubit.dart';
-import 'package:chiniot_power_hse/features/cpl_system/models/cpl_models.dart';
 import 'package:chiniot_power_hse/features/screens/dashboard_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('Dynamic Dashboard and User Lifecycle Widget Tests', () {
-    testWidgets('Dashboard dynamically displays Bilal Khan profile, BK avatar initials, and live counters', (tester) async {
+  group('Dynamic Registration, Auth Validation & Home Dashboard Tests', () {
+    testWidgets('Seamless registration -> login -> Home Dashboard renders CPL-EMP-2050 and live metrics', (tester) async {
       final cubit = CplSystemCubit();
 
-      // 1. Register a new user
-      await cubit.signup(
-        empId: 'CPL-EMP-2001',
-        fullName: 'Bilal Khan',
+      // 1. Register brand-new Employee ID CPL-EMP-2050
+      final signupOk = await cubit.signup(
+        empId: 'cpl-emp-2050',
+        fullName: 'Hamza Ali',
         cnic: '33202-9876543-1',
-        shift: 'Shift B: Evening (14:00 - 22:00)',
-        role: 'Plant Worker',
-        pin: '2001',
+        shift: 'Shift C: Night',
+        role: 'Safety Officer',
+        password: 'pass2050',
+        assignedZone: '132kV Grid Switchyard',
       );
 
-      // Verify pending registration
-      expect(cubit.state.pendingUsers.any((u) => u.empId == 'CPL-EMP-2001' && u.status == 'Pending'), isTrue);
-
-      // 2. Admin approves the user
-      await cubit.updateUserApproval('CPL-EMP-2001', 'Approved');
-      expect(cubit.state.pendingUsers.any((u) => u.empId == 'CPL-EMP-2001' && u.status == 'Approved'), isTrue);
-      expect(cubit.state.roster.any((w) => w.empId == 'CPL-EMP-2001'), isTrue);
-
-      // 3. Newly approved user logs in
-      await cubit.login(
-        empId: 'CPL-EMP-2001',
-        shift: 'Shift B: Evening (14:00 - 22:00)',
-        role: 'Plant Worker',
-        pin: '2001',
+      expect(signupOk, isTrue);
+      expect(cubit.state.lastAuthError, isNull);
+      // Immediately approved (no lockout)
+      expect(
+        cubit.state.pendingUsers.any((u) => u.empId == 'CPL-EMP-2050' && u.status == 'Approved'),
+        isTrue,
       );
+      expect(cubit.state.roster.any((w) => w.empId == 'CPL-EMP-2050'), isTrue);
 
-      expect(cubit.state.currentUser.name, equals('Bilal Khan'));
-      expect(cubit.state.currentUser.empId, equals('CPL-EMP-2001'));
-      expect(cubit.state.currentUser.role, equals('Plant Worker'));
+      // 2. Reject wrong password cleanly with error message
+      final badLogin = await cubit.login(
+        empId: 'cpl-emp-2050',
+        shift: 'Shift C: Night',
+        role: 'Safety Officer',
+        password: 'wrongpassword',
+      );
+      expect(badLogin, isFalse);
+      expect(cubit.state.lastAuthError, isNotNull);
 
-      // 4. Render DashboardScreen
+      // 3. Login with case-insensitive Employee ID and exact password
+      final goodLogin = await cubit.login(
+        empId: 'cpl-emp-2050',
+        shift: 'Shift C: Night',
+        role: 'Safety Officer',
+        password: 'pass2050',
+      );
+      expect(goodLogin, isTrue);
+      expect(cubit.state.lastAuthError, isNull);
+      expect(cubit.state.currentUser.empId, equals('CPL-EMP-2050'));
+      expect(cubit.state.currentUser.name, equals('Hamza Ali'));
+      expect(cubit.state.currentUser.role, equals('Safety Officer'));
+      expect(cubit.state.currentUser.zone, equals('132kV Grid Switchyard'));
+      expect(cubit.state.currentUser.shift, equals('Shift C: Night'));
+
+      // 4. Render Home Dashboard
       await tester.pumpWidget(
         MaterialApp(
           home: BlocProvider<CplSystemCubit>.value(
@@ -53,31 +67,39 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // Verify Dynamic Profile and Avatar Initials
-      expect(find.text('BK'), findsOneWidget); // Initials for Bilal Khan (NOT 'MT'!)
-      expect(find.text('MT'), findsNothing); // Hardcoded 'MT' must NOT exist
-      expect(find.text('Bilal Khan'), findsOneWidget);
-      expect(find.text('CPL-EMP-2001'), findsOneWidget);
-      expect(find.textContaining('Plant Worker'), findsWidgets);
+      // Dynamic Employee Identity Card checks
+      expect(find.text('UNIT-1 ONLINE'), findsOneWidget);
+      expect(find.text('HA'), findsOneWidget); // Initials for Hamza Ali
+      expect(find.text('Hamza Ali'), findsOneWidget);
+      expect(find.text('CPL-EMP-2050'), findsOneWidget);
+      expect(find.text('Safety Officer • 132kV Grid Switchyard'), findsOneWidget);
+      expect(find.text('Shift C: Night'), findsOneWidget);
+      expect(find.text('Logout'), findsOneWidget);
 
-      // Verify zero hardcoded mock values on dashboard
-      expect(find.text('218'), findsNothing); // Hardcoded safe work days removed
-      expect(find.text('97.2%'), findsNothing); // Hardcoded compliance removed
-      expect(find.text('148/148 PPE Verified'), findsNothing); // Hardcoded PPE verified removed
+      // Hardcoded cards removed
+      expect(find.text('591'), findsNothing);
+      expect(find.text('623'), findsNothing);
+      expect(find.text('218'), findsNothing);
+      expect(find.text('97.2%'), findsNothing);
+      expect(find.text('148/148 PPE Verified'), findsNothing);
+      expect(find.text('MT'), findsNothing);
+
+      // Live Operational Metrics Grid & Activity Feed present
+      expect(find.text('Open Hazards'), findsOneWidget);
+      expect(find.text('Shift Checklist'), findsOneWidget);
+      expect(find.text('Active PTW / LOTO'), findsOneWidget);
+      expect(find.text('On-Duty Roster'), findsOneWidget);
+      expect(find.text('RECENT LIVE ACTIVITY'), findsOneWidget);
+
+      // 5. Logout returns to AuthScreen (index 0)
+      await tester.tap(find.text('Logout'));
+      await tester.pumpAndSettle();
+      expect(cubit.state.activeScreenIndex, equals(0));
     });
 
-    testWidgets('Dashboard dynamically displays Zeeshan Ahmed profile and ZA avatar initials', (tester) async {
+    testWidgets('Shows All Plant Zones Clear emerald banner when hazards list is empty', (tester) async {
       final cubit = CplSystemCubit();
-
-      await cubit.login(
-        empId: 'CPL-EMP-1088',
-        shift: 'Shift A: Morning (06:00 - 14:00)',
-        role: 'Plant Worker',
-        pin: '1088',
-      );
-
-      expect(cubit.state.currentUser.name, equals('Zeeshan Ahmed'));
-      expect(cubit.state.currentUser.empId, equals('CPL-EMP-1088'));
+      cubit.emit(cubit.state.copyWith(hazards: const []));
 
       await tester.pumpWidget(
         MaterialApp(
@@ -89,11 +111,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('ZA'), findsOneWidget); // Initials for Zeeshan Ahmed
-      expect(find.text('MT'), findsNothing);
-      expect(find.text('Zeeshan Ahmed'), findsOneWidget);
-      expect(find.text('CPL-EMP-1088'), findsOneWidget);
+      expect(find.text('All Plant Zones Clear — No Active Hazards'), findsOneWidget);
     });
   });
 }
-

@@ -26,6 +26,7 @@ class CplSystemState extends Equatable {
   final List<String> emailRecipients;
   final int pendingOfflineCount;
   final List<AuditLogItem> auditLogs;
+  final String? lastAuthError;
 
   const CplSystemState({
     required this.language,
@@ -52,6 +53,7 @@ class CplSystemState extends Equatable {
     required this.emailRecipients,
     this.pendingOfflineCount = 0,
     this.auditLogs = const [],
+    this.lastAuthError,
   });
 
   int get riskScore => selectedLikelihood * selectedSeverity;
@@ -106,6 +108,7 @@ class CplSystemState extends Equatable {
     List<String>? emailRecipients,
     int? pendingOfflineCount,
     List<AuditLogItem>? auditLogs,
+    String? Function()? lastAuthError,
   }) {
     return CplSystemState(
       language: language ?? this.language,
@@ -132,6 +135,7 @@ class CplSystemState extends Equatable {
       emailRecipients: emailRecipients ?? this.emailRecipients,
       pendingOfflineCount: pendingOfflineCount ?? this.pendingOfflineCount,
       auditLogs: auditLogs ?? this.auditLogs,
+      lastAuthError: lastAuthError != null ? lastAuthError() : this.lastAuthError,
     );
   }
 
@@ -159,5 +163,8 @@ class CplSystemState extends Equatable {
         analyticsPeriod,
         pendingUsers,
         emailRecipients,
+        pendingOfflineCount,
+        auditLogs,
+        lastAuthError,
       ];
 }

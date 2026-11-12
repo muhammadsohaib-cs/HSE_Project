@@ -61,6 +61,7 @@ void main() async {
     await Hive.openBox(HiveBoxes.rosterBox);
     await Hive.openBox(HiveBoxes.permitsBox);
     await Hive.openBox(HiveBoxes.userBox);
+    await Hive.openBox(HiveBoxes.registeredUsersBox);
   } catch (e) {
     debugPrint('Hive initialization notice: $e');
   }
