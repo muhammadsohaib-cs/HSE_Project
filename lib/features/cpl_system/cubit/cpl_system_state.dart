@@ -60,6 +60,8 @@ class CplSystemState extends Equatable {
 
   bool get isUrdu => language == 'ur';
 
+  bool get isAuthenticated => currentUser.isNotEmpty;
+
   // Role-Based Access Control (RBAC) Permitted Actions
   bool get isManager =>
       currentUser.role.toLowerCase() == 'manager' ||

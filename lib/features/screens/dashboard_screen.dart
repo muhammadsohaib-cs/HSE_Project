@@ -257,7 +257,7 @@ class DashboardScreen extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
-                                      user.empId,
+                                      state.isAuthenticated ? user.empId : 'NOT SIGNED IN',
                                       style: CplTypography.mono(
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
@@ -269,9 +269,11 @@ class DashboardScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                isUrdu && user.urduName.isNotEmpty
-                                    ? user.urduName
-                                    : user.name,
+                                !state.isAuthenticated
+                                    ? (isUrdu ? 'لاگ ان نہیں ہے' : 'Not Signed In')
+                                    : (isUrdu && user.urduName.isNotEmpty
+                                        ? user.urduName
+                                        : user.name),
                                 style: isUrdu
                                     ? CplTypography.urdu(
                                         fontSize: 16,
@@ -283,7 +285,11 @@ class DashboardScreen extends StatelessWidget {
                                       ),
                               ),
                               Text(
-                                '${user.role} • ${user.zone}',
+                                state.isAuthenticated
+                                    ? '${user.role} • ${user.zone}'
+                                    : (isUrdu
+                                        ? 'براہ کرم اپنی ایمپلائی آئی ڈی سے لاگ ان کریں'
+                                        : 'Please sign in with your Employee ID'),
                                 style: CplTypography.body(
                                   fontSize: 11,
                                   color: CplColors.slate300,
@@ -313,7 +319,9 @@ class DashboardScreen extends StatelessWidget {
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
-                              user.shift,
+                              state.isAuthenticated
+                                  ? user.shift
+                                  : (isUrdu ? 'کوئی فعال شفٹ نہیں' : 'No Active Shift'),
                               style: CplTypography.body(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,

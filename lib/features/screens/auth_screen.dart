@@ -17,10 +17,10 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   bool _isLogin = true;
-  final _empIdController = TextEditingController(text: 'CPL-EMP-1001');
-  final _pinController = TextEditingController(text: '1001');
-  final _fullNameController = TextEditingController(text: 'Engr. Tariq Khan');
-  final _cnicMobileController = TextEditingController(text: '33202-1234567-1 / 0300-8661001');
+  final _empIdController = TextEditingController();
+  final _pinController = TextEditingController();
+  final _fullNameController = TextEditingController();
+  final _cnicMobileController = TextEditingController();
   final BiometricAuthService _biometricAuth = BiometricAuthService();
 
   String _selectedShift = 'Shift A: Morning';

@@ -33,16 +33,8 @@ class CplSystemCubit extends Cubit<CplSystemState> {
 
   static final CplSystemState _initialState = CplSystemState(
     language: 'en',
-    activeScreenIndex: 1, // Default to Dashboard (Screen 02)
-    currentUser: const UserSession(
-      empId: 'CPL-EMP-1001',
-      name: 'Engr. Tariq Khan',
-      urduName: 'انجینئر طارق خان',
-      role: 'HSE Manager',
-      shift: 'Shift A: Morning (06:00 - 14:00)',
-      cnic: '33202-1234567-1',
-      zone: 'Plant Headquarters',
-    ),
+    activeScreenIndex: 0, // Default to AuthScreen (0) until authenticated
+    currentUser: UserSession.empty,
     zones: const [
       PlantZone(id: 'Z1', name: 'Boiler House Unit-1', ur: 'بوائلر ہاؤس یونٹ-1', coords: '31.7204° N, 72.9791° E', workers: 34),
       PlantZone(id: 'Z2', name: 'Steam Turbine Hall', ur: 'سٹیم ٹربائن ہال', coords: '31.7201° N, 72.9788° E', workers: 26),
@@ -354,6 +346,7 @@ class CplSystemCubit extends Cubit<CplSystemState> {
   /// Load persisted state, restore JWT session, connect Socket.io, and fetch dynamic API records
   Future<void> initFromStorage() async {
     try {
+      UserSession? restoredUser;
       final storage = _secureStorage;
       if (storage != null) {
         // 1. Restore configured server URL
@@ -364,15 +357,35 @@ class CplSystemCubit extends Cubit<CplSystemState> {
         }
 
         // 2. Hydrate user session from storage
-        final token = await storage.getAccessToken();
         final userJson = await storage.getUserJson();
-        if (token != null && token.isNotEmpty && userJson != null) {
+        if (userJson != null && userJson.isNotEmpty) {
           try {
             final userMap = jsonDecode(userJson) as Map<String, dynamic>;
             final user = UserSession.fromJson(userMap);
-            emit(state.copyWith(currentUser: user, activeScreenIndex: 1));
+            if (user.isNotEmpty && user.empId != 'CPL-EMP-XXXX') {
+              restoredUser = user;
+            }
           } catch (_) {}
         }
+      }
+
+      if (restoredUser == null) {
+        final userBox = _getBoxIfOpen(HiveBoxes.userBox);
+        final cachedUser = userBox?.get('currentUser');
+        if (cachedUser is Map) {
+          try {
+            final user = UserSession.fromJson(Map<String, dynamic>.from(cachedUser));
+            if (user.isNotEmpty && user.empId != 'CPL-EMP-XXXX') {
+              restoredUser = user;
+            }
+          } catch (_) {}
+        }
+      }
+
+      if (restoredUser != null) {
+        emit(state.copyWith(currentUser: restoredUser, activeScreenIndex: 1));
+      } else {
+        emit(state.copyWith(currentUser: UserSession.empty, activeScreenIndex: 0));
       }
 
       final queueCount = _syncQueue?.pendingCount ?? 0;
@@ -575,8 +588,15 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     emit(state.copyWith(language: next));
   }
 
-  // Navigation
+  // Navigation (guarded by authentication)
   void setScreenIndex(int index) {
+    if (!state.isAuthenticated && index != 0) {
+      emit(state.copyWith(
+        activeScreenIndex: 0,
+        lastAuthError: () => 'Please sign in with your Employee ID to access the HSE Dashboard.',
+      ));
+      return;
+    }
     emit(state.copyWith(activeScreenIndex: index));
   }
 
@@ -807,12 +827,29 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     );
   }
 
-  // Logout & clear secure session
+  // Logout & completely clear user session and cached user identity
   Future<void> logout() async {
+    final prevEmpId = state.currentUser.empId;
+    final prevZone = state.currentUser.zone;
+    if (prevEmpId.isNotEmpty) {
+      _recordAudit(
+        action: 'USER_LOGOUT',
+        targetResource: prevZone.isNotEmpty ? prevZone : 'AUTH_GATEWAY',
+        details: 'Employee $prevEmpId signed out.',
+      );
+    }
     await _secureStorage?.clearSession();
     final userBox = _getBoxIfOpen(HiveBoxes.userBox);
     await userBox?.delete('currentUser');
-    emit(state.copyWith(activeScreenIndex: 0, lastAuthError: () => null));
+    await userBox?.clear();
+    emit(state.copyWith(
+      currentUser: UserSession.empty,
+      activeScreenIndex: 0,
+      checklistSigned: false,
+      qrCheckedIn: false,
+      activeQuizId: () => null,
+      lastAuthError: () => null,
+    ));
   }
 
   Future<bool> signup({

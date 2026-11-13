@@ -207,11 +207,13 @@ class ResponsiveShell extends StatelessWidget {
                         ),
                         const Spacer(),
 
-                        // Employee ID Tag
+                        // Employee ID Tag (or Not Signed In indicator)
                         Text(
-                          user.empId,
-                          style: const TextStyle(
-                            color: CplColors.slate300,
+                          state.isAuthenticated
+                              ? user.empId
+                              : (isUr ? 'لاگ ان درکار ہے' : 'SIGN IN REQUIRED'),
+                          style: TextStyle(
+                            color: state.isAuthenticated ? CplColors.slate300 : CplColors.amber500,
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                             fontFamily: 'monospace',
@@ -287,69 +289,77 @@ class ResponsiveShell extends StatelessWidget {
                           ],
                         ),
                       ),
-                    Expanded(child: _getScreenByIndex(activeIdx)),
+                    Expanded(
+                      child: state.isAuthenticated
+                          ? _getScreenByIndex(activeIdx)
+                          : const AuthScreen(),
+                    ),
                   ],
                 ),
 
-              // Raised Safety Amber Floating Action Button for Instant Hazard Reporting
+              // Raised Safety Amber Floating Action Button for Instant Hazard Reporting (only when signed in)
               floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-              floatingActionButton: FloatingActionButton(
-                onPressed: () {
-                  context.read<CplSystemCubit>().setScreenIndex(2); // Screen 03: Hazard Report
-                },
-                backgroundColor: CplColors.safety500,
-                elevation: 4,
-                child: const Icon(Icons.add, size: 30, color: Colors.white),
-              ),
+              floatingActionButton: state.isAuthenticated
+                  ? FloatingActionButton(
+                      onPressed: () {
+                        context.read<CplSystemCubit>().setScreenIndex(2); // Screen 03: Hazard Report
+                      },
+                      backgroundColor: CplColors.safety500,
+                      elevation: 4,
+                      child: const Icon(Icons.add, size: 30, color: Colors.white),
+                    )
+                  : null,
 
-              // Mobile Bottom Navigation Bar (4 tabs + center notch)
-              bottomNavigationBar: BottomAppBar(
-                shape: const CircularNotchedRectangle(),
-                notchMargin: 6,
-                color: Colors.white,
-                elevation: 10,
-                child: SizedBox(
-                  height: 56,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      // Home Tab
-                      _buildBottomNavItem(
-                        context,
-                        icon: Icons.home,
-                        label: isUr ? 'ہوم' : 'Home',
-                        isSelected: activeIdx == 1,
-                        onTap: () => context.read<CplSystemCubit>().setScreenIndex(1),
+              // Mobile Bottom Navigation Bar (hidden when logged out so unauthenticated users cannot jump to Dashboard)
+              bottomNavigationBar: state.isAuthenticated
+                  ? BottomAppBar(
+                      shape: const CircularNotchedRectangle(),
+                      notchMargin: 6,
+                      color: Colors.white,
+                      elevation: 10,
+                      child: SizedBox(
+                        height: 56,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            // Home Tab
+                            _buildBottomNavItem(
+                              context,
+                              icon: Icons.home,
+                              label: isUr ? 'ہوم' : 'Home',
+                              isSelected: activeIdx == 1,
+                              onTap: () => context.read<CplSystemCubit>().setScreenIndex(1),
+                            ),
+                            // Audit Tab
+                            _buildBottomNavItem(
+                              context,
+                              icon: Icons.checklist,
+                              label: isUr ? 'آڈٹ' : 'Audit',
+                              isSelected: activeIdx == 4,
+                              onTap: () => context.read<CplSystemCubit>().setScreenIndex(4),
+                            ),
+                            const SizedBox(width: 44), // Space for centered raised FAB
+                            // PTW Tab
+                            _buildBottomNavItem(
+                              context,
+                              icon: Icons.lock_clock,
+                              label: isUr ? 'پرمٹ' : 'PTW',
+                              isSelected: activeIdx == 5,
+                              onTap: () => context.read<CplSystemCubit>().setScreenIndex(5),
+                            ),
+                            // All (11) Modules Drawer Tab
+                            _buildBottomNavItem(
+                              context,
+                              icon: Icons.grid_view,
+                              label: isUr ? 'تمام (11)' : 'All (11)',
+                              isSelected: activeIdx > 5 || activeIdx == 0 || activeIdx == 3,
+                              onTap: () => _showAllModulesDrawer(context, isUr),
+                            ),
+                          ],
+                        ),
                       ),
-                      // Audit Tab
-                      _buildBottomNavItem(
-                        context,
-                        icon: Icons.checklist,
-                        label: isUr ? 'آڈٹ' : 'Audit',
-                        isSelected: activeIdx == 4,
-                        onTap: () => context.read<CplSystemCubit>().setScreenIndex(4),
-                      ),
-                      const SizedBox(width: 44), // Space for centered raised FAB
-                      // PTW Tab
-                      _buildBottomNavItem(
-                        context,
-                        icon: Icons.lock_clock,
-                        label: isUr ? 'پرمٹ' : 'PTW',
-                        isSelected: activeIdx == 5,
-                        onTap: () => context.read<CplSystemCubit>().setScreenIndex(5),
-                      ),
-                      // All (11) Modules Drawer Tab
-                      _buildBottomNavItem(
-                        context,
-                        icon: Icons.grid_view,
-                        label: isUr ? 'تمام (11)' : 'All (11)',
-                        isSelected: activeIdx > 5 || activeIdx == 0 || activeIdx == 3,
-                        onTap: () => _showAllModulesDrawer(context, isUr),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                    )
+                  : null,
             ),
           );
         },

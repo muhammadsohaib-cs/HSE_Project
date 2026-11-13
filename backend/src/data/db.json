@@ -202,6 +202,26 @@
       "isActive": true,
       "status": "Approved",
       "createdAt": "2026-11-12T20:57:30.772Z"
+    },
+    {
+      "id": "u-1794548439730",
+      "employeeId": "CPL-EML-123",
+      "empId": "CPL-EML-123",
+      "fullName": "Muhammad Sohaib",
+      "name": "Muhammad Sohaib",
+      "urduName": "Muhammad Sohaib",
+      "email": "cpl-eml-123@chiniotpower.com.pk",
+      "passwordHash": "$2a$10$VkES.cMD56R7kXqcfHooUO/tLmL3sDxaFh3UXGBYK4QW1q766BHwG",
+      "pin": "1234",
+      "role": "HSE Manager",
+      "department": "Operations & Maintenance",
+      "shift": "Shift A: Morning",
+      "cnic": "3125125122412",
+      "plantZone": "Steam Turbine Hall",
+      "assignedZone": "Steam Turbine Hall",
+      "isActive": true,
+      "status": "Approved",
+      "createdAt": "2026-11-13T05:40:39.842Z"
     }
   ],
   "checklistTemplates": [
@@ -446,9 +466,70 @@
       "shoes": true,
       "gloves": true,
       "ear": true
+    },
+    {
+      "empId": "CPL-EML-123",
+      "name": "Muhammad Sohaib",
+      "ur": "Muhammad Sohaib",
+      "role": "HSE Manager",
+      "zone": "Steam Turbine Hall",
+      "helmet": true,
+      "shoes": true,
+      "gloves": true,
+      "ear": true
     }
   ],
   "auditLogs": [
+    {
+      "id": "LOG-1794548512276-213",
+      "actorId": "CPL-EML-123",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGOUT",
+      "targetResource": "Steam Turbine Hall",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-13T05:41:52.276Z",
+      "details": "Employee CPL-EML-123 signed out."
+    },
+    {
+      "id": "LOG-1794548448447-522",
+      "actorId": "CPL-EML-123",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGIN",
+      "targetResource": "Steam Turbine Hall",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-13T05:40:48.447Z",
+      "details": "Staff member CPL-EML-123 (Muhammad Sohaib) authenticated via CPL Backend Gateway."
+    },
+    {
+      "id": "LOG-1794548447046-975",
+      "actorId": "CPL-EML-123",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGIN",
+      "targetResource": "Steam Turbine Hall",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-13T05:40:47.046Z",
+      "details": "Employee CPL-EML-123 (Muhammad Sohaib - HSE Manager) authenticated successfully."
+    },
+    {
+      "id": "LOG-1794548440198-18",
+      "actorId": "SYSTEM",
+      "actorRole": "worker",
+      "action": "STAFF_SIGNUP",
+      "targetResource": "CPL-EML-123",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-13T05:40:40.198Z",
+      "details": "Employee Muhammad Sohaib (CPL-EML-123) registered as HSE Manager at Steam Turbine Hall (Status: Approved)."
+    },
+    {
+      "id": "LOG-1794548439847-782",
+      "actorId": "CPL-EML-123",
+      "actorRole": "HSE Manager",
+      "action": "STAFF_REGISTRATION",
+      "targetResource": "Steam Turbine Hall",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-13T05:40:39.847Z",
+      "details": "Employee Muhammad Sohaib (CPL-EML-123) registered as HSE Manager (Steam Turbine Hall) with immediate Approved status."
+    },
     {
       "id": "LOG-1794517050868-839",
       "actorId": "CPL-EMP-2056",
@@ -805,6 +886,20 @@
   ],
   "activeAlarm": null,
   "pendingUsers": [
+    {
+      "empId": "CPL-EML-123",
+      "name": "Muhammad Sohaib",
+      "fullName": "Muhammad Sohaib",
+      "urduName": "Muhammad Sohaib",
+      "cnic": "3125125122412",
+      "role": "HSE Manager",
+      "shift": "Shift A: Morning",
+      "pin": "1234",
+      "zone": "Steam Turbine Hall",
+      "assignedZone": "Steam Turbine Hall",
+      "status": "Approved",
+      "createdAt": "2026-11-13T05:40:39.842Z"
+    },
     {
       "empId": "CPL-EMP-2056",
       "name": "Engr. Bilal Tariq",

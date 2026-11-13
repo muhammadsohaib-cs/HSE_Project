@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../theme/cpl_theme.dart';
 import '../utils/pdf_generator.dart';
-import '../utils/csv_exporter.dart';
 import '../widgets/cpl_brand_logo.dart';
 import '../../features/cpl_system/cubit/cpl_system_cubit.dart';
 import '../../features/cpl_system/cubit/cpl_system_state.dart';
@@ -134,9 +133,11 @@ class DesktopCommandCenter extends StatelessWidget {
                         children: [
                           CircleAvatar(
                             radius: 16,
-                            backgroundColor: CplColors.safety500,
+                            backgroundColor: state.isAuthenticated ? CplColors.safety500 : CplColors.slate700,
                             child: Text(
-                              user.empId.substring(user.empId.length - 2),
+                              state.isAuthenticated && user.empId.length >= 2
+                                  ? user.empId.substring(user.empId.length - 2)
+                                  : '--',
                               style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -146,18 +147,28 @@ class DesktopCommandCenter extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  user.name,
+                                  state.isAuthenticated ? user.name : (isUr ? 'لاگ ان نہیں ہے' : 'Not Signed In'),
                                   style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 Text(
-                                  user.role,
+                                  state.isAuthenticated
+                                      ? '${user.empId} • ${user.role}'
+                                      : (isUr ? 'براہ کرم لاگ ان کریں' : 'Sign in required'),
                                   style: const TextStyle(color: CplColors.slate400, fontSize: 10),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ],
                             ),
                           ),
+                          if (state.isAuthenticated)
+                            IconButton(
+                              constraints: const BoxConstraints(),
+                              padding: const EdgeInsets.all(4),
+                              icon: const Icon(Icons.logout, size: 16, color: CplColors.red600),
+                              tooltip: isUr ? 'لاگ آؤٹ' : 'Logout',
+                              onPressed: () => context.read<CplSystemCubit>().logout(),
+                            ),
                         ],
                       ),
                     ),
@@ -344,30 +355,51 @@ class DesktopCommandCenter extends StatelessWidget {
                         ),
                       ),
 
-                    // Top 4-Column KPI Strip
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      decoration: BoxDecoration(
-                        color: CplColors.slate100,
-                        border: Border(bottom: BorderSide(color: CplColors.slate200)),
+                    // Top 4-Column Live KPI Strip (only shown when authenticated)
+                    if (state.isAuthenticated)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        decoration: const BoxDecoration(
+                          color: CplColors.slate100,
+                          border: Border(bottom: BorderSide(color: CplColors.slate200)),
+                        ),
+                        child: Row(
+                          children: [
+                            _buildKpiCard(
+                              '${state.hazards.where((h) => h.status.toLowerCase() != 'resolved' && h.status.toLowerCase() != 'closed').length} Open Hazards',
+                              '${state.hazards.where((h) => h.severity.toLowerCase() == 'critical' && h.status.toLowerCase() != 'resolved').length} Critical Active',
+                              Icons.warning_amber_rounded,
+                              CplColors.safety500,
+                            ),
+                            const SizedBox(width: 12),
+                            _buildKpiCard(
+                              '${state.roster.where((w) => w.isFullPpe).length} / ${state.roster.length} On-Duty Roster',
+                              'PPE Verified Staff',
+                              Icons.people,
+                              CplColors.emerald500,
+                            ),
+                            const SizedBox(width: 12),
+                            _buildKpiCard(
+                              '${state.permits.where((p) => p.status.toLowerCase() == 'active').length} Active PTW & LOTO',
+                              '${state.permits.where((p) => p.status.toLowerCase() == 'pending').length} Pending Approval',
+                              Icons.lock_clock,
+                              CplColors.corporateNavy,
+                            ),
+                            const SizedBox(width: 12),
+                            _buildKpiCard(
+                              '${state.checklistItems.where((c) => c.status.toLowerCase() == 'pass').length}/${state.checklistItems.length} Shift Checklist',
+                              state.checklistZone,
+                              Icons.fact_check_outlined,
+                              const Color(0xFF8B5CF6),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: Row(
-                        children: [
-                          _buildKpiCard('218 Safe Work Days', 'Zero LTI • 3.84M Man-Hours', Icons.security, CplColors.slate900),
-                          const SizedBox(width: 12),
-                          _buildKpiCard('148 / 148 Muster Roll', '100% Shift Accounted', Icons.people, CplColors.emerald500),
-                          const SizedBox(width: 12),
-                          _buildKpiCard('3 Active PTW & LOTO', '14 Safety Padlocks Live', Icons.lock_clock, CplColors.safety500),
-                          const SizedBox(width: 12),
-                          _buildKpiCard('96.2% CAPA Closure', '3 Open Corrective Actions', Icons.task_alt, const Color(0xFF8B5CF6)),
-                        ],
-                      ),
-                    ),
 
-                    // Main View Area (Active Screen or 3-Column Command Grid on Dashboard)
+                    // Main View Area (Enforce AuthScreen when logged out)
                     Expanded(
-                      child: activeIdx == 1
-                          ? _buildDesktop3ColumnGrid(context, state, isUr)
+                      child: !state.isAuthenticated
+                          ? const AuthScreen()
                           : _getScreenByIndex(activeIdx),
                     ),
                   ],
@@ -420,288 +452,6 @@ class DesktopCommandCenter extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDesktop3ColumnGrid(BuildContext context, CplSystemState state, bool isUr) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isWideDesktop = constraints.maxWidth >= 1400;
-        final col1 = _buildStaffApprovalsCol(context, state);
-        final col2 = _buildCheckpointsCol(context, state);
-        final col3 = _buildLiveHazardsCol(context, state);
-
-        if (isWideDesktop) {
-          return Scrollbar(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: col1),
-                  const SizedBox(width: 16),
-                  Expanded(child: col2),
-                  const SizedBox(width: 16),
-                  Expanded(child: col3),
-                ],
-              ),
-            ),
-          );
-        } else {
-          // Standard Laptop Responsive 2-column + 1-row layout
-          return Scrollbar(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: col1),
-                      const SizedBox(width: 16),
-                      Expanded(child: col2),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  col3,
-                ],
-              ),
-            ),
-          );
-        }
-      },
-    );
-  }
-
-  Widget _buildStaffApprovalsCol(BuildContext context, CplSystemState state) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: CplColors.slate200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Flexible(
-                child: Text(
-                  'Staff ID Approvals',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: CplColors.safety500.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  '${state.pendingUsers.where((u) => u.status == 'Pending').length} Pending',
-                  style: const TextStyle(color: CplColors.safety500, fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 18),
-          ...state.pendingUsers.take(3).map((u) {
-            final isPending = u.status == 'Pending';
-            return Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: CplColors.slate50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: CplColors.slate200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(u.empId, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, fontFamily: 'monospace')),
-                      Text(u.status, style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: isPending ? CplColors.amber500 : CplColors.emerald500)),
-                    ],
-                  ),
-                  Text(u.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                  Text('${u.role} • ${u.shift}', style: TextStyle(fontSize: 11, color: CplColors.slate600)),
-                  if (isPending) ...[
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            context.read<CplSystemCubit>().updateUserApproval(u.empId, 'Approved');
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: CplColors.emerald500,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                            elevation: 0,
-                          ),
-                          child: const Text('Approve', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCheckpointsCol(BuildContext context, CplSystemState state) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: CplColors.slate200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Flexible(
-                child: Text(
-                  'Shift Checkpoints',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: CplColors.emerald500.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  '${state.checklistItems.length} Deployed',
-                  style: const TextStyle(color: CplColors.emerald500, fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 18),
-          ...state.checklistItems.take(3).map((item) {
-            final isFail = item.status == 'fail';
-            return Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isFail ? CplColors.red600.withOpacity(0.06) : CplColors.slate50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isFail ? CplColors.red600.withOpacity(0.3) : CplColors.slate200,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Checkpoint #${item.id}', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold)),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: isFail ? CplColors.red600 : CplColors.emerald500,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          item.status.toUpperCase(),
-                          style: const TextStyle(color: Colors.white, fontSize: 9.5, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(item.en, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600)),
-                  Text(item.ur, style: TextStyle(fontSize: 11, color: CplColors.slate600)),
-                ],
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLiveHazardsCol(BuildContext context, CplSystemState state) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: CplColors.slate200),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Flexible(
-                child: Text(
-                  'Live Hazards & Gateway',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: CplColors.red600.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  '${state.hazards.length} Logged',
-                  style: const TextStyle(color: CplColors.red600, fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 18),
-          ...state.hazards.take(3).map((h) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: CplColors.slate50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: CplColors.slate200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(h.id, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, fontFamily: 'monospace')),
-                      Text(h.time, style: TextStyle(fontSize: 10.5, color: CplColors.slate600)),
-                    ],
-                  ),
-                  const SizedBox(height: 2),
-                  Text(h.title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                  Text('${h.zone} • ${h.reporter}', style: TextStyle(fontSize: 10.5, color: CplColors.slate600)),
-                ],
-              ),
-            );
-          }),
-        ],
       ),
     );
   }

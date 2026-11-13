@@ -19,6 +19,19 @@ class UserSession extends Equatable {
     required this.zone,
   });
 
+  static const UserSession empty = UserSession(
+    empId: '',
+    name: '',
+    urduName: '',
+    role: '',
+    shift: '',
+    cnic: '',
+    zone: '',
+  );
+
+  bool get isEmpty => empId.trim().isEmpty;
+  bool get isNotEmpty => empId.trim().isNotEmpty;
+
   UserSession copyWith({
     String? empId,
     String? name,

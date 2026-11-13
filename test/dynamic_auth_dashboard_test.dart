@@ -91,10 +91,27 @@ void main() {
       expect(find.text('On-Duty Roster'), findsOneWidget);
       expect(find.text('RECENT LIVE ACTIVITY'), findsOneWidget);
 
-      // 5. Logout returns to AuthScreen (index 0)
+      // 5. Logout clears user session completely & returns to AuthScreen (index 0)
       await tester.tap(find.text('Logout'));
       await tester.pumpAndSettle();
       expect(cubit.state.activeScreenIndex, equals(0));
+      expect(cubit.state.isAuthenticated, isFalse);
+      expect(cubit.state.currentUser.empId, isEmpty);
+      expect(cubit.state.currentUser.name, isEmpty);
+
+      // 6. Attempting to navigate to Dashboard while logged out is blocked
+      cubit.setScreenIndex(1);
+      expect(cubit.state.activeScreenIndex, equals(0));
+      expect(cubit.state.lastAuthError, contains('Please sign in'));
+
+      // 7. Dashboard no longer shows previous user or pre-stored user details after logout
+      await tester.pumpAndSettle();
+      expect(find.text('CPL-EMP-2050'), findsNothing);
+      expect(find.text('Hamza Ali'), findsNothing);
+      expect(find.text('CPL-EMP-1001'), findsNothing);
+      expect(find.text('Engr. Tariq Khan'), findsNothing);
+      expect(find.text('NOT SIGNED IN'), findsOneWidget);
+      expect(find.text('Not Signed In'), findsOneWidget);
     });
 
     testWidgets('Shows All Plant Zones Clear emerald banner when hazards list is empty', (tester) async {
