@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shad;
 
 import 'core/network/dio_client.dart';
 import 'core/platform/audio_service.dart';
@@ -199,11 +200,17 @@ class ChiniotPowerHseApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CplSystemCubit, CplSystemState>(
       builder: (context, state) {
-        return MaterialApp(
-          title: 'Chiniot Power Limited (CPL) — HSE Management System',
-          debugShowCheckedModeBanner: false,
-          theme: CplTheme.lightTheme,
-          home: const ResponsiveShell(),
+        return shad.Theme(
+          data: shad.ThemeData(
+            colorScheme: shad.ColorSchemes.lightZinc,
+            radius: 0.5,
+          ),
+          child: MaterialApp(
+            title: 'Chiniot Power Limited (CPL) — HSE Management System',
+            debugShowCheckedModeBanner: false,
+            theme: CplTheme.lightTheme,
+            home: const ResponsiveShell(),
+          ),
         );
       },
     );

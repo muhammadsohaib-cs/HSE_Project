@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shad;
 import '../../core/localization/cpl_localizations.dart';
 import '../../core/theme/cpl_theme.dart';
 import '../../core/widgets/cpl_brand_logo.dart';
@@ -42,9 +44,7 @@ class DashboardScreen extends StatelessWidget {
     for (final h in state.hazards.take(3)) {
       final nmTag = h.nmNumber.isNotEmpty ? '[${h.nmNumber}] ' : '';
       entries.add(_LiveActivityEntry(
-        icon: h.severity.toLowerCase() == 'critical'
-            ? Icons.warning_amber_rounded
-            : Icons.report_problem_outlined,
+        icon: LucideIcons.triangleAlert,
         accent: h.severity.toLowerCase() == 'critical'
             ? CplColors.red600
             : CplColors.safety500,
@@ -63,8 +63,8 @@ class DashboardScreen extends StatelessWidget {
           log.action.contains('CAPA')) {
         entries.add(_LiveActivityEntry(
           icon: log.action.contains('CHECKLIST')
-              ? Icons.fact_check_outlined
-              : Icons.verified_user_outlined,
+              ? LucideIcons.clipboardCheck
+              : LucideIcons.shieldCheck,
           accent: log.action.contains('CHECKLIST')
               ? CplColors.emerald600
               : CplColors.corporateNavy,
@@ -80,7 +80,7 @@ class DashboardScreen extends StatelessWidget {
     // 3. PTW Permits (if audit logs don't already cover 3 items)
     for (final p in state.permits.take(2)) {
       entries.add(_LiveActivityEntry(
-        icon: Icons.lock_clock_outlined,
+        icon: LucideIcons.lock,
         accent: p.status == 'Active' ? CplColors.emerald600 : CplColors.amber500,
         title: '${p.type}: ${p.title}',
         subtitle: '${p.requester} • ${p.zone}',
@@ -285,7 +285,7 @@ class DashboardScreen extends StatelessWidget {
                       child: Row(
                         children: [
                           const Icon(
-                            Icons.schedule,
+                            LucideIcons.clock,
                             size: 14,
                             color: CplColors.energyAmber,
                           ),
@@ -307,8 +307,8 @@ class DashboardScreen extends StatelessWidget {
                             constraints: const BoxConstraints(),
                             padding: const EdgeInsets.symmetric(horizontal: 6),
                             icon: const Icon(
-                              Icons.refresh,
-                              size: 16,
+                              LucideIcons.refreshCw,
+                              size: 14,
                               color: CplColors.slate500,
                             ),
                             tooltip: 'Sync Live Plant Data',
@@ -338,7 +338,7 @@ class DashboardScreen extends StatelessWidget {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.logout, size: 12, color: Colors.white),
+                                  const Icon(LucideIcons.logOut, size: 12, color: Colors.white),
                                   const SizedBox(width: 4),
                                   Text(
                                     isUrdu ? 'لاگ آؤٹ' : 'Logout',
@@ -396,7 +396,7 @@ class DashboardScreen extends StatelessWidget {
                       subtitleColor: criticalHazards.isNotEmpty
                           ? const Color(0xFFDC2626)
                           : CplColors.slate500,
-                      icon: Icons.warning_amber_rounded,
+                      icon: LucideIcons.triangleAlert,
                       onTap: () => context.read<CplSystemCubit>().setScreenIndex(2),
                     ),
                   ),
@@ -408,7 +408,7 @@ class DashboardScreen extends StatelessWidget {
                       subtitle: user.empId == 'CPL-EMP-2050' ? '$passedChecklist/$totalChecklist Passed' : '148/148 PPE Verified',
                       valueColor: const Color(0xFF059669),
                       subtitleColor: CplColors.slate500,
-                      icon: Icons.fact_check_outlined,
+                      icon: LucideIcons.clipboardCheck,
                       onTap: () => context.read<CplSystemCubit>().setScreenIndex(4),
                     ),
                   ),
@@ -428,7 +428,7 @@ class DashboardScreen extends StatelessWidget {
                       subtitleColor: pendingPermitsCount > 0
                           ? const Color(0xFFEA580C)
                           : CplColors.slate500,
-                      icon: Icons.lock_clock_outlined,
+                      icon: LucideIcons.lock,
                       onTap: () => context.read<CplSystemCubit>().setScreenIndex(5),
                     ),
                   ),
@@ -440,7 +440,7 @@ class DashboardScreen extends StatelessWidget {
                       subtitle: '$compliantRosterCount/$totalRosterCount Full PPE',
                       valueColor: const Color(0xFF059669),
                       subtitleColor: CplColors.slate500,
-                      icon: Icons.groups_outlined,
+                      icon: LucideIcons.users,
                       onTap: () => context.read<CplSystemCubit>().setScreenIndex(8),
                     ),
                   ),
@@ -726,7 +726,7 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 alignment: Alignment.center,
                 child: const Icon(
-                  Icons.shield_outlined,
+                  LucideIcons.shieldCheck,
                   color: Color(0xFFF59E0B),
                   size: 24,
                 ),
@@ -784,7 +784,7 @@ class DashboardScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,
-              child: const Icon(Icons.campaign, color: Colors.white, size: 22),
+              child: const Icon(LucideIcons.siren, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -857,7 +857,7 @@ class DashboardScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               alignment: Alignment.center,
-              child: const Icon(Icons.campaign, color: Colors.white, size: 17),
+              child: const Icon(LucideIcons.siren, color: Colors.white, size: 17),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -895,7 +895,7 @@ class DashboardScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               alignment: Alignment.center,
-              child: const Icon(Icons.verified_outlined, color: Colors.white, size: 17),
+              child: const Icon(LucideIcons.shieldCheck, color: Colors.white, size: 17),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -944,7 +944,7 @@ class DashboardScreen extends StatelessWidget {
             ),
             alignment: Alignment.center,
             child: const Icon(
-              Icons.info,
+              LucideIcons.info,
               color: Colors.white,
               size: 17,
             ),
@@ -1022,7 +1022,7 @@ class DashboardScreen extends StatelessWidget {
                           color: CplColors.emerald50,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.access_time_filled, size: 16, color: CplColors.emerald600),
+                        child: const Icon(LucideIcons.clock, size: 16, color: CplColors.emerald600),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -1122,7 +1122,7 @@ class DashboardScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.sync_alt, size: 15, color: CplColors.energyAmber),
+              const Icon(LucideIcons.refreshCw, size: 14, color: CplColors.energyAmber),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(

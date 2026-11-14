@@ -48,6 +48,8 @@ dependencies:
   local_auth: ^3.0.2
   file_picker: ^11.0.3
   socket_io_client: ^3.1.6
+  shadcn_flutter: ^0.0.55
+  lucide_icons_flutter: ^4.0.3
 
 dev_dependencies:
   flutter_test:

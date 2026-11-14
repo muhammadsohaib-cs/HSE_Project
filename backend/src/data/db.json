@@ -1093,7 +1093,7 @@
       "nightsPerformed": 7,
       "helmet": true,
       "shoes": true,
-      "gloves": false,
+      "gloves": true,
       "ear": true
     },
     {
@@ -1323,6 +1323,146 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "LOG-1794682268340-751",
+      "actorId": "CPL-EMP-1002",
+      "actorRole": "HSE Manager",
+      "action": "SAFETY_QUIZ_COMPLETED",
+      "targetResource": "TRN-203",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:51:08.340Z",
+      "details": "Safety training quiz TRN-203 completed with 100% score by Engr. Tariq Khan."
+    },
+    {
+      "id": "LOG-1794682257596-323",
+      "actorId": "CPL-EMP-1002",
+      "actorRole": "HSE Manager",
+      "action": "SAFETY_QUIZ_COMPLETED",
+      "targetResource": "TRN-202",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:50:57.596Z",
+      "details": "Safety training quiz TRN-202 completed with 100% score by Engr. Tariq Khan."
+    },
+    {
+      "id": "LOG-1794682252155-152",
+      "actorId": "CPL-EMP-1002",
+      "actorRole": "HSE Manager",
+      "action": "SAFETY_QUIZ_COMPLETED",
+      "targetResource": "TRN-201",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:50:52.155Z",
+      "details": "Safety training quiz TRN-201 completed with 100% score by Engr. Tariq Khan."
+    },
+    {
+      "id": "LOG-1794682227971-813",
+      "actorId": "CPL-EMP-1002",
+      "actorRole": "HSE Manager",
+      "action": "SAFETY_QUIZ_COMPLETED",
+      "targetResource": "TRN-201",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:50:27.971Z",
+      "details": "Safety training quiz TRN-201 completed with 100% score by Engr. Tariq Khan."
+    },
+    {
+      "id": "LOG-1794682155063-688",
+      "actorId": "CP-EMP-1042",
+      "actorRole": "inspector",
+      "action": "PPE_STATUS_CHANGE",
+      "targetResource": "CPL-EMP-3092",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:49:15.063Z",
+      "details": "Worker CPL-EMP-3092 PPE 'shoes' toggled to true."
+    },
+    {
+      "id": "LOG-1794682155057-437",
+      "actorId": "CPL-EMP-1002",
+      "actorRole": "HSE Manager",
+      "action": "PPE_VERIFICATION",
+      "targetResource": "CPL-EMP-3092",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:49:15.058Z",
+      "details": "Worker CPL-EMP-3092 PPE (shoes) verified."
+    },
+    {
+      "id": "LOG-1794682154261-362",
+      "actorId": "CP-EMP-1042",
+      "actorRole": "inspector",
+      "action": "PPE_STATUS_CHANGE",
+      "targetResource": "CPL-EMP-3092",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:49:14.261Z",
+      "details": "Worker CPL-EMP-3092 PPE 'shoes' toggled to false."
+    },
+    {
+      "id": "LOG-1794682154256-700",
+      "actorId": "CPL-EMP-1002",
+      "actorRole": "HSE Manager",
+      "action": "PPE_VERIFICATION",
+      "targetResource": "CPL-EMP-3092",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:49:14.256Z",
+      "details": "Worker CPL-EMP-3092 PPE (shoes) verified."
+    },
+    {
+      "id": "LOG-1794682153235-576",
+      "actorId": "CP-EMP-1042",
+      "actorRole": "inspector",
+      "action": "PPE_STATUS_CHANGE",
+      "targetResource": "CPL-EMP-3092",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:49:13.235Z",
+      "details": "Worker CPL-EMP-3092 PPE 'gloves' toggled to true."
+    },
+    {
+      "id": "LOG-1794682153229-406",
+      "actorId": "CPL-EMP-1002",
+      "actorRole": "HSE Manager",
+      "action": "PPE_VERIFICATION",
+      "targetResource": "CPL-EMP-3092",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:49:13.229Z",
+      "details": "Worker CPL-EMP-3092 PPE (gloves) verified."
+    },
+    {
+      "id": "LOG-1794682147442-416",
+      "actorId": "CP-EMP-1042",
+      "actorRole": "inspector",
+      "action": "PPE_STATUS_CHANGE",
+      "targetResource": "CPL-EMP-0509",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:49:07.442Z",
+      "details": "Worker CPL-EMP-0509 PPE 'shoes' toggled to true."
+    },
+    {
+      "id": "LOG-1794682147437-709",
+      "actorId": "CPL-EMP-1002",
+      "actorRole": "HSE Manager",
+      "action": "PPE_VERIFICATION",
+      "targetResource": "CPL-EMP-0509",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:49:07.437Z",
+      "details": "Worker CPL-EMP-0509 PPE (shoes) verified."
+    },
+    {
+      "id": "LOG-1794682146178-75",
+      "actorId": "CP-EMP-1042",
+      "actorRole": "inspector",
+      "action": "PPE_STATUS_CHANGE",
+      "targetResource": "CPL-EMP-0509",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:49:06.178Z",
+      "details": "Worker CPL-EMP-0509 PPE 'shoes' toggled to false."
+    },
+    {
+      "id": "LOG-1794682146172-882",
+      "actorId": "CPL-EMP-1002",
+      "actorRole": "HSE Manager",
+      "action": "PPE_VERIFICATION",
+      "targetResource": "CPL-EMP-0509",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T18:49:06.172Z",
+      "details": "Worker CPL-EMP-0509 PPE (shoes) verified."
+    },
     {
       "id": "LOG-1794641479782-676",
       "actorId": "CPL-EMP-3648",

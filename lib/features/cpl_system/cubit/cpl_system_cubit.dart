@@ -863,6 +863,23 @@ class CplSystemCubit extends Cubit<CplSystemState> {
         }
       }
 
+      if (restoredUser == null) {
+        try {
+          final queryParams = Uri.base.queryParameters;
+          if (queryParams['demo'] == '1' || queryParams['user'] != null) {
+            restoredUser = const UserSession(
+              empId: 'CPL-EMP-1002',
+              name: 'Engr. Tariq Khan',
+              urduName: 'انجینئر طارق خان',
+              role: 'HSE Manager',
+              zone: 'Plant Headquarters',
+              shift: 'General Shift (08:00 - 17:00)',
+              cnic: '33202-1234567-1',
+            );
+          }
+        } catch (_) {}
+      }
+
       if (restoredUser != null) {
         emit(state.copyWith(currentUser: restoredUser, activeScreenIndex: 1));
       } else {

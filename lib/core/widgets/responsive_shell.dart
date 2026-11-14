@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../theme/cpl_theme.dart';
 import 'cpl_brand_logo.dart';
 import '../../features/cpl_system/cubit/cpl_system_cubit.dart';
@@ -50,16 +51,16 @@ class ResponsiveShell extends StatelessWidget {
   }
 
   static const List<Map<String, dynamic>> _modules = [
-    {'title': 'Plant Dashboard', 'ur': 'پلانٹ ہوم ڈیش بورڈ', 'icon': Icons.dashboard_outlined, 'index': 1},
-    {'title': 'Hazard & Near-Miss Report', 'ur': 'خطرہ و نیئر مس رپورٹ', 'icon': Icons.report_problem_outlined, 'index': 2},
-    {'title': '5×5 Risk Matrix & CAPA', 'ur': '5×5 رسک میٹرکس اور CAPA', 'icon': Icons.grid_view_outlined, 'index': 3},
-    {'title': 'Daily Safety Checklist', 'ur': 'روزانہ حفاظتی چیک لسٹ', 'icon': Icons.checklist_rtl_outlined, 'index': 4},
-    {'title': 'Permit to Work & LOTO', 'ur': 'پرمٹ ٹو ورک اور LOTO', 'icon': Icons.lock_clock_outlined, 'index': 5},
-    {'title': 'Emergency Siren Dispatch', 'ur': 'ایمرجنسی سائرن سینٹر', 'icon': Icons.campaign_outlined, 'index': 6},
-    {'title': 'HSE Training & QR Pass', 'ur': 'سیفٹی ٹریننگ اور کیو آر', 'icon': Icons.school_outlined, 'index': 7},
-    {'title': 'Shift Roster & PPE Roll', 'ur': 'ٹیم روسٹر اور پی پی ای', 'icon': Icons.groups_outlined, 'index': 8},
-    {'title': 'Safety Analytics & Reports', 'ur': 'اینالیٹکس اور پی ڈی ایف', 'icon': Icons.bar_chart_outlined, 'index': 9},
-    {'title': 'Admin & Manager Control', 'ur': 'ایڈمن اور مینیجر پینل', 'icon': Icons.admin_panel_settings_outlined, 'index': 10},
+    {'title': 'Plant Dashboard', 'ur': 'پلانٹ ہوم ڈیش بورڈ', 'icon': LucideIcons.layoutDashboard, 'index': 1},
+    {'title': 'Hazard & Near-Miss Report', 'ur': 'خطرہ و نیئر مس رپورٹ', 'icon': LucideIcons.triangleAlert, 'index': 2},
+    {'title': '5×5 Risk Matrix & CAPA', 'ur': '5×5 رسک میٹرکس اور CAPA', 'icon': LucideIcons.grid3x3, 'index': 3},
+    {'title': 'Daily Safety Checklist', 'ur': 'روزانہ حفاظتی چیک لسٹ', 'icon': LucideIcons.clipboardCheck, 'index': 4},
+    {'title': 'Permit to Work & LOTO', 'ur': 'پرمٹ ٹو ورک اور LOTO', 'icon': LucideIcons.lock, 'index': 5},
+    {'title': 'Emergency Siren Dispatch', 'ur': 'ایمرجنسی سائرن سینٹر', 'icon': LucideIcons.siren, 'index': 6},
+    {'title': 'HSE Training & QR Pass', 'ur': 'سیفٹی ٹریننگ اور کیو آر', 'icon': LucideIcons.graduationCap, 'index': 7},
+    {'title': 'Shift Roster & PPE Roll', 'ur': 'ٹیم روسٹر اور پی پی ای', 'icon': LucideIcons.users, 'index': 8},
+    {'title': 'Safety Analytics & Reports', 'ur': 'اینالیٹکس اور پی ڈی ایف', 'icon': LucideIcons.barChart3, 'index': 9},
+    {'title': 'Admin & Manager Control', 'ur': 'ایڈمن اور مینیجر پینل', 'icon': LucideIcons.shieldAlert, 'index': 10},
   ];
 
   Widget _buildHamburgerDrawer(BuildContext context, CplSystemState state, bool isUr) {
@@ -149,7 +150,7 @@ class ResponsiveShell extends StatelessWidget {
                         color: isSelected ? CplColors.safety600 : CplColors.slate800,
                       ),
                     ),
-                    trailing: const Icon(Icons.chevron_right, size: 16, color: CplColors.slate400),
+                    trailing: const Icon(LucideIcons.chevronRight, size: 16, color: CplColors.slate400),
                     onTap: () {
                       Navigator.pop(ctx);
                       context.read<CplSystemCubit>().setScreenIndex(targetIdx);
@@ -170,7 +171,7 @@ class ResponsiveShell extends StatelessWidget {
                   Navigator.pop(context);
                   context.read<CplSystemCubit>().logout();
                 },
-                icon: const Icon(Icons.logout, size: 16, color: CplColors.red600),
+                icon: const Icon(LucideIcons.logOut, size: 16, color: CplColors.red600),
                 label: Text(
                   isUr ? 'لاگ آؤٹ کریں' : 'Sign Out',
                   style: const TextStyle(color: CplColors.red600, fontWeight: FontWeight.bold),
@@ -226,7 +227,7 @@ class ResponsiveShell extends StatelessWidget {
                         children: [
                           if (isAuth)
                             IconButton(
-                              icon: const Icon(Icons.menu, color: Colors.white, size: 22),
+                              icon: const Icon(LucideIcons.menu, color: Colors.white, size: 20),
                               tooltip: isUr ? 'مینو' : 'Open Navigation Menu',
                               onPressed: () => Scaffold.of(scaffoldCtx).openDrawer(),
                             ),
@@ -360,7 +361,7 @@ class ResponsiveShell extends StatelessWidget {
                         },
                         backgroundColor: CplColors.safety500,
                         elevation: 4,
-                        child: const Icon(Icons.add, size: 30, color: Colors.white),
+                        child: const Icon(LucideIcons.plus, size: 24, color: Colors.white),
                       )
                     : null,
                 bottomNavigationBar: isAuth
@@ -376,14 +377,14 @@ class ResponsiveShell extends StatelessWidget {
                             children: [
                               _buildBottomNavItem(
                                 context,
-                                icon: Icons.home,
+                                icon: LucideIcons.layoutDashboard,
                                 label: isUr ? 'ہوم' : 'Home',
                                 isSelected: activeIdx == 1,
                                 onTap: () => context.read<CplSystemCubit>().setScreenIndex(1),
                               ),
                               _buildBottomNavItem(
                                 context,
-                                icon: Icons.checklist,
+                                icon: LucideIcons.clipboardCheck,
                                 label: isUr ? 'آڈٹ' : 'Audit',
                                 isSelected: activeIdx == 4,
                                 onTap: () => context.read<CplSystemCubit>().setScreenIndex(4),
@@ -391,7 +392,7 @@ class ResponsiveShell extends StatelessWidget {
                               const SizedBox(width: 44),
                               _buildBottomNavItem(
                                 context,
-                                icon: Icons.lock_clock,
+                                icon: LucideIcons.lock,
                                 label: isUr ? 'پرمٹ' : 'PTW',
                                 isSelected: activeIdx == 5,
                                 onTap: () => context.read<CplSystemCubit>().setScreenIndex(5),
@@ -399,7 +400,7 @@ class ResponsiveShell extends StatelessWidget {
                               Builder(
                                 builder: (scaffoldCtx) => _buildBottomNavItem(
                                   context,
-                                  icon: Icons.menu,
+                                  icon: LucideIcons.menu,
                                   label: isUr ? 'مینو' : 'Menu',
                                   isSelected: activeIdx > 5 || activeIdx == 0 || activeIdx == 3,
                                   onTap: () => Scaffold.of(scaffoldCtx).openDrawer(),

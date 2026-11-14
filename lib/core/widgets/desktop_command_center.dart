@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:shadcn_flutter/shadcn_flutter.dart' as shad;
 import '../theme/cpl_theme.dart';
 import '../utils/pdf_generator.dart';
 import '../widgets/cpl_brand_logo.dart';
@@ -58,13 +60,13 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
   }
 
   static const List<Map<String, dynamic>> _topNavLinks = [
-    {'title': 'Dashboard', 'ur': 'ڈیش بورڈ', 'icon': Icons.dashboard_outlined, 'index': 1},
-    {'title': 'Report Hazard', 'ur': 'خطرہ رپورٹ', 'icon': Icons.report_problem_outlined, 'index': 2},
-    {'title': 'Risk & CAPA', 'ur': 'رسک میٹرکس', 'icon': Icons.grid_view_outlined, 'index': 3},
-    {'title': 'Daily Audit', 'ur': 'چیک لسٹ', 'icon': Icons.fact_check_outlined, 'index': 4},
-    {'title': 'PTW & LOTO', 'ur': 'ورک پرمٹ', 'icon': Icons.lock_clock_outlined, 'index': 5},
-    {'title': 'Shift Roster', 'ur': 'ٹیم روسٹر', 'icon': Icons.groups_outlined, 'index': 8},
-    {'title': 'Analytics', 'ur': 'اینالیٹکس', 'icon': Icons.bar_chart_outlined, 'index': 9},
+    {'title': 'Dashboard', 'ur': 'ڈیش بورڈ', 'icon': LucideIcons.layoutDashboard, 'index': 1},
+    {'title': 'Report Hazard', 'ur': 'خطرہ رپورٹ', 'icon': LucideIcons.triangleAlert, 'index': 2},
+    {'title': 'Risk & CAPA', 'ur': 'رسک میٹرکس', 'icon': LucideIcons.grid3x3, 'index': 3},
+    {'title': 'Daily Audit', 'ur': 'چیک لسٹ', 'icon': LucideIcons.clipboardCheck, 'index': 4},
+    {'title': 'PTW & LOTO', 'ur': 'ورک پرمٹ', 'icon': LucideIcons.lock, 'index': 5},
+    {'title': 'Shift Roster', 'ur': 'ٹیم روسٹر', 'icon': LucideIcons.users, 'index': 8},
+    {'title': 'Analytics', 'ur': 'اینالیٹکس', 'icon': LucideIcons.barChart3, 'index': 9},
   ];
 
   static const List<Map<String, dynamic>> _drawerSections = [
@@ -72,34 +74,34 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
       'section': 'OVERVIEW & ANALYTICS',
       'sectionUr': 'عمومی جائزہ اور رپورٹس',
       'items': [
-        {'title': 'Plant Dashboard', 'ur': 'پلانٹ ہوم ڈیش بورڈ', 'icon': Icons.dashboard_outlined, 'index': 1},
-        {'title': 'Safety Analytics', 'ur': 'سیفٹی اینالیٹکس اور رپورٹس', 'icon': Icons.bar_chart_outlined, 'index': 9},
+        {'title': 'Plant Dashboard', 'ur': 'پلانٹ ہوم ڈیش بورڈ', 'icon': LucideIcons.layoutDashboard, 'index': 1},
+        {'title': 'Safety Analytics', 'ur': 'سیفٹی اینالیٹکس اور رپورٹس', 'icon': LucideIcons.barChart3, 'index': 9},
       ],
     },
     {
       'section': 'FIELD SAFETY & COMPLIANCE',
       'sectionUr': 'فیلڈ سیفٹی اور تعمیل',
       'items': [
-        {'title': 'Hazard & Near-Miss', 'ur': 'خطرہ اور نیئر مس رپورٹ', 'icon': Icons.report_problem_outlined, 'index': 2},
-        {'title': '5×5 Risk & CAPA', 'ur': '5×5 رسک میٹرکس اور CAPA', 'icon': Icons.grid_view_outlined, 'index': 3},
-        {'title': 'Daily Safety Checklist', 'ur': 'روزانہ حفاظتی چیک لسٹ', 'icon': Icons.checklist_rtl_outlined, 'index': 4},
-        {'title': 'Permit to Work & LOTO', 'ur': 'پرمٹ ٹو ورک اور LOTO', 'icon': Icons.lock_clock_outlined, 'index': 5},
+        {'title': 'Hazard & Near-Miss', 'ur': 'خطرہ اور نیئر مس رپورٹ', 'icon': LucideIcons.triangleAlert, 'index': 2},
+        {'title': '5×5 Risk & CAPA', 'ur': '5×5 رسک میٹرکس اور CAPA', 'icon': LucideIcons.grid3x3, 'index': 3},
+        {'title': 'Daily Safety Checklist', 'ur': 'روزانہ حفاظتی چیک لسٹ', 'icon': LucideIcons.clipboardCheck, 'index': 4},
+        {'title': 'Permit to Work & LOTO', 'ur': 'پرمٹ ٹو ورک اور LOTO', 'icon': LucideIcons.lock, 'index': 5},
       ],
     },
     {
       'section': 'WORKFORCE & EMERGENCY',
       'sectionUr': 'عملہ اور ایمرجنسی',
       'items': [
-        {'title': 'Shift Roster & PPE', 'ur': 'ٹیم روسٹر اور پی پی ای', 'icon': Icons.groups_outlined, 'index': 8},
-        {'title': 'HSE Training & QR', 'ur': 'سیفٹی ٹریننگ اور کیو آر', 'icon': Icons.school_outlined, 'index': 7},
-        {'title': 'Emergency Siren Center', 'ur': 'ایمرجنسی سائرن سینٹر', 'icon': Icons.campaign_outlined, 'index': 6},
+        {'title': 'Shift Roster & PPE', 'ur': 'ٹیم روسٹر اور پی پی ای', 'icon': LucideIcons.users, 'index': 8},
+        {'title': 'HSE Training & QR', 'ur': 'سیفٹی ٹریننگ اور کیو آر', 'icon': LucideIcons.graduationCap, 'index': 7},
+        {'title': 'Emergency Siren Center', 'ur': 'ایمرجنسی سائرن سینٹر', 'icon': LucideIcons.siren, 'index': 6},
       ],
     },
     {
       'section': 'GOVERNANCE',
       'sectionUr': 'ایڈمن گورننس',
       'items': [
-        {'title': 'Admin Control Panel', 'ur': 'ایڈمن اور مینیجر پینل', 'icon': Icons.admin_panel_settings_outlined, 'index': 10},
+        {'title': 'Admin Control Panel', 'ur': 'ایڈمن اور مینیجر پینل', 'icon': LucideIcons.shieldAlert, 'index': 10},
       ],
     },
   ];
@@ -112,12 +114,17 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
         final activeIdx = state.activeScreenIndex;
         final isAuth = state.isAuthenticated;
 
-        return Directionality(
-          textDirection: isUr ? TextDirection.rtl : TextDirection.ltr,
-          child: Scaffold(
-            backgroundColor: CplColors.slate100,
-            body: Column(
-              children: [
+        return shad.Theme(
+          data: shad.ThemeData(
+            colorScheme: shad.ColorSchemes.lightZinc,
+            radius: 0.5,
+          ),
+          child: Directionality(
+            textDirection: isUr ? TextDirection.rtl : TextDirection.ltr,
+            child: Scaffold(
+              backgroundColor: CplColors.slate100,
+              body: Column(
+                children: [
                 // 1. Standard Professional Top Navigation Bar (Always visible)
                 _buildTopNavbar(context, state, isUr, isAuth, activeIdx),
 
@@ -189,6 +196,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
               ],
             ),
           ),
+          ),
         );
       },
     );
@@ -230,9 +238,9 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                   ? (isUr ? 'مینو بند کریں' : 'Collapse Navigation Menu')
                   : (isUr ? 'مینو کھولیں' : 'Expand Navigation Menu'),
               icon: Icon(
-                _isSidebarExpanded ? Icons.menu_open : Icons.menu,
+                _isSidebarExpanded ? LucideIcons.chevronLeft : LucideIcons.menu,
                 color: Colors.white,
-                size: 24,
+                size: 20,
               ),
             ),
             const SizedBox(width: 8),
@@ -342,7 +350,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
             // Emergency Siren Quick Action
             ElevatedButton.icon(
               onPressed: () => context.read<CplSystemCubit>().setScreenIndex(6),
-              icon: const Icon(Icons.campaign, size: 16),
+              icon: const Icon(LucideIcons.siren, size: 15),
               label: Text(
                 isUr ? 'ایمرجنسی' : 'SOS Siren',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
@@ -352,6 +360,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 0,
               ),
             ),
             const SizedBox(width: 8),
@@ -384,7 +393,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                   );
                 }
               },
-              icon: const Icon(Icons.download_outlined, size: 15, color: Colors.white),
+              icon: const Icon(LucideIcons.download, size: 14, color: Colors.white),
               label: Text(
                 isUr ? 'رپورٹ' : 'Export PDF',
                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11.5, color: Colors.white),
@@ -412,7 +421,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.language, size: 15, color: CplColors.energyAmber),
+                  const Icon(LucideIcons.languages, size: 14, color: CplColors.energyAmber),
                   const SizedBox(width: 5),
                   Text(
                     isUr ? 'اردو' : 'EN / اردو',
@@ -467,7 +476,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                   IconButton(
                     constraints: const BoxConstraints(),
                     padding: const EdgeInsets.all(4),
-                    icon: const Icon(Icons.logout, size: 17, color: CplColors.red600),
+                    icon: const Icon(LucideIcons.logOut, size: 16, color: Color(0xFFF87171)),
                     tooltip: isUr ? 'لاگ آؤٹ' : 'Sign Out',
                     onPressed: () => context.read<CplSystemCubit>().logout(),
                   ),
@@ -526,7 +535,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                   child: Padding(
                     padding: const EdgeInsets.all(4),
                     child: Icon(
-                      _isSidebarExpanded ? Icons.chevron_left : Icons.chevron_right,
+                      _isSidebarExpanded ? LucideIcons.chevronLeft : LucideIcons.chevronRight,
                       size: 18,
                       color: CplColors.slate600,
                     ),
@@ -628,7 +637,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
               ),
               child: Row(
                 children: const [
-                  Icon(Icons.location_on_outlined, size: 15, color: CplColors.safety500),
+                  Icon(LucideIcons.mapPin, size: 15, color: CplColors.safety500),
                   SizedBox(width: 6),
                   Expanded(
                     child: Text(
@@ -796,7 +805,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: const [
-                    CircleAvatar(radius: 3.5, backgroundColor: Color(0xFF10B981)),
+                    Icon(LucideIcons.shieldCheck, size: 14, color: Color(0xFF10B981)),
                     SizedBox(width: 6),
                     Text(
                       'Chiniot Power Safety Streak',
@@ -924,7 +933,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                 ),
                 alignment: Alignment.center,
                 child: const Icon(
-                  Icons.shield_outlined,
+                  LucideIcons.shieldCheck,
                   color: Color(0xFFF59E0B),
                   size: 28,
                 ),
@@ -955,7 +964,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
           title: isUr ? 'اوپن خطرات اور نیئر مس' : 'Open Hazards & Near-Misses',
           value: '$openHazardsCount Open',
           subtitle: '$criticalHazardsCount Critical • 389 YTD (82.5% Closed)',
-          icon: Icons.warning_amber_rounded,
+          icon: LucideIcons.triangleAlert,
           color: const Color(0xFFEA580C),
           onTap: () => context.read<CplSystemCubit>().setScreenIndex(2),
         ),
@@ -964,7 +973,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
           title: isUr ? 'ماہانہ محفوظ گھنٹے' : 'Safe Man-Hours (Oct 2026)',
           value: '84,730 Hours',
           subtitle: '434 Active Staff (388 CPL + 46 EKL)',
-          icon: Icons.access_time_filled,
+          icon: LucideIcons.clock,
           color: const Color(0xFF059669),
           onTap: () => context.read<CplSystemCubit>().setScreenIndex(9),
         ),
@@ -973,7 +982,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
           title: isUr ? 'فعال پرمٹ ٹو ورک' : 'Active PTW & LOTO',
           value: '$activePermitsCount Active',
           subtitle: '$pendingPermitsCount Pending Authorization',
-          icon: Icons.lock_clock_outlined,
+          icon: LucideIcons.lock,
           color: const Color(0xFF0B1F3A),
           onTap: () => context.read<CplSystemCubit>().setScreenIndex(5),
         ),
@@ -982,7 +991,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
           title: isUr ? 'شفٹ چیک لسٹ اور تعمیل' : 'Shift Safety Checklist',
           value: '$checklistPct% Compliant',
           subtitle: '$passedChecklist/$totalChecklist Routine Checks Passed',
-          icon: Icons.fact_check_outlined,
+          icon: LucideIcons.clipboardCheck,
           color: const Color(0xFF7C3AED),
           onTap: () => context.read<CplSystemCubit>().setScreenIndex(4),
         ),
@@ -1086,6 +1095,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
         'telemetry': '105.2 bar Steam • 540°C Superheated',
         'status': 'OPERATIONAL',
         'color': Color(0xFFF59E0B),
+        'icon': LucideIcons.flame,
       },
       {
         'id': 'Z2',
@@ -1095,6 +1105,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
         'telemetry': '3,000 RPM • 62.4 MW Active Generation',
         'status': 'NORMAL',
         'color': Color(0xFFDC2626),
+        'icon': LucideIcons.cpu,
       },
       {
         'id': 'Z5',
@@ -1104,6 +1115,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
         'telemetry': '132.4 kV Busbar • 0 Active Grid Faults',
         'status': 'SECURED',
         'color': Color(0xFFDC2626),
+        'icon': LucideIcons.zap,
       },
       {
         'id': 'Z4',
@@ -1113,6 +1125,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
         'telemetry': 'Conveyors BC-1 to BC-5 Running • 180 TPH',
         'status': 'ACTIVE',
         'color': Color(0xFFF59E0B),
+        'icon': LucideIcons.truck,
       },
     ];
 
@@ -1137,7 +1150,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                       color: CplColors.corporateNavy.withAlpha((0.08 * 255).round()),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.speed, size: 16, color: CplColors.corporateNavy),
+                    child: const Icon(LucideIcons.activity, size: 16, color: CplColors.corporateNavy),
                   ),
                   const SizedBox(width: 10),
                   Text(
@@ -1254,7 +1267,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                     ),
                     Row(
                       children: [
-                        const Icon(Icons.sensors, size: 13, color: Color(0xFF059669)),
+                        const Icon(LucideIcons.activity, size: 13, color: Color(0xFF059669)),
                         const SizedBox(width: 5),
                         Expanded(
                           child: Text(
@@ -1351,7 +1364,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                       color: CplColors.corporateNavy.withAlpha((0.08 * 255).round()),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.table_chart_outlined, size: 16, color: CplColors.corporateNavy),
+                    child: const Icon(LucideIcons.clipboardCheck, size: 16, color: CplColors.corporateNavy),
                   ),
                   const SizedBox(width: 10),
                   Text(
@@ -1556,7 +1569,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
-            child: const Icon(Icons.info, color: Colors.white, size: 18),
+            child: const Icon(LucideIcons.info, color: Colors.white, size: 17),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -1620,7 +1633,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                 borderRadius: BorderRadius.circular(10),
               ),
               alignment: Alignment.center,
-              child: const Icon(Icons.campaign, color: Colors.white, size: 22),
+              child: const Icon(LucideIcons.siren, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1672,12 +1685,12 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
 
   Widget _buildDesktopQuickActions(BuildContext context, bool isUr) {
     final actions = [
-      {'title': 'Report Hazard', 'ur': 'خطرہ رپورٹ', 'icon': Icons.report_problem_outlined, 'index': 2, 'color': const Color(0xFFEA580C)},
-      {'title': 'Daily Audit', 'ur': 'سیفٹی آڈٹ', 'icon': Icons.fact_check_outlined, 'index': 4, 'color': const Color(0xFF059669)},
-      {'title': 'PTW & LOTO', 'ur': 'ورک پرمٹ', 'icon': Icons.lock_clock_outlined, 'index': 5, 'color': const Color(0xFF0B1F3A)},
-      {'title': 'Risk Matrix', 'ur': 'رسک میٹرکس', 'icon': Icons.grid_view_outlined, 'index': 3, 'color': const Color(0xFF3B82F6)},
-      {'title': 'HSE Training', 'ur': 'سیفٹی ٹریننگ', 'icon': Icons.school_outlined, 'index': 7, 'color': const Color(0xFF7C3AED)},
-      {'title': 'Shift Roster', 'ur': 'ٹیم روسٹر', 'icon': Icons.groups_outlined, 'index': 8, 'color': const Color(0xFF0D9488)},
+      {'title': 'Report Hazard', 'ur': 'خطرہ رپورٹ', 'icon': LucideIcons.triangleAlert, 'index': 2, 'color': const Color(0xFFEA580C)},
+      {'title': 'Daily Audit', 'ur': 'سیفٹی آڈٹ', 'icon': LucideIcons.clipboardCheck, 'index': 4, 'color': const Color(0xFF059669)},
+      {'title': 'PTW & LOTO', 'ur': 'ورک پرمٹ', 'icon': LucideIcons.lock, 'index': 5, 'color': const Color(0xFF0B1F3A)},
+      {'title': 'Risk Matrix', 'ur': 'رسک میٹرکس', 'icon': LucideIcons.grid3x3, 'index': 3, 'color': const Color(0xFF3B82F6)},
+      {'title': 'HSE Training', 'ur': 'سیفٹی ٹریننگ', 'icon': LucideIcons.graduationCap, 'index': 7, 'color': const Color(0xFF7C3AED)},
+      {'title': 'Shift Roster', 'ur': 'ٹیم روسٹر', 'icon': LucideIcons.users, 'index': 8, 'color': const Color(0xFF0D9488)},
     ];
 
     return Container(
@@ -1698,7 +1711,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                   color: CplColors.corporateNavy.withAlpha((0.08 * 255).round()),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.flash_on, size: 16, color: CplColors.corporateNavy),
+                child: const Icon(LucideIcons.zap, size: 16, color: CplColors.corporateNavy),
               ),
               const SizedBox(width: 8),
               Text(
@@ -1786,7 +1799,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                       color: CplColors.corporateNavy.withAlpha((0.08 * 255).round()),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(Icons.history, size: 16, color: CplColors.corporateNavy),
+                    child: const Icon(LucideIcons.history, size: 16, color: CplColors.corporateNavy),
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -1881,7 +1894,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
         'subtitle': '${h.reporter} • ${h.zone}',
         'badge': h.status.toUpperCase(),
         'color': h.severity.toLowerCase() == 'critical' ? CplColors.red600 : CplColors.safety500,
-        'icon': h.severity.toLowerCase() == 'critical' ? Icons.warning_amber_rounded : Icons.report_problem_outlined,
+        'icon': LucideIcons.triangleAlert,
         'screen': 2,
       });
     }
@@ -1891,7 +1904,7 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
         'subtitle': '${p.requester} • ${p.zone}',
         'badge': p.status.toUpperCase(),
         'color': p.status == 'Active' ? CplColors.emerald600 : CplColors.amber500,
-        'icon': Icons.lock_clock_outlined,
+        'icon': LucideIcons.lock,
         'screen': 5,
       });
     }
