@@ -66,18 +66,6 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  void _fillAccount({required String empId, required String role, required String pin, required String name}) {
-    setState(() {
-      _empIdController.text = empId;
-      _pinController.text = pin;
-      _selectedRole = role;
-      _fullNameController.text = name;
-      _errorMessage = null;
-      _successMessage = null;
-    });
-    context.read<CplSystemCubit>().clearAuthError();
-  }
-
   void _showServerSettingsDialog(BuildContext context) {
     final controller = TextEditingController(text: ApiEndpoints.baseUrl);
     showDialog(
@@ -345,50 +333,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 12),
-
-              // Fast Switch Real CPL Personnel Chips
-              Row(
-                children: const [
-                  Text('CPL VERIFIED STAFF • فوری عملہ لاگ ان:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: CplColors.slate600)),
-                ],
-              ),
-              const SizedBox(height: 6),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    ActionChip(
-                      avatar: const Icon(Icons.admin_panel_settings, size: 14, color: Colors.white),
-                      label: const Text('3648 Sumaira Rafique (HSE Lead)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
-                      backgroundColor: CplColors.corporateNavy,
-                      onPressed: () => _fillAccount(empId: 'CPL-EMP-3648', role: 'HSE Manager', pin: '3648', name: 'Sumaira Rafique'),
-                    ),
-                    const SizedBox(width: 6),
-                    ActionChip(
-                      avatar: const Icon(Icons.engineering, size: 14, color: Colors.white),
-                      label: const Text('0509 M. Shahbaz (SM Shift A)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
-                      backgroundColor: CplColors.emerald600,
-                      onPressed: () => _fillAccount(empId: 'CPL-EMP-0509', role: 'HSE Manager', pin: '0509', name: 'Muhammad Shahbaz'),
-                    ),
-                    const SizedBox(width: 6),
-                    ActionChip(
-                      avatar: const Icon(Icons.verified_user, size: 14, color: Colors.white),
-                      label: const Text('3845 Faisal Nadeem (Safety)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
-                      backgroundColor: CplColors.safety500,
-                      onPressed: () => _fillAccount(empId: 'CPL-EMP-3845', role: 'Safety Officer', pin: '3845', name: 'Faisal Nadeem'),
-                    ),
-                    const SizedBox(width: 6),
-                    ActionChip(
-                      avatar: const Icon(Icons.person, size: 14, color: Colors.white),
-                      label: const Text('0808 Umer Asghar (CCR Engr)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
-                      backgroundColor: CplColors.slate700,
-                      onPressed: () => _fillAccount(empId: 'CPL-EMP-0808', role: 'Plant Worker', pin: '0808', name: 'Umer Asghar'),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
 
               // Login / Signup Segmented Toggle
               Container(
@@ -549,21 +494,22 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     const SizedBox(height: 14),
 
-                    Text('SECURITY PIN / PASSWORD • پن کوڈ', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
+                      Text('SECURITY PIN / PASSWORD • پن کوڈ', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
                     const SizedBox(height: 6),
                     TextField(
                       controller: _pinController,
                       obscureText: true,
                       keyboardType: TextInputType.text,
                       style: CplTypography.mono(fontSize: 13, fontWeight: FontWeight.bold),
+                      onSubmitted: (_) => _handleSubmit(),
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.lock_outline, size: 18),
-                        hintText: '4-digit PIN (e.g. 1001, 1042) or admin123',
+                        hintText: 'Enter your security PIN or password',
                       ),
                     ),
-                    const SizedBox(height: 14),
 
                     if (!_isLogin) ...[
+                      const SizedBox(height: 14),
                       Text('FULL NAME • پورا نام', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
                       const SizedBox(height: 6),
                       TextField(
@@ -571,7 +517,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         style: CplTypography.body(fontSize: 13, fontWeight: FontWeight.w600),
                         decoration: const InputDecoration(
                           prefixIcon: Icon(Icons.person_outline, size: 18),
-                          hintText: 'e.g. Bilal Mahmood',
+                          hintText: 'Enter full employee name',
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -594,91 +540,92 @@ class _AuthScreenState extends State<AuthScreen> {
                         },
                       ),
                       const SizedBox(height: 14),
-                    ],
 
-                    Text('CNIC / MOBILE VERIFICATION • شناختی کارڈ', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
-                    const SizedBox(height: 6),
-                    TextField(
-                      controller: _cnicMobileController,
-                      style: CplTypography.mono(fontSize: 12),
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.verified_user_outlined, size: 18),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    Text('ACTIVE DUTY SHIFT • شفٹ منتخب کریں', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
-                    const SizedBox(height: 8),
-                    ..._shifts.map((sh) {
-                      final isSelected = _selectedShift == sh;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 6.0),
-                        child: InkWell(
-                          onTap: () => setState(() => _selectedShift = sh),
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: isSelected ? CplColors.safety50 : Colors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: isSelected ? CplColors.safety500 : CplColors.slate200),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  sh,
-                                  style: CplTypography.body(
-                                    fontSize: 12,
-                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                                    color: isSelected ? CplColors.safety600 : CplColors.slate800,
-                                  ),
-                                ),
-                                CircleAvatar(
-                                  radius: 5,
-                                  backgroundColor: isSelected ? CplColors.safety500 : CplColors.slate300,
-                                ),
-                              ],
-                            ),
-                          ),
+                      Text('CNIC / MOBILE VERIFICATION • شناختی کارڈ', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: _cnicMobileController,
+                        style: CplTypography.mono(fontSize: 12),
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.verified_user_outlined, size: 18),
+                          hintText: '33202-XXXXXXX-X',
                         ),
-                      );
-                    }),
-                    const SizedBox(height: 10),
+                      ),
+                      const SizedBox(height: 16),
 
-                    Text('ROLE BADGE • عہدہ', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: _roles.map((r) {
-                        final isSelected = _selectedRole == r;
-                        return Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 2.0),
-                            child: InkWell(
-                              onTap: () => setState(() => _selectedRole = r),
-                              borderRadius: BorderRadius.circular(10),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: isSelected ? CplColors.corporateNavy : CplColors.slate50,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: isSelected ? CplColors.corporateNavy : CplColors.slate200),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  r,
-                                  style: CplTypography.body(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: isSelected ? Colors.white : CplColors.slate700,
+                      Text('ACTIVE DUTY SHIFT • شفٹ منتخب کریں', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
+                      const SizedBox(height: 8),
+                      ..._shifts.map((sh) {
+                        final isSelected = _selectedShift == sh;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 6.0),
+                          child: InkWell(
+                            onTap: () => setState(() => _selectedShift = sh),
+                            borderRadius: BorderRadius.circular(12),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: isSelected ? CplColors.safety50 : Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: isSelected ? CplColors.safety500 : CplColors.slate200),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    sh,
+                                    style: CplTypography.body(
+                                      fontSize: 12,
+                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                      color: isSelected ? CplColors.safety600 : CplColors.slate800,
+                                    ),
                                   ),
-                                ),
+                                  CircleAvatar(
+                                    radius: 5,
+                                    backgroundColor: isSelected ? CplColors.safety500 : CplColors.slate300,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         );
-                      }).toList(),
-                    ),
+                      }),
+                      const SizedBox(height: 10),
+
+                      Text('ROLE BADGE • عہدہ', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: _roles.map((r) {
+                          final isSelected = _selectedRole == r;
+                          return Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                              child: InkWell(
+                                onTap: () => setState(() => _selectedRole = r),
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? CplColors.corporateNavy : CplColors.slate50,
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: isSelected ? CplColors.corporateNavy : CplColors.slate200),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    r,
+                                    style: CplTypography.body(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: isSelected ? Colors.white : CplColors.slate700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
                   ],
                 ),
               ),

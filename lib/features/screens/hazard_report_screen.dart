@@ -22,18 +22,16 @@ class _HazardReportScreenState extends State<HazardReportScreen> with SingleTick
   String _selectedCategory = 'Steam Leak';
   String _selectedSeverity = 'High';
   String _selectedZone = 'Boiler Area (Unit 1 & 2)';
-  final _descController = TextEditingController(
-    text: 'High-pressure steam weeping at valve flange FV-14, temperature above 240°C.',
-  );
+  final _descController = TextEditingController();
   final String _gpsCoords = '31.7204° N, 72.9791° E';
 
   bool _isRecording = false;
   int _recordSeconds = 0;
   Timer? _recordTimer;
-  bool _photoCaptured = true;
+  bool _photoCaptured = false;
   String? _recordedVoicePath;
   String? _capturedPhotoPath;
-  String _capturedPhotoName = 'Photo Captured • Flange Steam Jet FV-14';
+  String _capturedPhotoName = '';
 
   late AnimationController _animController;
 
@@ -484,14 +482,18 @@ class _HazardReportScreenState extends State<HazardReportScreen> with SingleTick
                                 Text(
                                   _isRecording
                                       ? (isUr ? 'ریکارڈنگ جاری ہے...' : 'Recording Live...')
-                                      : (isUr ? 'آواز ریکارڈ کریں (14 سیکنڈ موجود)' : 'Urdu Voice Note (14s saved)'),
+                                      : (_recordedVoicePath != null
+                                          ? (isUr ? 'وائس نوٹ محفوظ ہو گیا' : 'Voice Note Recorded (${_recordSeconds}s)')
+                                          : (isUr ? 'آواز ریکارڈ کرنے کے لیے مائیک دبائیں' : 'Tap Mic to Record Voice Note')),
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: _isRecording ? CplColors.red600 : CplColors.slate800,
                                   ),
                                 ),
                                 Text(
-                                  _isRecording ? '0:${_recordSeconds.toString().padLeft(2, '0')}' : '0:14',
+                                  _isRecording || _recordedVoicePath != null
+                                      ? '0:${_recordSeconds.toString().padLeft(2, '0')}'
+                                      : '0:00',
                                   style: CplTypography.mono().copyWith(
                                     fontWeight: FontWeight.bold,
                                     color: _isRecording ? CplColors.red600 : CplColors.slate600,

@@ -17,38 +17,90 @@ import '../../features/screens/roster_screen.dart';
 import '../../features/screens/analytics_screen.dart';
 import '../../features/screens/admin_panel_screen.dart';
 
-class DesktopCommandCenter extends StatelessWidget {
+class DesktopCommandCenter extends StatefulWidget {
   const DesktopCommandCenter({super.key});
+
+  @override
+  State<DesktopCommandCenter> createState() => _DesktopCommandCenterState();
+}
+
+class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
+  bool _isSidebarExpanded = true;
 
   Widget _getScreenByIndex(int index) {
     switch (index) {
-      case 0: return const AuthScreen();
-      case 1: return const DashboardScreen();
-      case 2: return const HazardReportScreen();
-      case 3: return const RiskMatrixScreen();
-      case 4: return const ChecklistScreen();
-      case 5: return const PtwScreen();
-      case 6: return const AlarmCenterScreen();
-      case 7: return const TrainingScreen();
-      case 8: return const RosterScreen();
-      case 9: return const AnalyticsScreen();
-      case 10: return const AdminPanelScreen();
-      default: return const DashboardScreen();
+      case 0:
+        return const AuthScreen();
+      case 1:
+        return const DashboardScreen();
+      case 2:
+        return const HazardReportScreen();
+      case 3:
+        return const RiskMatrixScreen();
+      case 4:
+        return const ChecklistScreen();
+      case 5:
+        return const PtwScreen();
+      case 6:
+        return const AlarmCenterScreen();
+      case 7:
+        return const TrainingScreen();
+      case 8:
+        return const RosterScreen();
+      case 9:
+        return const AnalyticsScreen();
+      case 10:
+        return const AdminPanelScreen();
+      default:
+        return const DashboardScreen();
     }
   }
 
-  final List<Map<String, dynamic>> _navItems = const [
-    {'title': '01. Staff Login', 'ur': 'لاگ ان', 'icon': Icons.lock_person, 'index': 0},
-    {'title': '02. Dashboard', 'ur': 'ڈیش بورڈ', 'icon': Icons.dashboard, 'index': 1},
-    {'title': '03. Hazard Report', 'ur': 'خطرہ رپورٹ', 'icon': Icons.report_problem, 'index': 2},
-    {'title': '04. 5×5 Risk Matrix', 'ur': 'رسک میٹرکس', 'icon': Icons.grid_view, 'index': 3},
-    {'title': '05. Safety Checklist', 'ur': 'چیک لسٹ', 'icon': Icons.checklist, 'index': 4},
-    {'title': '06. PTW & LOTO', 'ur': 'پرمٹ ٹو ورک', 'icon': Icons.lock_clock, 'index': 5},
-    {'title': '07. Siren Dispatch', 'ur': 'سائرن الرٹ', 'icon': Icons.campaign, 'index': 6},
-    {'title': '08. Training & QR', 'ur': 'سیفٹی ٹریننگ', 'icon': Icons.school, 'index': 7},
-    {'title': '09. Team Roster', 'ur': 'روسٹر پی پی ای', 'icon': Icons.groups, 'index': 8},
-    {'title': '10. Safety Analytics', 'ur': 'اینالیٹکس', 'icon': Icons.bar_chart, 'index': 9},
-    {'title': '11. Admin Panel', 'ur': 'ایڈمن کنٹرول', 'icon': Icons.admin_panel_settings, 'index': 10},
+  static const List<Map<String, dynamic>> _topNavLinks = [
+    {'title': 'Dashboard', 'ur': 'ڈیش بورڈ', 'icon': Icons.dashboard_outlined, 'index': 1},
+    {'title': 'Report Hazard', 'ur': 'خطرہ رپورٹ', 'icon': Icons.report_problem_outlined, 'index': 2},
+    {'title': 'Risk & CAPA', 'ur': 'رسک میٹرکس', 'icon': Icons.grid_view_outlined, 'index': 3},
+    {'title': 'Daily Audit', 'ur': 'چیک لسٹ', 'icon': Icons.fact_check_outlined, 'index': 4},
+    {'title': 'PTW & LOTO', 'ur': 'ورک پرمٹ', 'icon': Icons.lock_clock_outlined, 'index': 5},
+    {'title': 'Shift Roster', 'ur': 'ٹیم روسٹر', 'icon': Icons.groups_outlined, 'index': 8},
+    {'title': 'Analytics', 'ur': 'اینالیٹکس', 'icon': Icons.bar_chart_outlined, 'index': 9},
+  ];
+
+  static const List<Map<String, dynamic>> _drawerSections = [
+    {
+      'section': 'OVERVIEW & ANALYTICS',
+      'sectionUr': 'عمومی جائزہ اور رپورٹس',
+      'items': [
+        {'title': 'Plant Dashboard', 'ur': 'پلانٹ ہوم ڈیش بورڈ', 'icon': Icons.dashboard_outlined, 'index': 1},
+        {'title': 'Safety Analytics', 'ur': 'سیفٹی اینالیٹکس اور رپورٹس', 'icon': Icons.bar_chart_outlined, 'index': 9},
+      ],
+    },
+    {
+      'section': 'FIELD SAFETY & COMPLIANCE',
+      'sectionUr': 'فیلڈ سیفٹی اور تعمیل',
+      'items': [
+        {'title': 'Hazard & Near-Miss', 'ur': 'خطرہ اور نیئر مس رپورٹ', 'icon': Icons.report_problem_outlined, 'index': 2},
+        {'title': '5×5 Risk & CAPA', 'ur': '5×5 رسک میٹرکس اور CAPA', 'icon': Icons.grid_view_outlined, 'index': 3},
+        {'title': 'Daily Safety Checklist', 'ur': 'روزانہ حفاظتی چیک لسٹ', 'icon': Icons.checklist_rtl_outlined, 'index': 4},
+        {'title': 'Permit to Work & LOTO', 'ur': 'پرمٹ ٹو ورک اور LOTO', 'icon': Icons.lock_clock_outlined, 'index': 5},
+      ],
+    },
+    {
+      'section': 'WORKFORCE & EMERGENCY',
+      'sectionUr': 'عملہ اور ایمرجنسی',
+      'items': [
+        {'title': 'Shift Roster & PPE', 'ur': 'ٹیم روسٹر اور پی پی ای', 'icon': Icons.groups_outlined, 'index': 8},
+        {'title': 'HSE Training & QR', 'ur': 'سیفٹی ٹریننگ اور کیو آر', 'icon': Icons.school_outlined, 'index': 7},
+        {'title': 'Emergency Siren Center', 'ur': 'ایمرجنسی سائرن سینٹر', 'icon': Icons.campaign_outlined, 'index': 6},
+      ],
+    },
+    {
+      'section': 'GOVERNANCE',
+      'sectionUr': 'ایڈمن گورننس',
+      'items': [
+        {'title': 'Admin Control Panel', 'ur': 'ایڈمن اور مینیجر پینل', 'icon': Icons.admin_panel_settings_outlined, 'index': 10},
+      ],
+    },
   ];
 
   @override
@@ -58,349 +110,647 @@ class DesktopCommandCenter extends StatelessWidget {
         final isUr = state.isUrdu;
         final activeIdx = state.activeScreenIndex;
         final user = state.currentUser;
+        final isAuth = state.isAuthenticated;
 
         return Directionality(
           textDirection: isUr ? TextDirection.rtl : TextDirection.ltr,
           child: Scaffold(
-            backgroundColor: CplColors.slate50,
-            body: Row(
-            children: [
-              // Persistent Left Sidebar (NavigationRail / Drawer)
-              Container(
-                width: 250,
-                color: CplColors.slate900,
-                child: Column(
-                  children: [
-                    // Brand Header
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                      decoration: const BoxDecoration(
-                        border: Border(bottom: BorderSide(color: CplColors.slate800)),
-                      ),
-                      child: const CplBrandLogo(
-                        height: 36,
-                        isDark: true,
-                        showSubtitle: true,
-                      ),
-                    ),
-                    // Navigation List
-                    Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        children: _navItems.map((item) {
-                          final idx = item['index'] as int;
-                          final isSelected = activeIdx == idx;
+            backgroundColor: CplColors.slate100,
+            body: Column(
+              children: [
+                // 1. Standard Professional Top Navigation Bar (Always visible)
+                _buildTopNavbar(context, state, isUr, isAuth, activeIdx),
 
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: isSelected ? CplColors.safety500 : Colors.transparent,
-                              borderRadius: BorderRadius.circular(8),
+                // 2. Persistent Top Offline Sync Banner
+                if (state.pendingOfflineCount > 0)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    color: CplColors.amber500,
+                    child: Row(
+                      children: [
+                        const Icon(Icons.cloud_off, color: Colors.white, size: 16),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            isUr
+                                ? '${state.pendingOfflineCount} رپورٹس آف لائن ہیں — نیٹ ورک سگنل ملنے پر سنک ہو جائیں گی'
+                                : '${state.pendingOfflineCount} Reports Queued in Offline Storage — will auto-sync on connection',
+                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        ElevatedButton(
+                          onPressed: () => context.read<CplSystemCubit>().syncOfflineNow(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: CplColors.slate900,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            isUr ? 'ابھی سنک کریں' : 'Sync Now',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                // 3. Body Workspace: Collapsible Hamburger Sidebar (when authenticated) + Main Content
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (isAuth)
+                        _buildCollapsibleSidebar(context, state, isUr, activeIdx),
+
+                      Expanded(
+                        child: Column(
+                          children: [
+                            // Live Plant KPI Strip (only shown on Dashboard or when authenticated)
+                            if (isAuth && activeIdx == 1)
+                              _buildTopKpiStrip(context, state, isUr),
+
+                            // Active Screen Content Area
+                            Expanded(
+                              child: !isAuth
+                                  ? Center(
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(maxWidth: 500),
+                                        child: const AuthScreen(),
+                                      ),
+                                    )
+                                  : Align(
+                                      alignment: Alignment.topCenter,
+                                      child: ConstrainedBox(
+                                        constraints: const BoxConstraints(maxWidth: 1240),
+                                        child: _getScreenByIndex(activeIdx),
+                                      ),
+                                    ),
                             ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: ListTile(
-                                dense: true,
-                                leading: Icon(
-                                  item['icon'] as IconData,
-                                  color: isSelected ? Colors.white : CplColors.slate400,
-                                  size: 18,
-                                ),
-                                title: Text(
-                                  isUr ? item['ur'] as String : item['title'] as String,
-                                  style: TextStyle(
-                                    color: isSelected ? Colors.white : CplColors.slate300,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                    fontSize: 12.5,
-                                  ),
-                                ),
-                                onTap: () {
-                                  context.read<CplSystemCubit>().setScreenIndex(idx);
-                                },
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTopNavbar(
+    BuildContext context,
+    CplSystemState state,
+    bool isUr,
+    bool isAuth,
+    int activeIdx,
+  ) {
+    final user = state.currentUser;
+
+    return Container(
+      height: 66,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: CplColors.slate900,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha((0.16 * 255).round()),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Hamburger Menu Toggle Button (when signed in)
+          if (isAuth) ...[
+            IconButton(
+              onPressed: () {
+                setState(() {
+                  _isSidebarExpanded = !_isSidebarExpanded;
+                });
+              },
+              tooltip: _isSidebarExpanded
+                  ? (isUr ? 'مینو بند کریں' : 'Collapse Navigation Menu')
+                  : (isUr ? 'مینو کھولیں' : 'Expand Navigation Menu'),
+              icon: Icon(
+                _isSidebarExpanded ? Icons.menu_open : Icons.menu,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+
+          // CPL Brand Logo
+          InkWell(
+            onTap: isAuth
+                ? () => context.read<CplSystemCubit>().setScreenIndex(1)
+                : null,
+            borderRadius: BorderRadius.circular(8),
+            child: const CplBrandLogo(
+              height: 34,
+              isDark: true,
+              showSubtitle: true,
+            ),
+          ),
+          const SizedBox(width: 24),
+
+          // Center Horizontal Navigation Links (when authenticated)
+          if (isAuth)
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: _topNavLinks.map((item) {
+                    final idx = item['index'] as int;
+                    final isSelected = activeIdx == idx;
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: InkWell(
+                        onTap: () => context.read<CplSystemCubit>().setScreenIndex(idx),
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? Colors.white.withAlpha((0.1 * 255).round())
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border(
+                              bottom: BorderSide(
+                                color: isSelected ? CplColors.safety500 : Colors.transparent,
+                                width: 2.5,
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                    // Current User Pill
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: const BoxDecoration(
-                        border: Border(top: BorderSide(color: CplColors.slate800)),
-                      ),
-                      child: Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: state.isAuthenticated ? CplColors.safety500 : CplColors.slate700,
-                            child: Text(
-                              state.isAuthenticated && user.empId.length >= 2
-                                  ? user.empId.substring(user.empId.length - 2)
-                                  : '--',
-                              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                            ),
                           ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  state.isAuthenticated ? user.name : (isUr ? 'لاگ ان نہیں ہے' : 'Not Signed In'),
-                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                item['icon'] as IconData,
+                                size: 16,
+                                color: isSelected ? CplColors.safety500 : CplColors.slate300,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                isUr ? item['ur'] as String : item['title'] as String,
+                                style: TextStyle(
+                                  color: isSelected ? Colors.white : CplColors.slate300,
+                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                  fontSize: 12.5,
                                 ),
-                                Text(
-                                  state.isAuthenticated
-                                      ? '${user.empId} • ${user.role}'
-                                      : (isUr ? 'براہ کرم لاگ ان کریں' : 'Sign in required'),
-                                  style: const TextStyle(color: CplColors.slate400, fontSize: 10),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          if (state.isAuthenticated)
-                            IconButton(
-                              constraints: const BoxConstraints(),
-                              padding: const EdgeInsets.all(4),
-                              icon: const Icon(Icons.logout, size: 16, color: CplColors.red600),
-                              tooltip: isUr ? 'لاگ آؤٹ' : 'Logout',
-                              onPressed: () => context.read<CplSystemCubit>().logout(),
-                            ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
+                    );
+                  }).toList(),
                 ),
               ),
+            )
+          else
+            const Spacer(),
 
-              // Main Content Area
-              Expanded(
-                child: Column(
-                  children: [
-                    // Top Desktop Command Bar
-                    Container(
-                      height: 64,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        border: Border(bottom: BorderSide(color: CplColors.slate200)),
+          const SizedBox(width: 12),
+
+          // Live Co-Gen Plant Status Indicator
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: CplColors.emerald500.withAlpha((0.15 * 255).round()),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: CplColors.emerald500.withAlpha((0.45 * 255).round())),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                CircleAvatar(radius: 3.5, backgroundColor: CplColors.emerald500),
+                SizedBox(width: 6),
+                Text(
+                  'UNIT-1 62.4 MW ONLINE',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+
+          if (isAuth) ...[
+            // Emergency Siren Quick Action
+            ElevatedButton.icon(
+              onPressed: () => context.read<CplSystemCubit>().setScreenIndex(6),
+              icon: const Icon(Icons.campaign, size: 16),
+              label: Text(
+                isUr ? 'ایمرجنسی' : 'SOS Siren',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: CplColors.red600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // PDF Export Button
+            OutlinedButton.icon(
+              onPressed: () async {
+                final pdfBytes = await PdfReportGenerator.generateShiftTurnoverPdf(
+                  plantUnit: 'UNIT-1 62.4 MW Co-Gen',
+                  shiftType: state.currentUser.shift,
+                  outgoingSupervisor: state.currentUser.name,
+                  checklistsCompleted: state.checklistItems.length,
+                  hazardsIdentified: state.hazards.length,
+                  criticalAlarmsCount: state.activeAlarm != null ? 1 : 0,
+                  openItems: state.hazards
+                      .take(4)
+                      .map((h) => {'title': h.title, 'owner': h.reporter})
+                      .toList(),
+                );
+                final savedPath = await PdfReportGenerator.saveOrShareReport(
+                  pdfBytes,
+                  'CPL_NEPRA_ISO_Audit_Report_${DateTime.now().millisecondsSinceEpoch}.pdf',
+                );
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('NEPRA / ISO 45001 Master Audit Report Saved: $savedPath'),
+                      backgroundColor: CplColors.emerald500,
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.download_outlined, size: 15, color: Colors.white),
+              label: Text(
+                isUr ? 'رپورٹ' : 'Export PDF',
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11.5, color: Colors.white),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Colors.white24),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
+
+          // Language Switcher
+          InkWell(
+            onTap: () => context.read<CplSystemCubit>().toggleLanguage(),
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha((0.1 * 255).round()),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.language, size: 15, color: CplColors.energyAmber),
+                  const SizedBox(width: 5),
+                  Text(
+                    isUr ? 'اردو' : 'EN / اردو',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Authenticated User Profile Chip & Logout
+          if (isAuth) ...[
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white.withAlpha((0.08 * 255).round()),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 13,
+                    backgroundColor: CplColors.safety500,
+                    child: Text(
+                      user.name.isNotEmpty ? user.name[0].toUpperCase() : 'C',
+                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        user.name,
+                        style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
                       ),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            // Plant title & live coordinates
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const BoxDecoration(
-                                    color: CplColors.emerald500,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'UNIT-1 62.4 MW • Co-Gen Online',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                                ),
-                                const SizedBox(width: 12),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: CplColors.slate100,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: const Text(
-                                    '31.7204° N, 72.9791° E (Chiniot, Punjab)',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontFamily: 'monospace',
-                                      color: CplColors.slate700,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 20),
+                      Text(
+                        '${user.empId} • ${user.role}',
+                        style: const TextStyle(color: CplColors.slate400, fontSize: 9.5, fontFamily: 'monospace'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    constraints: const BoxConstraints(),
+                    padding: const EdgeInsets.all(4),
+                    icon: const Icon(Icons.logout, size: 17, color: CplColors.red600),
+                    tooltip: isUr ? 'لاگ آؤٹ' : 'Sign Out',
+                    onPressed: () => context.read<CplSystemCubit>().logout(),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 
-                            // Test Plant Siren CTA
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                context.read<CplSystemCubit>().triggerPlantAlarm('PLANT-WIDE SIREN TEST');
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Desktop Test Siren Active. Buzzer audio sounding.'),
-                                    backgroundColor: CplColors.red600,
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.warning, size: 16),
-                              label: const Text('Test Plant Siren', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: CplColors.red600,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+  Widget _buildCollapsibleSidebar(
+    BuildContext context,
+    CplSystemState state,
+    bool isUr,
+    int activeIdx,
+  ) {
+    final width = _isSidebarExpanded ? 255.0 : 68.0;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      width: width,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(right: BorderSide(color: CplColors.slate200)),
+      ),
+      child: Column(
+        children: [
+          // Sidebar Header Strip
+          Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: _isSidebarExpanded ? 16 : 12,
+              vertical: 12,
+            ),
+            decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(color: CplColors.slate100)),
+            ),
+            child: Row(
+              mainAxisAlignment:
+                  _isSidebarExpanded ? MainAxisAlignment.spaceBetween : MainAxisAlignment.center,
+              children: [
+                if (_isSidebarExpanded)
+                  Text(
+                    isUr ? 'نیویگیشن مینو' : 'PLANT NAVIGATION',
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      color: CplColors.slate500,
+                      letterSpacing: 0.7,
+                    ),
+                  ),
+                InkWell(
+                  onTap: () => setState(() => _isSidebarExpanded = !_isSidebarExpanded),
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      _isSidebarExpanded ? Icons.chevron_left : Icons.chevron_right,
+                      size: 18,
+                      color: CplColors.slate600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Categorized Navigation Items
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              children: _drawerSections.map((section) {
+                final items = section['items'] as List<Map<String, dynamic>>;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_isSidebarExpanded)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+                        child: Text(
+                          isUr ? section['sectionUr'] as String : section['section'] as String,
+                          style: const TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold,
+                            color: CplColors.slate400,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                      ),
+                    ...items.map((item) {
+                      final idx = item['index'] as int;
+                      final isSelected = activeIdx == idx;
+                      final label = isUr ? item['ur'] as String : item['title'] as String;
+
+                      return Tooltip(
+                        message: _isSidebarExpanded ? '' : label,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? CplColors.corporateNavy
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: InkWell(
+                            onTap: () => context.read<CplSystemCubit>().setScreenIndex(idx),
+                            borderRadius: BorderRadius.circular(10),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: _isSidebarExpanded ? 12 : 0,
+                                vertical: 10,
                               ),
-                            ),
-                            const SizedBox(width: 10),
-
-                            // Export Master Report CTA
-                            ElevatedButton.icon(
-                              onPressed: () async {
-                                final pdfBytes = await PdfReportGenerator.generateShiftTurnoverPdf(
-                                  plantUnit: 'UNIT-1 62.4 MW Co-Gen',
-                                  shiftType: state.currentUser.shift,
-                                  outgoingSupervisor: state.currentUser.name,
-                                  checklistsCompleted: state.checklistItems.length,
-                                  hazardsIdentified: state.hazards.length,
-                                  criticalAlarmsCount: state.activeAlarm != null ? 1 : 0,
-                                  openItems: state.hazards
-                                      .take(4)
-                                      .map((h) => {'title': h.title, 'owner': h.reporter})
-                                      .toList(),
-                                );
-                                final savedPath = await PdfReportGenerator.saveOrShareReport(
-                                  pdfBytes,
-                                  'CPL_NEPRA_ISO_Audit_Report_${DateTime.now().millisecondsSinceEpoch}.pdf',
-                                );
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('NEPRA / ISO 45001 Master Audit Report Saved: $savedPath'),
-                                      backgroundColor: CplColors.emerald500,
-                                    ),
-                                  );
-                                }
-                              },
-                              icon: const Icon(Icons.download, size: 16),
-                              label: const Text('Export Master Report', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: CplColors.emerald500,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-
-                            // Language Toggle Chip
-                            InkWell(
-                              onTap: () => context.read<CplSystemCubit>().toggleLanguage(),
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: CplColors.slate100,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: CplColors.slate200),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.language, size: 16, color: CplColors.slate700),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      isUr ? 'اردو (UR)' : 'EN / اردو',
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                              child: Row(
+                                mainAxisAlignment: _isSidebarExpanded
+                                    ? MainAxisAlignment.start
+                                    : MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    item['icon'] as IconData,
+                                    size: 19,
+                                    color: isSelected ? CplColors.energyAmber : CplColors.slate600,
+                                  ),
+                                  if (_isSidebarExpanded) ...[
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        label,
+                                        style: TextStyle(
+                                          fontSize: 12.5,
+                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                                          color: isSelected ? Colors.white : CplColors.slate800,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ],
-                                ),
+                                ],
                               ),
                             ),
-                          ],
+                          ),
                         ),
+                      );
+                    }),
+                  ],
+                );
+              }).toList(),
+            ),
+          ),
+
+          // Bottom Plant Coordinates Footer
+          if (_isSidebarExpanded)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: const BoxDecoration(
+                color: CplColors.slate50,
+                border: Border(top: BorderSide(color: CplColors.slate200)),
+              ),
+              child: Row(
+                children: const [
+                  Icon(Icons.location_on_outlined, size: 15, color: CplColors.safety500),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Chiniot Power (62.4 MW)\n31.7204° N, 72.9791° E',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontFamily: 'monospace',
+                        color: CplColors.slate600,
                       ),
                     ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 
-                    // Persistent Top Offline Sync Banner for Desktop
-                    if (state.pendingOfflineCount > 0)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                        color: CplColors.amber500,
-                        child: Row(
-                          children: [
-                            const Icon(Icons.cloud_off, color: Colors.white, size: 16),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                isUr
-                                    ? '${state.pendingOfflineCount} رپورٹس آف لائن ہیں — نیٹ ورک سگنل ملنے پر سنک ہو جائیں گی'
-                                    : '${state.pendingOfflineCount} Reports Queued in Offline Storage — will auto-sync on connection',
-                                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            ElevatedButton(
-                              onPressed: () => context.read<CplSystemCubit>().syncOfflineNow(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: CplColors.slate900,
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                elevation: 0,
-                              ),
-                              child: Text(
-                                isUr ? 'ابھی سنک کریں' : 'Sync Now',
-                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+  Widget _buildTopKpiStrip(BuildContext context, CplSystemState state, bool isUr) {
+    final openHazardsCount = state.hazards
+        .where((h) => h.status.toLowerCase() != 'resolved' && h.status.toLowerCase() != 'closed')
+        .length;
+    final criticalCount = state.hazards
+        .where((h) => h.severity.toLowerCase() == 'critical' && h.status.toLowerCase() != 'resolved' && h.status.toLowerCase() != 'closed')
+        .length;
 
-                    // Top 4-Column Live KPI Strip (only shown when authenticated)
-                    if (state.isAuthenticated)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        decoration: const BoxDecoration(
-                          color: CplColors.slate100,
-                          border: Border(bottom: BorderSide(color: CplColors.slate200)),
-                        ),
-                        child: Row(
-                          children: [
-                            _buildKpiCard(
-                              '${state.hazards.where((h) => h.status.toLowerCase() != 'resolved' && h.status.toLowerCase() != 'closed').length} Open Hazards',
-                              '${state.hazards.where((h) => h.severity.toLowerCase() == 'critical' && h.status.toLowerCase() != 'resolved').length} Critical Active',
-                              Icons.warning_amber_rounded,
-                              CplColors.safety500,
-                            ),
-                            const SizedBox(width: 12),
-                            _buildKpiCard(
-                              '${state.roster.where((w) => w.isFullPpe).length} / ${state.roster.length} On-Duty Roster',
-                              'PPE Verified Staff',
-                              Icons.people,
-                              CplColors.emerald500,
-                            ),
-                            const SizedBox(width: 12),
-                            _buildKpiCard(
-                              '${state.permits.where((p) => p.status.toLowerCase() == 'active').length} Active PTW & LOTO',
-                              '${state.permits.where((p) => p.status.toLowerCase() == 'pending').length} Pending Approval',
-                              Icons.lock_clock,
-                              CplColors.corporateNavy,
-                            ),
-                            const SizedBox(width: 12),
-                            _buildKpiCard(
-                              '${state.checklistItems.where((c) => c.status.toLowerCase() == 'pass').length}/${state.checklistItems.length} Shift Checklist',
-                              state.checklistZone,
-                              Icons.fact_check_outlined,
-                              const Color(0xFF8B5CF6),
-                            ),
-                          ],
-                        ),
-                      ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: CplColors.slate200)),
+      ),
+      child: Row(
+        children: [
+          _buildKpiCard(
+            '$openHazardsCount Open Hazards',
+            '$criticalCount Critical • 389 YTD (82.5% Closed)',
+            Icons.warning_amber_rounded,
+            CplColors.safety500,
+            onTap: () => context.read<CplSystemCubit>().setScreenIndex(2),
+          ),
+          const SizedBox(width: 12),
+          _buildKpiCard(
+            '84,730 Safe Man-Hours',
+            '434 Active Personnel (388 CPL + 46 EKL)',
+            Icons.access_time_filled,
+            CplColors.emerald600,
+            onTap: () => context.read<CplSystemCubit>().setScreenIndex(9),
+          ),
+          const SizedBox(width: 12),
+          _buildKpiCard(
+            '${state.permits.where((p) => p.status.toLowerCase() == 'active').length} Active PTW & LOTO',
+            '${state.permits.where((p) => p.status.toLowerCase() == 'pending').length} Pending Approval',
+            Icons.lock_clock,
+            CplColors.corporateNavy,
+            onTap: () => context.read<CplSystemCubit>().setScreenIndex(5),
+          ),
+          const SizedBox(width: 12),
+          _buildKpiCard(
+            '${state.checklistItems.where((c) => c.status.toLowerCase() == 'pass').length}/${state.checklistItems.length} Shift Checklist',
+            state.checklistZone,
+            Icons.fact_check_outlined,
+            const Color(0xFF8B5CF6),
+            onTap: () => context.read<CplSystemCubit>().setScreenIndex(4),
+          ),
+        ],
+      ),
+    );
+  }
 
-                    // Main View Area (Enforce AuthScreen when logged out)
-                    Expanded(
-                      child: !state.isAuthenticated
-                          ? const AuthScreen()
-                          : _getScreenByIndex(activeIdx),
+  Widget _buildKpiCard(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color, {
+    VoidCallback? onTap,
+  }) {
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: CplColors.slate50,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: CplColors.slate200),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withAlpha((0.12 * 255).round()),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: color, size: 18),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(fontSize: 10.5, color: CplColors.slate600),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -408,52 +758,7 @@ class DesktopCommandCenter extends StatelessWidget {
             ],
           ),
         ),
-      );
-      },
-    );
-  }
-
-  Widget _buildKpiCard(String title, String subtitle, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: CplColors.slate200),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 18),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(fontSize: 10.5, color: CplColors.slate600),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
 }
-
