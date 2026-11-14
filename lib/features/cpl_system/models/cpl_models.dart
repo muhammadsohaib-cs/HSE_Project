@@ -87,6 +87,7 @@ class PlantZone extends Equatable {
   final String ur;
   final String coords;
   final int workers;
+  final String riskLevel;
 
   const PlantZone({
     required this.id,
@@ -94,14 +95,34 @@ class PlantZone extends Equatable {
     required this.ur,
     required this.coords,
     required this.workers,
+    this.riskLevel = 'High',
   });
 
+  factory PlantZone.fromJson(Map<String, dynamic> json) => PlantZone(
+        id: json['id']?.toString() ?? 'Z1',
+        name: json['name']?.toString() ?? 'Boiler Area (Unit 1 & 2)',
+        ur: json['ur']?.toString() ?? '',
+        coords: json['coords']?.toString() ?? '31.7204° N, 72.9791° E',
+        workers: json['workers'] is int ? json['workers'] as int : int.tryParse(json['workers']?.toString() ?? '0') ?? 0,
+        riskLevel: json['riskLevel']?.toString() ?? 'High',
+      );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'ur': ur,
+        'coords': coords,
+        'workers': workers,
+        'riskLevel': riskLevel,
+      };
+
   @override
-  List<Object?> get props => [id, name, ur, coords, workers];
+  List<Object?> get props => [id, name, ur, coords, workers, riskLevel];
 }
 
 class HazardItem extends Equatable {
   final String id;
+  final String nmNumber;
   final String title;
   final String zone;
   final String severity;
@@ -109,6 +130,10 @@ class HazardItem extends Equatable {
   final String status;
   final String time;
   final String coords;
+  final String observationType; // 'Unsafe Condition' | 'Unsafe Act'
+  final String categoryType; // 'Safety' | 'ENV'
+  final String responsibleTeam; // 'MMD' | 'EMD' | 'Civil' | 'Ops' | 'Fuel' | 'I&C' | 'Admin' | 'HSE'
+  final String suggestion;
   final bool photoAttached;
   final bool voiceSaved;
   final String? photoUrl;
@@ -116,6 +141,7 @@ class HazardItem extends Equatable {
 
   const HazardItem({
     required this.id,
+    this.nmNumber = '',
     required this.title,
     required this.zone,
     required this.severity,
@@ -123,6 +149,10 @@ class HazardItem extends Equatable {
     required this.status,
     required this.time,
     required this.coords,
+    this.observationType = 'Unsafe Condition',
+    this.categoryType = 'Safety',
+    this.responsibleTeam = 'MMD',
+    this.suggestion = '',
     this.photoAttached = true,
     this.voiceSaved = true,
     this.photoUrl,
@@ -131,6 +161,7 @@ class HazardItem extends Equatable {
 
   Map<String, dynamic> toJson() => {
     'id': id,
+    'nmNumber': nmNumber.isNotEmpty ? nmNumber : id,
     'title': title,
     'zone': zone,
     'severity': severity,
@@ -138,29 +169,59 @@ class HazardItem extends Equatable {
     'status': status,
     'time': time,
     'coords': coords,
+    'observationType': observationType,
+    'categoryType': categoryType,
+    'responsibleTeam': responsibleTeam,
+    'suggestion': suggestion,
     'photoAttached': photoAttached,
     'voiceSaved': voiceSaved,
     'photoUrl': photoUrl,
     'voiceNoteUrl': voiceNoteUrl,
   };
 
-  factory HazardItem.fromJson(Map<String, dynamic> json) => HazardItem(
-    id: json['id'] as String? ?? 'HAZ-${DateTime.now().millisecondsSinceEpoch}',
-    title: json['title'] as String? ?? 'Safety Hazard',
-    zone: json['zone'] as String? ?? 'Boiler House Unit-1',
-    severity: json['severity'] as String? ?? 'Moderate',
-    reporter: json['reporter'] as String? ?? 'Plant Worker',
-    status: json['status'] as String? ?? 'Open',
-    time: json['time'] as String? ?? 'Just now',
-    coords: json['coords'] as String? ?? '31.7204° N, 72.9791° E',
-    photoAttached: json['photoAttached'] as bool? ?? (json['photoUrl'] != null),
-    voiceSaved: json['voiceSaved'] as bool? ?? (json['voiceNoteUrl'] != null),
-    photoUrl: json['photoUrl'] as String?,
-    voiceNoteUrl: json['voiceNoteUrl'] as String?,
-  );
+  factory HazardItem.fromJson(Map<String, dynamic> json) {
+    final resolvedId = (json['id'] ?? json['nmNumber'] ?? '26-CPL-${DateTime.now().millisecondsSinceEpoch % 1000}').toString();
+    return HazardItem(
+      id: resolvedId,
+      nmNumber: (json['nmNumber'] ?? resolvedId).toString(),
+      title: json['title'] as String? ?? 'Safety Observation',
+      zone: json['zone'] as String? ?? 'Boiler Area (Unit 1 & 2)',
+      severity: json['severity'] as String? ?? 'Moderate',
+      reporter: json['reporter'] as String? ?? 'CPL Staff',
+      status: json['status'] as String? ?? 'Open',
+      time: json['time'] as String? ?? 'Just now',
+      coords: json['coords'] as String? ?? '31.7204° N, 72.9791° E',
+      observationType: json['observationType'] as String? ?? 'Unsafe Condition',
+      categoryType: json['categoryType'] as String? ?? 'Safety',
+      responsibleTeam: json['responsibleTeam'] as String? ?? 'MMD',
+      suggestion: (json['suggestion'] ?? json['correctiveAction'] ?? '').toString(),
+      photoAttached: json['photoAttached'] as bool? ?? (json['photoUrl'] != null),
+      voiceSaved: json['voiceSaved'] as bool? ?? (json['voiceNoteUrl'] != null),
+      photoUrl: json['photoUrl'] as String?,
+      voiceNoteUrl: json['voiceNoteUrl'] as String?,
+    );
+  }
 
   @override
-  List<Object?> get props => [id, title, zone, severity, reporter, status, time, coords, photoAttached, voiceSaved, photoUrl, voiceNoteUrl];
+  List<Object?> get props => [
+        id,
+        nmNumber,
+        title,
+        zone,
+        severity,
+        reporter,
+        status,
+        time,
+        coords,
+        observationType,
+        categoryType,
+        responsibleTeam,
+        suggestion,
+        photoAttached,
+        voiceSaved,
+        photoUrl,
+        voiceNoteUrl,
+      ];
 }
 
 class CapaItem extends Equatable {
@@ -295,6 +356,8 @@ class TrainingModule extends Equatable {
   final String status;
   final String expiry;
   final String score;
+  final String shiftGroup;
+  final String leadTrainer;
 
   const TrainingModule({
     required this.id,
@@ -304,9 +367,17 @@ class TrainingModule extends Equatable {
     required this.status,
     required this.expiry,
     required this.score,
+    this.shiftGroup = 'All Shifts',
+    this.leadTrainer = 'Sumaira Rafique [3648]',
   });
 
-  TrainingModule copyWith({String? status, String? expiry, String? score}) {
+  TrainingModule copyWith({
+    String? status,
+    String? expiry,
+    String? score,
+    String? shiftGroup,
+    String? leadTrainer,
+  }) {
     return TrainingModule(
       id: id,
       title: title,
@@ -315,11 +386,13 @@ class TrainingModule extends Equatable {
       status: status ?? this.status,
       expiry: expiry ?? this.expiry,
       score: score ?? this.score,
+      shiftGroup: shiftGroup ?? this.shiftGroup,
+      leadTrainer: leadTrainer ?? this.leadTrainer,
     );
   }
 
   @override
-  List<Object?> get props => [id, title, ur, duration, status, expiry, score];
+  List<Object?> get props => [id, title, ur, duration, status, expiry, score, shiftGroup, leadTrainer];
 }
 
 class WorkerRosterItem extends Equatable {
@@ -328,6 +401,10 @@ class WorkerRosterItem extends Equatable {
   final String ur;
   final String role;
   final String zone;
+  final String shift; // 'Shift A', 'Shift B', 'Shift C', 'Shift D', 'General'
+  final String designation; // 'SM', 'DSM', 'ASM', 'CRO', 'Sr PO', 'PO', 'APO', 'Shift Chemist', 'Sr. Fireman', 'Helper', 'HSE / Fire Fighter'
+  final String attendanceStatus; // 'D', 'N', 'G', 'R', 'L', 'GH', 'SWP'
+  final int nightsPerformed;
   final bool helmet;
   final bool shoes;
   final bool gloves;
@@ -339,6 +416,10 @@ class WorkerRosterItem extends Equatable {
     required this.ur,
     required this.role,
     required this.zone,
+    this.shift = 'Shift A',
+    this.designation = 'PO',
+    this.attendanceStatus = 'D',
+    this.nightsPerformed = 7,
     required this.helmet,
     required this.shoes,
     required this.gloves,
@@ -346,6 +427,10 @@ class WorkerRosterItem extends Equatable {
   });
 
   WorkerRosterItem copyWith({
+    String? shift,
+    String? designation,
+    String? attendanceStatus,
+    int? nightsPerformed,
     bool? helmet,
     bool? shoes,
     bool? gloves,
@@ -357,6 +442,10 @@ class WorkerRosterItem extends Equatable {
       ur: ur,
       role: role,
       zone: zone,
+      shift: shift ?? this.shift,
+      designation: designation ?? this.designation,
+      attendanceStatus: attendanceStatus ?? this.attendanceStatus,
+      nightsPerformed: nightsPerformed ?? this.nightsPerformed,
       helmet: helmet ?? this.helmet,
       shoes: shoes ?? this.shoes,
       gloves: gloves ?? this.gloves,
@@ -364,10 +453,58 @@ class WorkerRosterItem extends Equatable {
     );
   }
 
+  factory WorkerRosterItem.fromJson(Map<String, dynamic> json) => WorkerRosterItem(
+        empId: (json['empId'] ?? 'CPL-EMP-0000').toString(),
+        name: (json['name'] ?? '').toString(),
+        ur: (json['ur'] ?? json['name'] ?? '').toString(),
+        role: (json['role'] ?? 'Plant Worker').toString(),
+        zone: (json['zone'] ?? 'Boiler Area (Unit 1 & 2)').toString(),
+        shift: (json['shift'] ?? 'Shift A').toString(),
+        designation: (json['designation'] ?? json['role'] ?? 'PO').toString(),
+        attendanceStatus: (json['attendanceStatus'] ?? 'D').toString(),
+        nightsPerformed: json['nightsPerformed'] is int
+            ? json['nightsPerformed'] as int
+            : int.tryParse(json['nightsPerformed']?.toString() ?? '7') ?? 7,
+        helmet: json['helmet'] as bool? ?? true,
+        shoes: json['shoes'] as bool? ?? true,
+        gloves: json['gloves'] as bool? ?? true,
+        ear: json['ear'] as bool? ?? true,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'empId': empId,
+        'name': name,
+        'ur': ur,
+        'role': role,
+        'zone': zone,
+        'shift': shift,
+        'designation': designation,
+        'attendanceStatus': attendanceStatus,
+        'nightsPerformed': nightsPerformed,
+        'helmet': helmet,
+        'shoes': shoes,
+        'gloves': gloves,
+        'ear': ear,
+      };
+
   bool get isFullPpe => helmet && shoes && gloves && ear;
 
   @override
-  List<Object?> get props => [empId, name, ur, role, zone, helmet, shoes, gloves, ear];
+  List<Object?> get props => [
+        empId,
+        name,
+        ur,
+        role,
+        zone,
+        shift,
+        designation,
+        attendanceStatus,
+        nightsPerformed,
+        helmet,
+        shoes,
+        gloves,
+        ear,
+      ];
 }
 
 class PendingUserRegistration extends Equatable {

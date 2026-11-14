@@ -130,5 +130,53 @@ void main() {
 
       expect(find.text('All Plant Zones Clear — No Active Hazards'), findsOneWidget);
     });
+
+    testWidgets('Real CPL personnel login (raw EMP_CODE 3648 & 509) and Oct-2026 operational dataset verification', (tester) async {
+      final cubit = CplSystemCubit();
+
+      // Verify 10 real CPL Plant Zones, 10 Oct-2026 Near-Miss Hazards, 4 Shift HSE Trainings, 23 Nov-2026 Roster entries
+      expect(cubit.state.zones.length, equals(10));
+      expect(cubit.state.zones.first.name, equals('Boiler Area (Unit 1 & 2)'));
+      expect(cubit.state.zones.first.workers, equals(43));
+      expect(cubit.state.hazards.length, equals(10));
+      expect(cubit.state.hazards.first.nmNumber, equals('26-CPL-474'));
+      expect(cubit.state.trainings.length, equals(4));
+      expect(cubit.state.roster.length, equals(24));
+
+      // Login using raw numeric EMP_CODE '3648' (Sumaira Rafique, HSE Manager)
+      final login3648 = await cubit.login(
+        empId: '3648',
+        shift: 'General Shift (08:00 - 17:00)',
+        role: 'HSE Manager',
+        pin: '3648',
+      );
+      expect(login3648, isTrue);
+      expect(cubit.state.currentUser.empId, equals('CPL-EMP-3648'));
+      expect(cubit.state.currentUser.name, equals('Sumaira Rafique'));
+
+      // Login using raw numeric EMP_CODE '509' (Muhammad Shahbaz, Shift Manager Shift A)
+      final login509 = await cubit.login(
+        empId: '509',
+        shift: 'Shift A (07:00 - 19:00 / 19:00 - 07:00)',
+        role: 'Shift Manager (Shift A)',
+        pin: '509',
+      );
+      expect(login509, isTrue);
+      expect(cubit.state.currentUser.empId, equals('CPL-EMP-0509'));
+      expect(cubit.state.currentUser.name, equals('Muhammad Shahbaz'));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider<CplSystemCubit>.value(
+            value: cubit,
+            child: const Scaffold(body: DashboardScreen()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('84,730 Safe Man-Hours • 434 Active Personnel'), findsOneWidget);
+      expect(find.textContaining('26-CPL-474'), findsWidgets);
+    });
   });
 }

@@ -35,6 +35,14 @@ function formatUserResponse(user) {
   };
 }
 
+function normalizeEmpId(raw) {
+  const s = (raw || '').toString().trim().toUpperCase();
+  if (/^\d+$/.test(s)) {
+    return `CPL-EMP-${s.padStart(4, '0')}`;
+  }
+  return s;
+}
+
 // POST /api/auth/login & /api/v1/auth/login
 router.post('/login', (req, res) => {
   const rawEmpId = req.body.empId || req.body.employeeId;
@@ -48,13 +56,18 @@ router.post('/login', (req, res) => {
     return res.status(400).json({ success: false, message: 'Password or Security PIN is required.' });
   }
 
-  const cleanInputId = rawEmpId.toString().trim().toUpperCase();
+  const rawTrimmed = rawEmpId.toString().trim().toUpperCase();
+  const cleanInputId = normalizeEmpId(rawTrimmed);
   const secret = rawSecret.toString().trim();
   const db = readDb();
   if (!db.users) db.users = [];
 
-  // Exact case-insensitive match first, then CP- <-> CPL- prefix fallback
-  let user = db.users.find(u => u.employeeId && u.employeeId.toUpperCase() === cleanInputId);
+  // Exact case-insensitive match first, then raw numeric empCode, then CP- <-> CPL- prefix fallback
+  let user = db.users.find(
+    u =>
+      (u.employeeId && u.employeeId.toUpperCase() === cleanInputId) ||
+      (u.empCode && u.empCode.toString().toUpperCase() === rawTrimmed)
+  );
   if (!user) {
     user = db.users.find(u => {
       if (!u.employeeId) return false;
@@ -79,7 +92,11 @@ router.post('/login', (req, res) => {
 
   // Strictly verify Password / PIN
   let isVerified = false;
-  if (user.pin && user.pin.toString().trim() === secret) {
+  if (
+    user.pin &&
+    (user.pin.toString().trim() === secret ||
+      (/^\d+$/.test(secret) && user.pin.toString().trim() === secret.padStart(4, '0')))
+  ) {
     isVerified = true;
   } else if (user.passwordHash) {
     try {
@@ -129,12 +146,12 @@ router.post('/register', (req, res) => {
     return res.status(400).json({ success: false, message: 'Password or Security PIN is required for registration.' });
   }
 
-  const cleanId = rawEmpId.toString().trim().toUpperCase();
+  const cleanId = normalizeEmpId(rawEmpId);
   const cleanName = rawFullName.toString().trim();
   const assignedSecret = rawSecret.toString().trim();
   const assignedRole = (role && role.toString().trim().length > 0) ? role.toString().trim() : 'Plant Worker';
-  const assignedShift = shift || 'Shift A: Morning';
-  const resolvedZone = assignedZone || plantZone || zone || 'Boiler House Unit-1';
+  const assignedShift = shift || 'Shift A (07:00 - 19:00 / 19:00 - 07:00)';
+  const resolvedZone = assignedZone || plantZone || zone || 'Boiler Area (Unit 1 & 2)';
   const cleanCnic = cnic ? cnic.toString().trim() : '33202-0000000-1';
 
   const db = readDb();

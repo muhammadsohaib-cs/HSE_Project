@@ -21,7 +21,7 @@ class _HazardReportScreenState extends State<HazardReportScreen> with SingleTick
 
   String _selectedCategory = 'Steam Leak';
   String _selectedSeverity = 'High';
-  String _selectedZone = 'Boiler House Unit-1';
+  String _selectedZone = 'Boiler Area (Unit 1 & 2)';
   final _descController = TextEditingController(
     text: 'High-pressure steam weeping at valve flange FV-14, temperature above 240°C.',
   );
@@ -252,7 +252,7 @@ class _HazardReportScreenState extends State<HazardReportScreen> with SingleTick
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
-                      value: _selectedZone,
+                      value: zones.contains(_selectedZone) ? _selectedZone : zones.first,
                       isExpanded: true,
                       icon: const Icon(Icons.arrow_drop_down, color: CplColors.slate700),
                       items: zones.map((z) {

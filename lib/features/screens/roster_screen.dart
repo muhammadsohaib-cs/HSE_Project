@@ -14,8 +14,22 @@ class RosterScreen extends StatelessWidget {
     return BlocBuilder<CplSystemCubit, CplSystemState>(
       builder: (context, state) {
         final isUr = state.isUrdu;
-        final roster = state.roster;
-        final fullyCompliantCount = roster.where((w) => w.isFullPpe).length;
+        final shiftFilter = state.rosterShiftFilter;
+        final areaFilter = state.rosterAreaFilter;
+
+        final filteredRoster = state.roster.where((w) {
+          final matchesShift = shiftFilter == 'All' ||
+              w.shift.toLowerCase() == shiftFilter.toLowerCase();
+          final matchesArea = areaFilter == 'All' ||
+              w.zone.toLowerCase().contains(areaFilter.toLowerCase());
+          return matchesShift && matchesArea;
+        }).toList();
+
+        final fullyCompliantCount =
+            filteredRoster.where((w) => w.isFullPpe).length;
+
+        const shiftOptions = ['All', 'Shift A', 'Shift B', 'Shift C', 'Shift D', 'General'];
+        const areaOptions = ['All', 'Boiler', 'TG', 'CCR', 'Fuel', 'WTP', 'BPL', 'ESP', 'Grid'];
 
         return Scaffold(
           backgroundColor: CplColors.slate50,
@@ -36,7 +50,7 @@ class RosterScreen extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '148 / 148 Accounted For • Shift A',
+                  '$fullyCompliantCount / ${filteredRoster.length} PPE Verified • $shiftFilter (${state.roster.length} Active Roster • 434 Plant Total)',
                   style: CplTypography.caption(context).copyWith(color: CplColors.slate400),
                 ),
               ],
@@ -71,7 +85,7 @@ class RosterScreen extends StatelessWidget {
                               Icon(Icons.people_alt, size: 20, color: CplColors.safety500),
                               SizedBox(width: 8),
                               Text(
-                                'On-Site Muster Headcount',
+                                'Nov-2026 Attendance & Muster Roll',
                                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                               ),
                             ],
@@ -82,9 +96,9 @@ class RosterScreen extends StatelessWidget {
                               color: CplColors.emerald500.withOpacity(0.12),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Text(
-                              '148 / 148 SAFE',
-                              style: TextStyle(
+                            child: Text(
+                              '$fullyCompliantCount / ${filteredRoster.length} SAFE',
+                              style: const TextStyle(
                                 color: CplColors.emerald500,
                                 fontWeight: FontWeight.w900,
                                 fontSize: 12,
@@ -97,17 +111,73 @@ class RosterScreen extends StatelessWidget {
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          _buildZoneBadge('Boiler Unit-1', '34 Safe', CplColors.safety500),
+                          _buildZoneBadge('Boiler (Z1)', '43 Staff', CplColors.safety500),
                           const SizedBox(width: 6),
-                          _buildZoneBadge('Bagasse Yard', '38 Safe', CplColors.amber500),
+                          _buildZoneBadge('Fuel & Bagasse', '92 Staff', CplColors.amber500),
                           const SizedBox(width: 6),
-                          _buildZoneBadge('Turbine & Grid', '76 Safe', const Color(0xFF8B5CF6)),
+                          _buildZoneBadge('CCR & TG Hall', '88 Staff', const Color(0xFF8B5CF6)),
                         ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
+
+                // Dynamic Shift Filter Chips (Shift A, Shift B, Shift C, Shift D, General)
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: shiftOptions.map((s) {
+                      final selected = shiftFilter == s;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ChoiceChip(
+                          label: Text(
+                            s,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: selected ? Colors.white : CplColors.slate700,
+                            ),
+                          ),
+                          selected: selected,
+                          selectedColor: CplColors.corporateNavy,
+                          backgroundColor: Colors.white,
+                          onSelected: (_) => context.read<CplSystemCubit>().setRosterShiftFilter(s),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 6),
+
+                // Dynamic Plant Area Filter Chips
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: areaOptions.map((a) {
+                      final selected = areaFilter == a;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 6),
+                        child: ChoiceChip(
+                          label: Text(
+                            a == 'All' ? 'All Areas' : a,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w600,
+                              color: selected ? Colors.white : CplColors.slate700,
+                            ),
+                          ),
+                          selected: selected,
+                          selectedColor: CplColors.safety500,
+                          backgroundColor: Colors.white,
+                          onSelected: (_) => context.read<CplSystemCubit>().setRosterAreaFilter(a),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 12),
 
                 // PPE Compliance Progress Header
                 Row(
@@ -118,9 +188,9 @@ class RosterScreen extends StatelessWidget {
                       style: CplTypography.subheading(context).copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      '$fullyCompliantCount / ${roster.length} Compliant',
+                      '$fullyCompliantCount / ${filteredRoster.length} Compliant',
                       style: TextStyle(
-                        color: fullyCompliantCount == roster.length ? CplColors.emerald500 : CplColors.safety500,
+                        color: fullyCompliantCount == filteredRoster.length ? CplColors.emerald500 : CplColors.safety500,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       ),
@@ -130,7 +200,7 @@ class RosterScreen extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 // Worker Cards
-                ...roster.map((worker) {
+                ...filteredRoster.map((worker) {
                   final isCompliant = worker.isFullPpe;
 
                   return Container(
@@ -151,32 +221,73 @@ class RosterScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Text(
-                                      worker.empId,
-                                      style: CplTypography.mono().copyWith(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: CplColors.safety500,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        worker.empId,
+                                        style: CplTypography.mono().copyWith(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: CplColors.safety500,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      worker.name,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  '${worker.role} • ${worker.zone}',
-                                  style: TextStyle(fontSize: 11.5, color: CplColors.slate600),
-                                ),
-                              ],
+                                      const SizedBox(width: 8),
+                                      Flexible(
+                                        child: Text(
+                                          worker.name,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '${worker.designation} • ${worker.zone}',
+                                    style: TextStyle(fontSize: 11.5, color: CplColors.slate600),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: CplColors.slate100,
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        child: Text(
+                                          worker.shift,
+                                          style: CplTypography.mono(
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: CplColors.corporateNavy,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: CplColors.emerald50,
+                                          borderRadius: BorderRadius.circular(5),
+                                        ),
+                                        child: Text(
+                                          'Duty: ${worker.attendanceStatus} • Nights: ${worker.nightsPerformed}',
+                                          style: CplTypography.mono(
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: CplColors.emerald700,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

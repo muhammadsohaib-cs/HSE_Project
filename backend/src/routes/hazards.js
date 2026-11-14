@@ -22,6 +22,8 @@ router.post(
   ]),
   (req, res) => {
     const {
+      id,
+      nmNumber,
       title,
       zone,
       severity = 'Moderate',
@@ -29,6 +31,10 @@ router.post(
       reporter,
       reporterId,
       coords = '31.7204° N, 72.9791° E',
+      observationType = 'Unsafe Condition',
+      categoryType = 'Safety',
+      responsibleTeam = 'MMD',
+      suggestion,
       correctiveAction,
       assignedTo
     } = req.body;
@@ -57,23 +63,29 @@ router.post(
       }
     }
 
-    const hazardId = `HAZ-${Date.now().toString().slice(-4)}`;
+    const resolvedNm = nmNumber || id || `26-CPL-${475 + (db.hazards ? db.hazards.length : 0)}`;
+    const resolvedSuggestion = suggestion || correctiveAction || 'Site inspection and hazard isolation underway';
     const newHazard = {
-      id: hazardId,
+      id: resolvedNm,
+      nmNumber: resolvedNm,
       title: title.trim(),
       zone: zone.trim(),
       severity,
       probability: probNum,
       score: computedScore,
-      reporter: reporter || 'CPL Plant Worker',
-      reporterId: reporterId || 'CP-EMP-XXXX',
+      reporter: reporter || 'CPL Staff',
+      reporterId: reporterId || 'CPL-EMP-3845',
       status: 'Open',
       time: 'Just now',
       coords,
+      observationType,
+      categoryType,
+      responsibleTeam,
+      suggestion: resolvedSuggestion,
       photoUrl,
       voiceNoteUrl,
-      correctiveAction: correctiveAction || 'Site inspection and hazard isolation underway',
-      assignedTo: assignedTo || 'HSE Shift Lead',
+      correctiveAction: resolvedSuggestion,
+      assignedTo: assignedTo || responsibleTeam,
       createdAt: new Date().toISOString()
     };
 

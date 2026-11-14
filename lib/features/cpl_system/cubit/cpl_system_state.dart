@@ -27,6 +27,8 @@ class CplSystemState extends Equatable {
   final int pendingOfflineCount;
   final List<AuditLogItem> auditLogs;
   final String? lastAuthError;
+  final String rosterShiftFilter;
+  final String rosterAreaFilter;
 
   const CplSystemState({
     required this.language,
@@ -54,6 +56,8 @@ class CplSystemState extends Equatable {
     this.pendingOfflineCount = 0,
     this.auditLogs = const [],
     this.lastAuthError,
+    this.rosterShiftFilter = 'All',
+    this.rosterAreaFilter = 'All',
   });
 
   int get riskScore => selectedLikelihood * selectedSeverity;
@@ -63,15 +67,26 @@ class CplSystemState extends Equatable {
   bool get isAuthenticated => currentUser.isNotEmpty;
 
   // Role-Based Access Control (RBAC) Permitted Actions
-  bool get isManager =>
-      currentUser.role.toLowerCase() == 'manager' ||
-      currentUser.role.toLowerCase() == 'admin' ||
-      currentUser.role.toLowerCase() == 'hse manager';
+  bool get isManager {
+    final r = currentUser.role.toLowerCase();
+    return r == 'manager' ||
+        r == 'admin' ||
+        r == 'hse manager' ||
+        r.contains('dy. manager') ||
+        r.contains('plant manager') ||
+        r.contains('general manager') ||
+        r.contains('dgm') ||
+        r.contains('shift manager');
+  }
 
-  bool get isInspector =>
-      currentUser.role.toLowerCase() == 'inspector' ||
-      currentUser.role.toLowerCase() == 'safety officer' ||
-      isManager;
+  bool get isInspector {
+    final r = currentUser.role.toLowerCase();
+    return r == 'inspector' ||
+        r == 'safety officer' ||
+        r.contains('fire fighter') ||
+        r.contains('fireman') ||
+        isManager;
+  }
 
   bool get canApprovePtw => isManager;
   bool get canAccessAdminPanel => isManager;
@@ -111,6 +126,8 @@ class CplSystemState extends Equatable {
     int? pendingOfflineCount,
     List<AuditLogItem>? auditLogs,
     String? Function()? lastAuthError,
+    String? rosterShiftFilter,
+    String? rosterAreaFilter,
   }) {
     return CplSystemState(
       language: language ?? this.language,
@@ -138,6 +155,8 @@ class CplSystemState extends Equatable {
       pendingOfflineCount: pendingOfflineCount ?? this.pendingOfflineCount,
       auditLogs: auditLogs ?? this.auditLogs,
       lastAuthError: lastAuthError != null ? lastAuthError() : this.lastAuthError,
+      rosterShiftFilter: rosterShiftFilter ?? this.rosterShiftFilter,
+      rosterAreaFilter: rosterAreaFilter ?? this.rosterAreaFilter,
     );
   }
 
@@ -168,5 +187,7 @@ class CplSystemState extends Equatable {
         pendingOfflineCount,
         auditLogs,
         lastAuthError,
+        rosterShiftFilter,
+        rosterAreaFilter,
       ];
 }

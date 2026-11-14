@@ -40,6 +40,7 @@ class DashboardScreen extends StatelessWidget {
 
     // 1. Submitted Hazards
     for (final h in state.hazards.take(3)) {
+      final nmTag = h.nmNumber.isNotEmpty ? '[${h.nmNumber}] ' : '';
       entries.add(_LiveActivityEntry(
         icon: h.severity.toLowerCase() == 'critical'
             ? Icons.warning_amber_rounded
@@ -47,8 +48,8 @@ class DashboardScreen extends StatelessWidget {
         accent: h.severity.toLowerCase() == 'critical'
             ? CplColors.red600
             : CplColors.safety500,
-        title: h.title,
-        subtitle: '${h.reporter} • ${h.zone}',
+        title: '$nmTag${h.title}',
+        subtitle: '${h.reporter} • ${h.zone} • Resp: ${h.responsibleTeam}',
         timestamp: h.time,
         badge: h.status.toUpperCase(),
         targetScreen: 2,
@@ -544,6 +545,14 @@ class DashboardScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+
+              // 4B. Real CPL Oct-2026 Safe Man-Hours & Workforce Breakdown Card
+              _buildManHoursSummaryCard(context, isUrdu),
+              const SizedBox(height: 12),
+
+              // 4C. Live CPL Shift Rotation & Duty Schedule Indicator Card
+              _buildShiftRotationCard(isUrdu),
               const SizedBox(height: 16),
 
               // 5. Quick Field Actions Grid (6 Modules)
@@ -846,7 +855,7 @@ class DashboardScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${latestAlertHazard.severity.toUpperCase()} ALERT • ${latestAlertHazard.zone}',
+                  '${latestAlertHazard.nmNumber.isNotEmpty ? "${latestAlertHazard.nmNumber} • " : ""}${latestAlertHazard.severity.toUpperCase()} ALERT • ${latestAlertHazard.zone}',
                   style: CplTypography.mono(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -855,7 +864,7 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '${latestAlertHazard.title} — Reported by ${latestAlertHazard.reporter} (${latestAlertHazard.time})',
+                  '${latestAlertHazard.title} — Reported by ${latestAlertHazard.reporter} (${latestAlertHazard.time}) • Resp: ${latestAlertHazard.responsibleTeam}',
                   style: CplTypography.body(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
@@ -864,6 +873,175 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildManHoursSummaryCard(BuildContext context, bool isUrdu) {
+    const deptBreakdown = [
+      {'dept': 'Admin & HR', 'staff': 108, 'hours': '24,204'},
+      {'dept': 'Operations Deptt.', 'staff': 106, 'hours': '18,326'},
+      {'dept': 'Fuel Dept', 'staff': 92, 'hours': '17,010'},
+      {'dept': 'Mechanical (MMD)', 'staff': 27, 'hours': '5,252'},
+      {'dept': 'Safety & Health', 'staff': 12, 'hours': '3,310'},
+      {'dept': 'Electrical (EMD)', 'staff': 10, 'hours': '1,644'},
+      {'dept': 'I&C', 'staff': 9, 'hours': '1,644'},
+      {'dept': 'Civil', 'staff': 6, 'hours': '1,056'},
+      {'dept': 'Stores', 'staff': 8, 'hours': '948'},
+    ];
+
+    return InkWell(
+      onTap: () => context.read<CplSystemCubit>().setScreenIndex(9),
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: CplColors.slate200),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: CplColors.emerald50,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.access_time_filled, size: 16, color: CplColors.emerald600),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              isUrdu ? 'ماہانہ محفوظ ورکنگ آورز (اکتوبر 2026)' : 'MONTHLY SAFE MAN-HOURS (OCT 2026)',
+                              overflow: TextOverflow.ellipsis,
+                              style: CplTypography.mono(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: CplColors.slate700,
+                              ),
+                            ),
+                            Text(
+                              '84,730 Safe Man-Hours • 434 Active Personnel',
+                              overflow: TextOverflow.ellipsis,
+                              style: CplTypography.displayHeading(
+                                fontSize: 15,
+                                color: CplColors.corporateNavy,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: CplColors.emerald50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: CplColors.emerald500.withAlpha((0.4 * 255).round())),
+                  ),
+                  child: Text(
+                    'ZERO LTI',
+                    style: CplTypography.mono(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: CplColors.emerald700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'CPL Site Staff: 388 (75,082 hrs • 121 Perm, 253 Temp, 9 Daily Wages, 5 Contract)  |  EKL Contractors: 46 (9,648 hrs)',
+              style: CplTypography.body(
+                fontSize: 10.5,
+                color: CplColors.slate600,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: deptBreakdown.map((d) {
+                  return Container(
+                    margin: const EdgeInsets.only(right: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: CplColors.slate50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: CplColors.slate200),
+                    ),
+                    child: Text(
+                      '${d['dept']}: ${d['staff']} staff • ${d['hours']} hrs',
+                      style: CplTypography.mono(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w600,
+                        color: CplColors.slate800,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShiftRotationCard(bool isUrdu) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: CplColors.slate900,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.sync_alt, size: 15, color: CplColors.energyAmber),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  isUrdu
+                      ? 'لائیو پلانٹ شفٹ روٹیشن شیڈول (نومبر 2026)'
+                      : 'LIVE CPL PLANT SHIFT ROTATION ENGINE (NOV 2026)',
+                  style: CplTypography.mono(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: CplColors.energyAmber,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '• General Shift (G): 08:00 AM – 05:00 PM (Mon–Fri, 9 hrs) • 08:00 AM – 01:00 PM (Sat, 5 hrs) • Sunday Rest',
+            style: CplTypography.body(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            '• 12-Hour Rotating Plant Shifts (A, B, C, D): Morning (D): 07:00 AM – 07:00 PM | Night (N): 07:00 PM – 07:00 AM (2 Days → 2 Nights → 4 Rest)',
+            style: CplTypography.body(fontSize: 10.5, color: CplColors.slate300, fontWeight: FontWeight.w500),
           ),
         ],
       ),

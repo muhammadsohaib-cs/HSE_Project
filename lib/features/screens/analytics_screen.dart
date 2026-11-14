@@ -15,21 +15,22 @@ class AnalyticsScreen extends StatelessWidget {
         final isUr = state.isUrdu;
         final period = state.analyticsPeriod;
 
+        final all2026Months = [
+          {'month': 'Jan', 'hazards': 41, 'closed': 40, 'open': 1, 'rate': '97.6%'},
+          {'month': 'Feb', 'hazards': 13, 'closed': 12, 'open': 1, 'rate': '92.3%'},
+          {'month': 'Mar', 'hazards': 23, 'closed': 23, 'open': 0, 'rate': '100%'},
+          {'month': 'Apr', 'hazards': 48, 'closed': 41, 'open': 7, 'rate': '85.4%'},
+          {'month': 'May', 'hazards': 56, 'closed': 49, 'open': 7, 'rate': '87.5%'},
+          {'month': 'Jun', 'hazards': 45, 'closed': 39, 'open': 6, 'rate': '86.7%'},
+          {'month': 'Jul', 'hazards': 79, 'closed': 61, 'open': 18, 'rate': '77.2%'},
+          {'month': 'Aug', 'hazards': 38, 'closed': 30, 'open': 8, 'rate': '78.9%'},
+          {'month': 'Sep', 'hazards': 23, 'closed': 20, 'open': 3, 'rate': '87.0%'},
+          {'month': 'Oct', 'hazards': 23, 'closed': 6, 'open': 17, 'rate': '26.1%'},
+        ];
+
         final monthlyData = period == '6M'
-            ? [
-                {'month': 'Jun', 'hazards': 18, 'closed': 17},
-                {'month': 'Jul', 'hazards': 14, 'closed': 14},
-                {'month': 'Aug', 'hazards': 22, 'closed': 20},
-                {'month': 'Sep', 'hazards': 11, 'closed': 11},
-                {'month': 'Oct', 'hazards': 8, 'closed': 8},
-                {'month': 'Nov', 'hazards': 3, 'closed': 2},
-              ]
-            : [
-                {'month': 'Q1', 'hazards': 48, 'closed': 45},
-                {'month': 'Q2', 'hazards': 54, 'closed': 52},
-                {'month': 'Q3', 'hazards': 41, 'closed': 39},
-                {'month': 'Q4', 'hazards': 22, 'closed': 21},
-              ];
+            ? all2026Months.sublist(4) // May - Oct 2026
+            : all2026Months; // Jan - Oct 2026 (389 Total, 321 Closed, 68 Open)
 
         return Scaffold(
           backgroundColor: CplColors.slate50,
@@ -116,18 +117,15 @@ class AnalyticsScreen extends StatelessWidget {
                 // Top KPI Grid: 96.2% CAPA Closure & 218 Safe Days
                 Row(
                   children: [
-                      // Dynamic CAPA and Safe Streak calculations
+                      // Dynamic CAPA / Near-Miss Closure and Safe Man-Hours calculations
                       () {
-                        final totalCapas = state.capas.length;
-                        final closedCapas = state.capas.where((c) => c.signedOff).length;
-                        final capaRate = totalCapas > 0 ? (closedCapas / totalCapas) : 0.96;
-                        final capaDisplay = (capaRate * 100).toStringAsFixed(1);
+                        const nmClosureRate = 0.825; // 321 / 389 Closed in 2026 (82.5%)
+                        const nmClosureDisplay = '82.5';
                         final streakDays = (DateTime.now().difference(DateTime(2025, 4, 1)).inDays).clamp(1, 9999);
-                        final safeManHours = ((streakDays * 17600) / 1000000).toStringAsFixed(2);
 
                         return Row(
                           children: [
-                            // CAPA Closure Gauge Card
+                            // 2026 Near-Miss Closure Gauge Card
                             Expanded(
                               child: Container(
                                 padding: const EdgeInsets.all(16),
@@ -145,15 +143,15 @@ class AnalyticsScreen extends StatelessWidget {
                                           width: 72,
                                           height: 72,
                                           child: CircularProgressIndicator(
-                                            value: capaRate,
+                                            value: nmClosureRate,
                                             strokeWidth: 8,
                                             backgroundColor: CplColors.slate100,
                                             valueColor: const AlwaysStoppedAnimation<Color>(CplColors.emerald500),
                                           ),
                                         ),
-                                        Text(
-                                          '$capaDisplay%',
-                                          style: const TextStyle(
+                                        const Text(
+                                          '$nmClosureDisplay%',
+                                          style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w900,
                                             fontFamily: 'monospace',
@@ -163,12 +161,12 @@ class AnalyticsScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
-                                      isUr ? 'سی اے پی اے حل کی شرح' : 'CAPA Resolution Rate',
+                                      isUr ? '2026 نیئر مس کلوزر ریٹ' : '2026 Near-Miss Closure Rate',
                                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                                       textAlign: TextAlign.center,
                                     ),
-                                    Text(
-                                      'Target: >95.0%',
+                                    const Text(
+                                      '321 Closed / 389 Total (68 Open)',
                                       style: TextStyle(fontSize: 10.5, color: CplColors.emerald500, fontWeight: FontWeight.w600),
                                     ),
                                   ],
@@ -176,7 +174,7 @@ class AnalyticsScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 12),
-                            // Safe Work Days Card
+                            // Safe Man-Hours & Workforce Card
                             Expanded(
                               child: Container(
                                 padding: const EdgeInsets.all(16),
@@ -194,27 +192,27 @@ class AnalyticsScreen extends StatelessWidget {
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: const Text(
-                                        'ZERO LTI',
+                                        'ZERO LTI • OCT 2026',
                                         style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                                       ),
                                     ),
                                     const SizedBox(height: 8),
-                                    Text(
-                                      '$streakDays',
-                                      style: const TextStyle(
+                                    const Text(
+                                      '84,730',
+                                      style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 32,
+                                        fontSize: 28,
                                         fontWeight: FontWeight.w900,
                                         fontFamily: 'monospace',
                                       ),
                                     ),
                                     Text(
-                                      isUr ? 'محفوظ کام کے دن' : 'Safe Work Days',
+                                      isUr ? 'ماہانہ محفوظ ورکنگ آورز' : 'Monthly Safe Man-Hours',
                                       style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                                     ),
                                     Text(
-                                      '$safeManHours Million Safe Man-Hours',
-                                      style: TextStyle(color: CplColors.slate400, fontSize: 10),
+                                      '434 Personnel (388 CPL + 46 EKL) • $streakDays Safe Days',
+                                      style: const TextStyle(color: CplColors.slate400, fontSize: 10),
                                     ),
                                   ],
                                 ),
@@ -265,27 +263,32 @@ class AnalyticsScreen extends StatelessWidget {
                         children: monthlyData.map((d) {
                           final h = (d['hazards'] as int).toDouble();
                           final c = (d['closed'] as int).toDouble();
-                          const maxH = 25.0;
+                          const maxH = 85.0;
 
                           return Expanded(
                             child: Column(
                               children: [
+                                Text(
+                                  '${d['closed']}/${d['hazards']}',
+                                  style: const TextStyle(fontSize: 8.5, fontFamily: 'monospace', color: CplColors.slate600),
+                                ),
+                                const SizedBox(height: 3),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
                                     Container(
-                                      width: 10,
-                                      height: (h / maxH) * 85,
+                                      width: 8,
+                                      height: ((h / maxH) * 85).clamp(4.0, 85.0),
                                       decoration: BoxDecoration(
                                         color: CplColors.safety500,
                                         borderRadius: BorderRadius.circular(3),
                                       ),
                                     ),
-                                    const SizedBox(width: 3),
+                                    const SizedBox(width: 2),
                                     Container(
-                                      width: 10,
-                                      height: (c / maxH) * 85,
+                                      width: 8,
+                                      height: ((c / maxH) * 85).clamp(4.0, 85.0),
                                       decoration: BoxDecoration(
                                         color: CplColors.emerald500,
                                         borderRadius: BorderRadius.circular(3),
@@ -296,7 +299,7 @@ class AnalyticsScreen extends StatelessWidget {
                                 const SizedBox(height: 8),
                                 Text(
                                   d['month'] as String,
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
@@ -308,7 +311,7 @@ class AnalyticsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
 
-                // Department Hazard Share Breakdown
+                // Departmental Near-Miss Closure Rate Cards (from CPL-NM File Oct 2026.xlsx)
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -320,17 +323,57 @@ class AnalyticsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isUr ? 'پلانٹ زونز میں خطرات کی تقسیم' : 'Plant Zone Incident Density',
+                        isUr
+                            ? 'ڈیپارٹمنٹ کے لحاظ سے نیئر مس کیسز (2026 کل 389 کیسز)'
+                            : 'Departmental Near-Miss Breakdown (CPL-NM 2026 • 389 Cases)',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                       const SizedBox(height: 14),
-                      _buildZoneBar('Boiler House Unit-1', 0.42, '42%', CplColors.red600),
+                      _buildZoneBar('Mechanical Maintenance (MMD) — 155 cases', 155 / 389, '155 (39.8%)', CplColors.red600),
                       const SizedBox(height: 10),
-                      _buildZoneBar('Bagasse & Coal Yard', 0.28, '28%', CplColors.safety500),
+                      _buildZoneBar('Electrical Maintenance (EMD) — 64 cases', 64 / 389, '64 (16.5%)', CplColors.safety500),
                       const SizedBox(height: 10),
-                      _buildZoneBar('Steam Turbine Hall & Grid', 0.18, '18%', const Color(0xFF8B5CF6)),
+                      _buildZoneBar('Admin & HR — 64 cases', 64 / 389, '64 (16.5%)', const Color(0xFF8B5CF6)),
                       const SizedBox(height: 10),
-                      _buildZoneBar('Water Treatment Plant', 0.12, '12%', CplColors.emerald500),
+                      _buildZoneBar('Civil Department — 26 cases', 26 / 389, '26 (6.7%)', CplColors.amber500),
+                      const SizedBox(height: 10),
+                      _buildZoneBar('Operations (Ops) — 20 cases', 20 / 389, '20 (5.1%)', CplColors.emerald500),
+                      const SizedBox(height: 10),
+                      _buildZoneBar('Safety / HSE (12) • Fuel (5) • I&C (3)', 20 / 389, '20 (5.1%)', CplColors.corporateNavy),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // Departmental Man-Hours Breakdown Card (from Monthly Working Hours Report Oct-26.xlsx)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: CplColors.slate200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isUr
+                            ? 'ڈیپارٹمنٹ ورکنگ آورز رپورٹ (اکتوبر 2026 • 84,730 گھنٹے)'
+                            : 'Departmental Working Hours (Oct 2026 • 84,730 Total Hrs)',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                      const SizedBox(height: 14),
+                      _buildZoneBar('Admin & HR (108 staff)', 24204 / 84730, '24,204 hrs', CplColors.corporateNavy),
+                      const SizedBox(height: 10),
+                      _buildZoneBar('Operations Deptt. (106 staff)', 18326 / 84730, '18,326 hrs', CplColors.emerald600),
+                      const SizedBox(height: 10),
+                      _buildZoneBar('Fuel Dept (92 staff)', 17010 / 84730, '17,010 hrs', CplColors.safety500),
+                      const SizedBox(height: 10),
+                      _buildZoneBar('EKL Contractors (46 staff)', 9648 / 84730, '9,648 hrs', const Color(0xFF8B5CF6)),
+                      const SizedBox(height: 10),
+                      _buildZoneBar('Mechanical MMD (27 staff)', 5252 / 84730, '5,252 hrs', CplColors.amber500),
+                      const SizedBox(height: 10),
+                      _buildZoneBar('Safety & Health (12 staff • 3,310h) + EMD/I&C/Civil/Stores', 8602 / 84730, '8,602 hrs', CplColors.emerald500),
                     ],
                   ),
                 ),

@@ -330,11 +330,11 @@ class TrainingScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      isUr ? 'حفاظتی کورسز اور سرٹیفیکیشن' : 'Safety Courses & Certification',
+                      isUr ? 'شفٹ وائز سیفٹی ٹریننگ (اکتوبر 2026)' : 'Shift-Wise HSE Training (Oct 2026)',
                       style: CplTypography.subheading(context).copyWith(fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      '3 Courses',
+                      '${state.trainings.length} Shift Drills',
                       style: CplTypography.caption(context).copyWith(color: CplColors.slate600),
                     ),
                   ],
@@ -344,7 +344,7 @@ class TrainingScreen extends StatelessWidget {
                 // Module Cards
                 ...state.trainings.map((trn) {
                   final isDueSoon = trn.status == 'Due Soon';
-                  final isCompleted = trn.status == 'Completed';
+                  final isCompleted = trn.status == 'Completed' || trn.status == 'Certified';
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -363,16 +363,36 @@ class TrainingScreen extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: CplColors.slate100,
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Text(
-                                trn.id,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, fontFamily: 'monospace'),
-                              ),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: CplColors.slate100,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    trn.id,
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, fontFamily: 'monospace'),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: CplColors.corporateNavy.withAlpha((0.1 * 255).round()),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    trn.shiftGroup,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10.5,
+                                      color: CplColors.corporateNavy,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -408,7 +428,18 @@ class TrainingScreen extends StatelessWidget {
                           ),
                           textAlign: isUr ? TextAlign.right : TextAlign.left,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            const Icon(Icons.engineering, size: 14, color: CplColors.safety500),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Lead: ${trn.leadTrainer}',
+                              style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: CplColors.slate800),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
                         Row(
                           children: [
                             const Icon(Icons.ondemand_video, size: 14, color: CplColors.slate600),

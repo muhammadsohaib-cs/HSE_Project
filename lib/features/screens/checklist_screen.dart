@@ -93,7 +93,9 @@ class ChecklistScreen extends StatelessWidget {
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
-                          value: state.checklistZone,
+                          value: state.zones.any((z) => z.name == state.checklistZone)
+                              ? state.checklistZone
+                              : (state.zones.isNotEmpty ? state.zones.first.name : 'Boiler Area (Unit 1 & 2)'),
                           items: state.zones.map((z) {
                             return DropdownMenuItem(
                               value: z.name,

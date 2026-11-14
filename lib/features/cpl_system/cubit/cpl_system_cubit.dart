@@ -31,97 +31,249 @@ class CplSystemCubit extends Cubit<CplSystemState> {
         _secureStorage = secureStorage,
         super(_initialState);
 
+  static String normalizeEmpId(String raw) {
+    final s = raw.trim().toUpperCase();
+    if (RegExp(r'^\d+$').hasMatch(s)) {
+      return 'CPL-EMP-${s.padLeft(4, '0')}';
+    }
+    return s;
+  }
+
   static final CplSystemState _initialState = CplSystemState(
     language: 'en',
     activeScreenIndex: 0, // Default to AuthScreen (0) until authenticated
     currentUser: UserSession.empty,
     zones: const [
-      PlantZone(id: 'Z1', name: 'Boiler House Unit-1', ur: 'بوائلر ہاؤس یونٹ-1', coords: '31.7204° N, 72.9791° E', workers: 34),
-      PlantZone(id: 'Z2', name: 'Steam Turbine Hall', ur: 'سٹیم ٹربائن ہال', coords: '31.7201° N, 72.9788° E', workers: 26),
-      PlantZone(id: 'Z3', name: 'Bagasse & Coal Yard', ur: 'بگاس اور کوئلہ یارڈ', coords: '31.7195° N, 72.9802° E', workers: 38),
-      PlantZone(id: 'Z4', name: '132kV Grid Switchyard', ur: '132 کے وی گرڈ سوئچ یارڈ', coords: '31.7208° N, 72.9780° E', workers: 14),
-      PlantZone(id: 'Z5', name: 'Water Treatment Plant', ur: 'واٹر ٹریٹمنٹ پلانٹ', coords: '31.7198° N, 72.9784° E', workers: 18),
-      PlantZone(id: 'Z6', name: 'Cooling Tower', ur: 'کولنگ ٹاور', coords: '31.7192° N, 72.9795° E', workers: 18),
+      PlantZone(id: 'Z1', name: 'Boiler Area (Unit 1 & 2)', ur: 'بوائلر ایریا یونٹ 1 اور 2', coords: '31.7204° N, 72.9791° E', workers: 43, riskLevel: 'High'),
+      PlantZone(id: 'Z2', name: 'TG Building (Steam Turbine Hall)', ur: 'ٹی جی بلڈنگ / سٹیم ٹربائن ہال', coords: '31.7201° N, 72.9788° E', workers: 27, riskLevel: 'Critical'),
+      PlantZone(id: 'Z3', name: 'Central Control Room (CCR)', ur: 'سینٹرل کنٹرول روم', coords: '31.7208° N, 72.9788° E', workers: 61, riskLevel: 'Low'),
+      PlantZone(id: 'Z4', name: 'Fuel & Bagasse Yard (BC-1 to BC-5 / JT)', ur: 'فیول اور بگاس یارڈ', coords: '31.7195° N, 72.9802° E', workers: 92, riskLevel: 'High'),
+      PlantZone(id: 'Z5', name: '132kV Grid Switchyard', ur: '132 کے وی گرڈ سوئچ یارڈ', coords: '31.7208° N, 72.9780° E', workers: 10, riskLevel: 'Critical'),
+      PlantZone(id: 'Z6', name: 'Water Treatment Plant (WTP)', ur: 'واٹر ٹریٹمنٹ پلانٹ', coords: '31.7198° N, 72.9784° E', workers: 12, riskLevel: 'Medium'),
+      PlantZone(id: 'Z7', name: 'Balance of Plant (BOP & Cooling Tower)', ur: 'بیلنس آف پلانٹ اور کولنگ ٹاور', coords: '31.7192° N, 72.9795° E', workers: 16, riskLevel: 'Medium'),
+      PlantZone(id: 'Z8', name: 'ESP & Ash Handling (SCC / Silo)', ur: 'ای ایس پی اور ایش ہینڈلنگ', coords: '31.7185° N, 72.9760° E', workers: 18, riskLevel: 'High'),
+      PlantZone(id: 'Z9', name: 'Bagasse Piling & Shredder (BPL / RSML)', ur: 'بگاس پائلنگ اور شریڈر ایریا', coords: '31.7190° N, 72.9798° E', workers: 24, riskLevel: 'High'),
+      PlantZone(id: 'Z10', name: 'Admin, Stores & Workshops (MMD / EMD / I&C)', ur: 'ایڈمن، اسٹورز اور ورکشاپ', coords: '31.7200° N, 72.9810° E', workers: 85, riskLevel: 'Low'),
     ],
     hazards: const [
       HazardItem(
-        id: 'HAZ-309',
-        title: 'Steam Flange Weeping (FV-14)',
-        zone: 'Boiler House Unit-1',
-        severity: 'High',
-        reporter: 'Muhammad Tariq (CPL-EMP-1042)',
-        status: 'Open',
-        time: '12m ago',
-        coords: '31.7204° N, 72.9791° E',
-      ),
-      HazardItem(
-        id: 'HAZ-308',
-        title: 'Bagasse Conveyor Belt Guard Loose',
-        zone: 'Bagasse & Coal Yard',
-        severity: 'Critical',
-        reporter: 'Zeeshan Ahmed (CPL-EMP-1088)',
-        status: 'In Progress',
-        time: '1h ago',
-        coords: '31.7195° N, 72.9802° E',
-      ),
-      HazardItem(
-        id: 'HAZ-307',
-        title: 'Switchyard Earth Pit Resistance > 2 Ohms',
-        zone: '132kV Grid Switchyard',
+        id: '26-CPL-474',
+        nmNumber: '26-CPL-474',
+        title: 'Monitor lizard wandering near CPL colony plant-side gate posing venomous bite risk',
+        zone: 'Admin, Stores & Workshops (MMD / EMD / I&C)',
         severity: 'Moderate',
-        reporter: 'Usman Ghani (CPL-EMP-1015)',
+        reporter: 'Sana Shakeel',
+        status: 'Open',
+        time: '2026-10-28',
+        coords: '31.7200° N, 72.9810° E',
+        observationType: 'Unsafe Condition',
+        categoryType: 'Safety',
+        responsibleTeam: 'Admin',
+        suggestion: 'Clear wild vegetation along perimeter fencing and apply reptile repellent treatment',
+      ),
+      HazardItem(
+        id: '26-CPL-473',
+        nmNumber: '26-CPL-473',
+        title: 'Uncovered manhole found at Unit-02 near EDG room posing severe fall/fracture risk',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        severity: 'Critical',
+        reporter: 'Mudassir Ali (CPL-EMP-3939)',
+        status: 'Open',
+        time: '2026-10-25',
+        coords: '31.7204° N, 72.9791° E',
+        observationType: 'Unsafe Condition',
+        categoryType: 'Safety',
+        responsibleTeam: 'Civil',
+        suggestion: 'Install heavy-duty RCC/checkered steel manhole cover and hard barricade immediately',
+      ),
+      HazardItem(
+        id: '26-CPL-471',
+        nmNumber: '26-CPL-471',
+        title: 'Feeding tractor concrete traction slabs loosely held; slab jammed screw feeder & can damage SCC racks/drum extractor shaft',
+        zone: 'Fuel & Bagasse Yard (BC-1 to BC-5 / JT)',
+        severity: 'Critical',
+        reporter: 'Umar Draz (CPL-EMP-2377)',
+        status: 'Open',
+        time: '2026-10-21',
+        coords: '31.7195° N, 72.9802° E',
+        observationType: 'Unsafe Condition',
+        categoryType: 'Safety',
+        responsibleTeam: 'Fuel',
+        suggestion: 'Securely bolt traction counterweights with steel frame before operating tractor in Bagasse yard',
+      ),
+      HazardItem(
+        id: '26-CPL-470',
+        nmNumber: '26-CPL-470',
+        title: 'Monitor #03 and fire hydrant partially covered with soil obstructing emergency access',
+        zone: 'Fuel & Bagasse Yard (BC-1 to BC-5 / JT)',
+        severity: 'High',
+        reporter: 'Khalid Bashir (CPL-EMP-3854)',
+        status: 'Open',
+        time: '2026-10-21',
+        coords: '31.7195° N, 72.9802° E',
+        observationType: 'Unsafe Condition',
+        categoryType: 'Safety',
+        responsibleTeam: 'Civil',
+        suggestion: 'Excavate accumulated soil around Fire Monitor #03 and paint safety clearance kerb',
+      ),
+      HazardItem(
+        id: '26-CPL-468',
+        nmNumber: '26-CPL-468',
+        title: 'Air compressor belt fitting too tight at JT#05; burning smell noticed from motor',
+        zone: 'Fuel & Bagasse Yard (BC-1 to BC-5 / JT)',
+        severity: 'High',
+        reporter: 'Tauseef Ahmad (CPL-EMP-3697)',
         status: 'Resolved',
-        time: '4h ago',
-        coords: '31.7208° N, 72.9780° E',
+        time: '2026-10-20',
+        coords: '31.7195° N, 72.9802° E',
+        observationType: 'Unsafe Condition',
+        categoryType: 'Safety',
+        responsibleTeam: 'MMD',
+        suggestion: 'Realign compressor pulley and adjust V-belt tension per OEM torque spec',
+      ),
+      HazardItem(
+        id: '26-CPL-467',
+        nmNumber: '26-CPL-467',
+        title: 'Broken cladding sheet pieces hanging from Close Shed drain channel posing falling object hazard',
+        zone: 'Fuel & Bagasse Yard (BC-1 to BC-5 / JT)',
+        severity: 'High',
+        reporter: 'Muhammad Saqlain (CPL-EMP-3940)',
+        status: 'Open',
+        time: '2026-10-17',
+        coords: '31.7195° N, 72.9802° E',
+        observationType: 'Unsafe Condition',
+        categoryType: 'Safety',
+        responsibleTeam: 'MMD',
+        suggestion: 'Remove hanging GI cladding sheets and re-fasten Close Shed drain channel brackets',
+      ),
+      HazardItem(
+        id: '26-CPL-466',
+        nmNumber: '26-CPL-466',
+        title: 'Exposed edge without side railing or fall protection around Unit 2 CCR HVAC outdoor unit',
+        zone: 'Central Control Room (CCR)',
+        severity: 'High',
+        reporter: 'Saeed Ahmed Khan (CPL-EMP-2768)',
+        status: 'Open',
+        time: '2026-10-17',
+        coords: '31.7208° N, 72.9788° E',
+        observationType: 'Unsafe Condition',
+        categoryType: 'Safety',
+        responsibleTeam: 'Civil',
+        suggestion: 'Install standard 1.1m tubular safety guardrail with toe-board around HVAC platform',
+      ),
+      HazardItem(
+        id: '26-CPL-462',
+        nmNumber: '26-CPL-462',
+        title: 'Loose exposed electrical wire at bottom of push-button box surrounded by combustible bagasse dust at SCC DE-Side & BC-3',
+        zone: 'ESP & Ash Handling (SCC / Silo)',
+        severity: 'Critical',
+        reporter: 'Faisal Nadeem (CPL-EMP-3845)',
+        status: 'Open',
+        time: '2026-10-09',
+        coords: '31.7185° N, 72.9760° E',
+        observationType: 'Unsafe Condition',
+        categoryType: 'Safety',
+        responsibleTeam: 'EMD',
+        suggestion: 'Terminate cable with IP65 explosion-proof cable gland and clear bagasse dust accumulation',
+      ),
+      HazardItem(
+        id: '26-CPL-460',
+        nmNumber: '26-CPL-460',
+        title: 'Safety railing pipe damaged and tied with rope at S.B-8 Boiler-1',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        severity: 'High',
+        reporter: 'Faisal Nadeem (CPL-EMP-3845)',
+        status: 'Open',
+        time: '2026-10-09',
+        coords: '31.7204° N, 72.9791° E',
+        observationType: 'Unsafe Condition',
+        categoryType: 'Safety',
+        responsibleTeam: 'MMD',
+        suggestion: 'Weld and restore structural handrail pipe at Soot-Blower #8 elevation platform',
+      ),
+      HazardItem(
+        id: '26-CPL-456',
+        nmNumber: '26-CPL-456',
+        title: 'Contractor team painting at height on bamboo ladder without fall protection at Maintenance Building',
+        zone: 'Admin, Stores & Workshops (MMD / EMD / I&C)',
+        severity: 'Critical',
+        reporter: 'Sumaira Rafique (CPL-EMP-3648)',
+        status: 'Resolved',
+        time: '2026-10-07',
+        coords: '31.7200° N, 72.9810° E',
+        observationType: 'Unsafe Act',
+        categoryType: 'Safety',
+        responsibleTeam: 'Civil',
+        suggestion: 'Stop work immediately; enforce certified scaffolding and full-body double-lanyard safety harness',
       ),
     ],
     selectedLikelihood: 4,
     selectedSeverity: 4,
     capas: const [
       CapaItem(
-        id: 'CAPA-104',
-        title: 'Bagasse Conveyor Emergency Stop Cord Re-anchoring',
-        zone: 'Bagasse Yard',
+        id: '26-CPL-473',
+        title: 'Unit-02 EDG Room Uncovered Manhole Steel Cover & Barricade',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        score: 25,
+        level: 'Critical',
+        owner: 'Civil Dept',
+        due: 'Immediate',
+        signedOff: false,
+      ),
+      CapaItem(
+        id: '26-CPL-471',
+        title: 'Feeding Tractor Concrete Traction Slab Steel Frame Bolting',
+        zone: 'Fuel & Bagasse Yard (BC-1 to BC-5 / JT)',
         score: 20,
         level: 'Critical',
-        owner: 'Mechanical Team',
+        owner: 'Fuel Dept',
         due: 'Today 18:00',
         signedOff: false,
       ),
       CapaItem(
-        id: 'CAPA-103',
-        title: 'Turbine Vibration Sensor Calibration on Bearing 2',
-        zone: 'Turbine Hall',
-        score: 12,
+        id: '26-CPL-462',
+        title: 'SCC DE-Side & BC-3 Push-Button Box IP65 Gland Termination',
+        zone: 'ESP & Ash Handling (SCC / Silo)',
+        score: 25,
+        level: 'Critical',
+        owner: 'EMD Team',
+        due: 'Tomorrow 12:00',
+        signedOff: false,
+      ),
+      CapaItem(
+        id: '26-CPL-468',
+        title: 'JT#05 Air Compressor Pulley Alignment & V-Belt Torque',
+        zone: 'Fuel & Bagasse Yard (BC-1 to BC-5 / JT)',
+        score: 16,
         level: 'High',
-        owner: 'I&C Department',
-        due: 'Tomorrow 10:00',
+        owner: 'MMD Team',
+        due: 'Completed Oct 20',
         signedOff: true,
       ),
       CapaItem(
-        id: 'CAPA-102',
-        title: 'Deaerator Pressure Relief Valve Recertification',
-        zone: 'Boiler House Unit-1',
-        score: 9,
-        level: 'Moderate',
-        owner: 'Operations Shift Lead',
-        due: '14 Nov 14:00',
+        id: '26-CPL-456',
+        title: 'Maintenance Building Scaffolding & Fall Protection Enforcement',
+        zone: 'Admin, Stores & Workshops (MMD / EMD / I&C)',
+        score: 20,
+        level: 'Critical',
+        owner: 'Civil / HSE',
+        due: 'Completed Oct 07',
         signedOff: true,
       ),
     ],
-    checklistZone: 'Boiler House Unit-1',
+    checklistZone: 'Boiler Area (Unit 1 & 2)',
     checklistSigned: false,
     checklistItems: const [
       ChecklistAuditItem(
         id: 1,
-        en: 'Main Steam Line (105 bar) expansion joints checked for weeping',
-        ur: 'مین سٹیم لائن (105 بار) ایکسپینشن جوائنٹس کا معائنہ مکمل ہے',
+        en: 'Main Steam Line (105 bar) expansion joints & soot-blower S.B-8 railing verified',
+        ur: 'مین سٹیم لائن (105 بار) اور سوٹ بلوئر ریلنگ کا معائنہ مکمل ہے',
         status: 'pass',
       ),
       ChecklistAuditItem(
         id: 2,
-        en: 'Bagasse feeder emergency stop pull-cords tested & responsive',
-        ur: 'بگاس فیڈر ایمرجنسی اسٹاپ پل کورڈز مکمل طور پر فعال ہیں',
+        en: 'Unit-02 EDG room manholes & floor trench covers securely seated',
+        ur: 'یونٹ 2 ای ڈی جی روم کے مین ہولز اور فلور کورز محفوظ ہیں',
         status: 'pass',
       ),
       ChecklistAuditItem(
@@ -132,20 +284,20 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       ),
       ChecklistAuditItem(
         id: 4,
-        en: 'Furnace flame scanner & purge interlock status verified',
-        ur: 'فرنس فلیم سکینر اور پرج انٹرلاک سٹیٹس تصدیق شدہ ہے',
+        en: 'SCC DE-Side & BC-3 push-button boxes free from combustible bagasse dust',
+        ur: 'ایس سی سی اور بی سی 3 پش بٹن باکس بگاس ڈسٹ سے صاف ہیں',
         status: 'pass',
       ),
       ChecklistAuditItem(
         id: 5,
-        en: 'Safety relief valves manual lever inspection tagged',
-        ur: 'سیفٹی ریلیف والوز کی مینوئل لیور ٹیگنگ درست ہے',
-        status: 'fail',
+        en: 'Monitor #03 and fire hydrant ring pressure >= 8.5 bar & unobstructed',
+        ur: 'فائر مانیٹر 03 اور ہائیڈرنٹ لائن پریشر 8.5 بار سے زائد اور صاف ہے',
+        status: 'pass',
       ),
       ChecklistAuditItem(
         id: 6,
-        en: 'Fire hydrant pressure gauge reading >= 8.5 bar',
-        ur: 'فائر ہائیڈرنٹ پریشر گیج 8.5 بار یا زائد ہے',
+        en: 'Unit 2 CCR HVAC outdoor platform edge protection & harness anchor verified',
+        ur: 'یونٹ 2 سی سی آر ایچ وی اے سی پلیٹ فارم ریلنگ تصدیق شدہ ہے',
         status: 'pass',
       ),
     ],
@@ -154,9 +306,9 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       PtwItem(
         id: 'PTW-842',
         type: 'Hot Work',
-        title: 'Boiler Deaerator Header Steam Line Welding',
-        zone: 'Boiler House Unit-1 (Elev. 18m)',
-        requester: 'Muhammad Tariq (Lead Welder)',
+        title: 'S.B-8 Boiler-1 Structural Handrail Pipe Welding (26-CPL-460)',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        requester: 'Muhammad Faisal Nadeem (CPL-EMP-3845)',
         status: 'Active',
         telemetry: 'O2: 20.9% • LEL: 0.0%',
         timer: '03:42:18 Remaining',
@@ -164,181 +316,510 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       ),
       PtwItem(
         id: 'PTW-841',
-        type: 'Confined Space',
-        title: 'Furnace Grate Chamber Internal Ash Inspection',
-        zone: 'Boiler Furnace Chamber',
-        requester: 'Zeeshan Ahmed (Boiler Tech)',
+        type: 'Electrical LOTO',
+        title: 'SCC DE-Side & BC-3 Push-Button Box IP65 Gland Termination (26-CPL-462)',
+        zone: 'ESP & Ash Handling (SCC / Silo)',
+        requester: 'Umer Asghar (CPL-EMP-0808)',
         status: 'Active',
-        telemetry: 'CO: 2 ppm • Temp: 38°C',
-        timer: '01:14:05 Remaining',
-        lotoTags: 'LOTO-12 (Mechanical Blind Applied)',
+        telemetry: '0.00 kV Verified • Dust Cleared',
+        timer: '01:45:00 Remaining',
+        lotoTags: 'LOTO-12 (MCC Feeder Isolated)',
       ),
       PtwItem(
         id: 'PTW-840',
-        type: 'Electrical HV',
-        title: '132kV Bus-Coupler Circuit Breaker Annual Overhaul',
-        zone: '132kV Grid Switchyard',
-        requester: 'Usman Ghani (Grid Engineer)',
-        status: 'Hold',
-        telemetry: '0.00 kV (Discharged & Earthed)',
-        timer: 'Expired / Review',
-        lotoTags: 'LOTO-08 (Dual Key Trapped Lock)',
-      ),
-      PtwItem(
-        id: 'PTW-839',
         type: 'Working at Height',
-        title: 'Chimney Flue Gas Emission Continuous Analyzer Sensor',
-        zone: 'Boiler Stack (Elev. 65m)',
-        requester: 'Bilal Mahmood (I&C Tech)',
+        title: 'Unit 2 CCR HVAC Outdoor Platform Guardrail Installation (26-CPL-466)',
+        zone: 'Central Control Room (CCR)',
+        requester: 'Saeed Ahmed Khan (CPL-EMP-2768)',
         status: 'Pending',
-        telemetry: 'Wind: 14 km/h (Permissible)',
-        timer: 'Pending Shift Eng Approval',
-        lotoTags: 'Full Body Harness & Lifeline Rigged',
+        telemetry: 'Wind: 11 km/h • Full Harness',
+        timer: 'Pending SM Approval',
+        lotoTags: 'Lifeline Anchor Verified',
       ),
     ],
     activeAlarm: null,
     emailLogs: const [
       EmailLogItem(
         id: 'EM-904',
-        to: 'plant.head@chiniotpower.com',
-        subject: '[DISPATCH] Boiler Header Steam Flange Weeping Alert',
+        to: 'sumaira.rafique@chiniotpower.com',
+        subject: '[26-CPL-473] Unit-02 EDG Room Uncovered Manhole Critical Alert',
         time: '14m ago',
         status: 'Delivered',
       ),
       EmailLogItem(
         id: 'EM-903',
-        to: 'safety.board@chiniotpower.com',
-        subject: '[NEPRA] Shift A Daily HSE Turnover Log Signed Off',
+        to: 'moid.khan@chiniotpower.com',
+        subject: '[NEPRA] Oct-2026 Monthly Safe Man-Hours (84,730 Hrs) Report Signed Off',
         time: '1h ago',
         status: 'Delivered',
       ),
       EmailLogItem(
         id: 'EM-902',
-        to: 'rescue1122.chiniot@punjab.gov.pk',
-        subject: '[DRILL] CPL Unit-1 Emergency Evacuation Routine Confirmation',
+        to: 'zeeshan.rehman@chiniotpower.com',
+        subject: '[DRILL] Shift A-D Emergency Evacuation & Fire Monitor #03 Verification',
         time: '3h ago',
         status: 'Acknowledged',
       ),
     ],
     trainings: const [
       TrainingModule(
-        id: 'TRN-101',
-        title: 'High Pressure Steam Safety & Scald Mitigation',
-        ur: 'ہائی پریشر سٹیم سیفٹی اور جلنے سے بچاؤ',
-        duration: '45 mins • Practical On-Site',
-        status: 'Certified',
-        expiry: 'Valid until 12 Oct 2027',
+        id: 'TRN-201',
+        title: 'Shift B Safety & Emergency Drill',
+        ur: 'شفٹ بی سیفٹی اور ایمرجنسی ڈرل',
+        duration: 'Completed: 08 Oct 2026 • Practical Drill',
+        status: 'Completed',
+        expiry: 'Lead: SM Bilal Khan [95]',
+        score: '98%',
+        shiftGroup: 'Shift B',
+        leadTrainer: 'SM Muhammad Bilal Khan [95]',
+      ),
+      TrainingModule(
+        id: 'TRN-202',
+        title: 'Shift A Boiler & LOTO Competency Training',
+        ur: 'شفٹ اے بوائلر اور لوٹو حفاظتی ٹریننگ',
+        duration: 'Completed: 10 Oct 2026 • Boiler & LOTO',
+        status: 'Completed',
+        expiry: 'Lead: SM Muhammad Shahbaz [509]',
         score: '96%',
+        shiftGroup: 'Shift A',
+        leadTrainer: 'SM Muhammad Shahbaz [509]',
       ),
       TrainingModule(
-        id: 'TRN-102',
-        title: '132kV Switchyard High Voltage ARC Flash Protection',
-        ur: '132 کے وی گرڈ آرک فلیش حفاظتی طریقہ کار',
-        duration: '60 mins • High Voltage Safety',
-        status: 'Certified',
-        expiry: 'Valid until 18 Dec 2026',
-        score: '92%',
+        id: 'TRN-203',
+        title: 'Shift C Fire & ESP Dust Hazard Training',
+        ur: 'شفٹ سی فائر اور ای ایس پی ڈسٹ ٹریننگ',
+        duration: 'Completed: 20 Oct 2026 • Fire & ESP Safety',
+        status: 'Completed',
+        expiry: 'Lead: SM Majid Hussain [315]',
+        score: '95%',
+        shiftGroup: 'Shift C',
+        leadTrainer: 'SM Majid Hussain [315]',
       ),
       TrainingModule(
-        id: 'TRN-103',
-        title: 'Bagasse Dust Explosive Fire Prevention Drill',
-        ur: 'بگاس ڈسٹ فائر ڈرل و حفاظتی تدابیر',
-        duration: '30 mins • Practical Drill',
-        status: 'Expiring Soon',
-        expiry: 'Expires in 6 days',
-        score: '84%',
+        id: 'TRN-204',
+        title: 'Shift D Turbine & High-Pressure Steam Safety',
+        ur: 'شفٹ ڈی ٹربائن اور ہائی پریشر سٹیم سیفٹی',
+        duration: 'Completed: 22 Oct 2026 • TG & Steam SOP',
+        status: 'Completed',
+        expiry: 'Lead: SM Masab Latif [187]',
+        score: '97%',
+        shiftGroup: 'Shift D',
+        leadTrainer: 'SM Masab Latif [187]',
       ),
     ],
     qrCheckedIn: false,
     roster: const [
       WorkerRosterItem(
-        empId: 'CPL-EMP-1042',
-        name: 'Muhammad Tariq',
-        ur: 'محمد طارق',
+        empId: 'CPL-EMP-0509',
+        name: 'Muhammad Shahbaz',
+        ur: 'محمد شہباز',
+        role: 'Shift Manager (SM)',
+        designation: 'SM',
+        shift: 'Shift A',
+        zone: 'Central Control Room (CCR)',
+        attendanceStatus: 'D',
+        nightsPerformed: 8,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-0808',
+        name: 'Umer Asghar',
+        ur: 'عمر اصغر',
+        role: 'Control Room Operator',
+        designation: 'CRO',
+        shift: 'Shift A',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        attendanceStatus: 'D',
+        nightsPerformed: 8,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-0195',
+        name: 'Arshad Mehmood',
+        ur: 'ارشد محمود',
+        role: 'Control Room Operator',
+        designation: 'CRO',
+        shift: 'Shift A',
+        zone: 'TG Building (Steam Turbine Hall)',
+        attendanceStatus: 'D',
+        nightsPerformed: 8,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-0854',
+        name: 'Muhammad Faisal Sartaj',
+        ur: 'محمد فیصل سرتاج',
+        role: 'Plant Operator',
+        designation: 'PO',
+        shift: 'Shift A',
+        zone: 'Water Treatment Plant (WTP)',
+        attendanceStatus: 'D',
+        nightsPerformed: 7,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-3851',
+        name: 'Mubashar Ali',
+        ur: 'مبشر علی',
         role: 'Safety Officer',
-        zone: 'Boiler House Unit-1',
+        designation: 'HSE / Fire Fighter',
+        shift: 'Shift A',
+        zone: 'Fuel & Bagasse Yard (BC-1 to BC-5 / JT)',
+        attendanceStatus: 'D',
+        nightsPerformed: 8,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-0307',
+        name: 'Mukhtar Ahmed Sabir',
+        ur: 'مختار احمد صابر',
+        role: 'Sr. Fireman',
+        designation: 'Sr. Fireman',
+        shift: 'Shift A',
+        zone: 'Bagasse Piling & Shredder (BPL / RSML)',
+        attendanceStatus: 'D',
+        nightsPerformed: 8,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-0095',
+        name: 'Muhammad Bilal Khan',
+        ur: 'محمد بلال خان',
+        role: 'Shift Manager (SM)',
+        designation: 'SM',
+        shift: 'Shift B',
+        zone: 'Central Control Room (CCR)',
+        attendanceStatus: 'N',
+        nightsPerformed: 7,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-0792',
+        name: 'Nadeem Khalid',
+        ur: 'ندیم خالد',
+        role: 'Control Room Operator',
+        designation: 'CRO',
+        shift: 'Shift B',
+        zone: 'TG Building (Steam Turbine Hall)',
+        attendanceStatus: 'N',
+        nightsPerformed: 7,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-3092',
+        name: 'Muhammad Khalid Nadeem',
+        ur: 'محمد خالد ندیم',
+        role: 'Plant Operator',
+        designation: 'PO',
+        shift: 'Shift B',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        attendanceStatus: 'N',
+        nightsPerformed: 7,
+        helmet: true,
+        shoes: true,
+        gloves: false,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-3939',
+        name: 'Mudassir Ali',
+        ur: 'مدثر علی',
+        role: 'Safety Officer',
+        designation: 'HSE / Fire Fighter',
+        shift: 'Shift B',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        attendanceStatus: 'N',
+        nightsPerformed: 7,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-0306',
+        name: 'Ghulam Mustafa',
+        ur: 'غلام مصطفیٰ',
+        role: 'Sr. Fireman',
+        designation: 'Sr. Fireman',
+        shift: 'Shift B',
+        zone: 'Bagasse Piling & Shredder (BPL / RSML)',
+        attendanceStatus: 'N',
+        nightsPerformed: 7,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-0315',
+        name: 'Majid Hussain',
+        ur: 'ماجد حسین',
+        role: 'Shift Manager (SM)',
+        designation: 'SM',
+        shift: 'Shift C',
+        zone: 'Central Control Room (CCR)',
+        attendanceStatus: 'R',
+        nightsPerformed: 8,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-0626',
+        name: 'M. Yaseen',
+        ur: 'محمد یاسین',
+        role: 'Control Room Operator',
+        designation: 'CRO',
+        shift: 'Shift C',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        attendanceStatus: 'R',
+        nightsPerformed: 8,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-3088',
+        name: 'Ansar Inayat',
+        ur: 'انصر عنایت',
+        role: 'Plant Operator',
+        designation: 'PO',
+        shift: 'Shift C',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        attendanceStatus: 'R',
+        nightsPerformed: 7,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-3848',
+        name: 'Muhammad Yaqoob',
+        ur: 'محمد یعقوب',
+        role: 'Safety Officer',
+        designation: 'HSE / Fire Fighter',
+        shift: 'Shift C',
+        zone: 'Bagasse Piling & Shredder (BPL / RSML)',
+        attendanceStatus: 'R',
+        nightsPerformed: 8,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-0310',
+        name: 'Noor Akbar',
+        ur: 'نور اکبر',
+        role: 'Fireman',
+        designation: 'Fireman',
+        shift: 'Shift C',
+        zone: 'ESP & Ash Handling (SCC / Silo)',
+        attendanceStatus: 'R',
+        nightsPerformed: 8,
         helmet: true,
         shoes: true,
         gloves: true,
         ear: false,
       ),
       WorkerRosterItem(
-        empId: 'CPL-EMP-1088',
-        name: 'Zeeshan Ahmed',
-        ur: 'ذیشان احمد',
-        role: 'Boiler Fuel Operator',
-        zone: 'Bagasse & Coal Yard',
+        empId: 'CPL-EMP-0187',
+        name: 'Masab Latif',
+        ur: 'مصعب لطیف',
+        role: 'Shift Manager (SM)',
+        designation: 'SM',
+        shift: 'Shift D',
+        zone: 'Central Control Room (CCR)',
+        attendanceStatus: 'R',
+        nightsPerformed: 7,
         helmet: true,
         shoes: true,
         gloves: true,
         ear: true,
       ),
       WorkerRosterItem(
-        empId: 'CPL-EMP-1015',
-        name: 'Usman Ghani',
-        ur: 'عثمان غنی',
-        role: 'Grid Switchyard Tech',
-        zone: '132kV Grid Switchyard',
+        empId: 'CPL-EMP-0185',
+        name: 'Adeel Ahmed',
+        ur: 'عدیل احمد',
+        role: 'Control Room Operator',
+        designation: 'CRO',
+        shift: 'Shift D',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        attendanceStatus: 'R',
+        nightsPerformed: 7,
         helmet: true,
         shoes: true,
         gloves: true,
         ear: true,
       ),
       WorkerRosterItem(
-        empId: 'CPL-EMP-1104',
-        name: 'Kamran Siddiqui',
-        ur: 'کامران صدیقی',
-        role: 'Turbine Shift Eng.',
-        zone: 'Steam Turbine Hall',
+        empId: 'CPL-EMP-2769',
+        name: 'Shahid Nawaz',
+        ur: 'شاہد نواز',
+        role: 'Sr. Plant Operator',
+        designation: 'Sr PO',
+        shift: 'Shift D',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        attendanceStatus: 'R',
+        nightsPerformed: 7,
         helmet: true,
         shoes: true,
-        gloves: false,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-3855',
+        name: 'Abdul Wahab',
+        ur: 'عبدالوہاب',
+        role: 'Safety Officer',
+        designation: 'HSE / Fire Fighter',
+        shift: 'Shift D',
+        zone: 'TG Building (Steam Turbine Hall)',
+        attendanceStatus: 'R',
+        nightsPerformed: 7,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-3648',
+        name: 'Sumaira Rafique',
+        ur: 'سمیرا رفیق',
+        role: 'Dy. Manager HSE',
+        designation: 'Dy. Manager HSE',
+        shift: 'General',
+        zone: 'Central Control Room (CCR)',
+        attendanceStatus: 'G',
+        nightsPerformed: 0,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-0444',
+        name: 'Zeeshan Rehman',
+        ur: 'ذیشان رحمان',
+        role: 'Shift Manager (SM)',
+        designation: 'SM',
+        shift: 'General',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        attendanceStatus: 'G',
+        nightsPerformed: 0,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-3845',
+        name: 'Muhammad Faisal Nadeem',
+        ur: 'محمد فیصل ندیم',
+        role: 'Safety Officer',
+        designation: 'HSE / Fire Fighter',
+        shift: 'General',
+        zone: 'Boiler Area (Unit 1 & 2)',
+        attendanceStatus: 'G',
+        nightsPerformed: 0,
+        helmet: true,
+        shoes: true,
+        gloves: true,
+        ear: true,
+      ),
+      WorkerRosterItem(
+        empId: 'CPL-EMP-3854',
+        name: 'Khalid Bashir',
+        ur: 'خالد بشیر',
+        role: 'Safety Officer',
+        designation: 'HSE / Fire Fighter',
+        shift: 'General',
+        zone: 'Fuel & Bagasse Yard (BC-1 to BC-5 / JT)',
+        attendanceStatus: 'G',
+        nightsPerformed: 0,
+        helmet: true,
+        shoes: true,
+        gloves: true,
         ear: true,
       ),
     ],
-    analyticsPeriod: '6M',
+    analyticsPeriod: '1Y',
     pendingUsers: const [
       PendingUserRegistration(
-        empId: 'CPL-EMP-1129',
-        name: 'Faisal Mehmood',
-        cnic: '33202-9918273-5',
-        role: 'Plant Worker',
-        shift: 'Shift B',
-        status: 'Pending',
-      ),
-      PendingUserRegistration(
-        empId: 'CPL-EMP-1134',
-        name: 'Asadullah Khan',
-        cnic: '33202-7741290-3',
-        role: 'Safety Officer',
-        shift: 'Shift C',
-        status: 'Pending',
-      ),
-      PendingUserRegistration(
-        empId: 'CPL-EMP-1088',
-        name: 'Zeeshan Ahmed',
-        cnic: '33202-5512098-1',
-        role: 'Boiler Operator',
-        shift: 'Shift A',
+        empId: 'CPL-EMP-3648',
+        name: 'Sumaira Rafique',
+        cnic: '33202-3648001-2',
+        role: 'HSE Manager',
+        shift: 'General Shift (08:00 - 17:00)',
         status: 'Approved',
+        pin: '3648',
+        zone: 'Central Control Room (CCR)',
+      ),
+      PendingUserRegistration(
+        empId: 'CPL-EMP-0509',
+        name: 'Muhammad Shahbaz',
+        cnic: '33202-0509001-1',
+        role: 'HSE Manager',
+        shift: 'Shift A (07:00 - 19:00 / 19:00 - 07:00)',
+        status: 'Approved',
+        pin: '0509',
+        zone: 'Central Control Room (CCR)',
+      ),
+      PendingUserRegistration(
+        empId: 'CPL-EMP-3845',
+        name: 'Muhammad Faisal Nadeem',
+        cnic: '33202-3845001-1',
+        role: 'Safety Officer',
+        shift: 'General Shift (08:00 - 17:00)',
+        status: 'Approved',
+        pin: '3845',
+        zone: 'Boiler Area (Unit 1 & 2)',
       ),
     ],
     emailRecipients: const [
-      'kamran.siddiqui@chiniotpower.com (HSE Manager)',
-      'plant.head@chiniotpower.com (VP Operations)',
-      'controlroom.unit1@chiniotpower.com (DCS Desk)',
+      'sumaira.rafique@chiniotpower.com (Dy. Manager HSE [3648])',
+      'moid.khan@chiniotpower.com (Plant Manager G.M [0157])',
+      'saeed.ullah@chiniotpower.com (DGM Plant [0059])',
+      'junaid.iqbal@chiniotpower.com (DGM Operations [0025])',
     ],
     pendingOfflineCount: 0,
     auditLogs: const [
       AuditLogItem(
         id: 'LOG-INIT-01',
-        actorId: 'CP-EMP-1001',
-        actorRole: 'admin',
+        actorId: 'CPL-EMP-3648',
+        actorRole: 'HSE Manager',
         action: 'SYSTEM_BOOTSTRAP',
-        targetResource: 'PLANT_UNIT_1',
+        targetResource: 'PLANT_UNIT_1_2',
         timestamp: '2026-11-12T06:00:00Z',
         coords: '31.7204° N, 72.9791° E',
-        details: 'Initial CPL 62.4 MW Power Plant master database provisioned.',
+        details: 'CPL 62.4 MW Co-Gen Plant real operational datasets (Oct/Nov 2026) provisioned.',
       ),
     ],
   );
@@ -533,17 +1014,7 @@ class CplSystemCubit extends Cubit<CplSystemState> {
         final rawList = res.data['roster'] ?? res.data['workers'];
         if (rawList is List) {
           final roster = rawList
-              .map((r) => WorkerRosterItem(
-                    empId: r['empId'] ?? 'CPL-EMP-000',
-                    name: r['name'] ?? '',
-                    ur: r['ur'] ?? r['name'] ?? '',
-                    role: r['role'] ?? 'Worker',
-                    zone: r['zone'] ?? 'Unit-1',
-                    helmet: r['helmet'] ?? true,
-                    shoes: r['shoes'] ?? true,
-                    gloves: r['gloves'] ?? true,
-                    ear: r['ear'] ?? true,
-                  ))
+              .map((r) => WorkerRosterItem.fromJson(Map<String, dynamic>.from(r as Map)))
               .toList();
           emit(state.copyWith(roster: roster));
         }
@@ -641,6 +1112,22 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     }
   }
 
+  String _normalizeEmpId(String raw) {
+    final clean = raw.trim().toUpperCase();
+    if (RegExp(r'^\d+$').hasMatch(clean)) {
+      return 'CPL-EMP-${clean.padLeft(4, '0')}';
+    }
+    final cplMatch = RegExp(r'^CPL-EMP-(\d+)$').firstMatch(clean);
+    if (cplMatch != null) {
+      return 'CPL-EMP-${cplMatch.group(1)!.padLeft(4, '0')}';
+    }
+    final cpMatch = RegExp(r'^CP-EMP-(\d+)$').firstMatch(clean);
+    if (cpMatch != null) {
+      return 'CPL-EMP-${cpMatch.group(1)!.padLeft(4, '0')}';
+    }
+    return clean;
+  }
+
   // Auth: Login with Employee ID + PIN / Password
   Future<bool> login({
     required String empId,
@@ -649,10 +1136,11 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     String? pin,
     String? password,
   }) async {
-    final cleanId = empId.trim().toUpperCase();
+    final rawTrimmed = empId.trim().toUpperCase();
+    final cleanId = _normalizeEmpId(rawTrimmed);
     final secret = (password ?? pin ?? '').trim();
 
-    if (cleanId.isEmpty) {
+    if (rawTrimmed.isEmpty) {
       emit(state.copyWith(lastAuthError: () => 'Please enter your Employee ID.'));
       return false;
     }
@@ -711,11 +1199,11 @@ class CplSystemCubit extends Cubit<CplSystemState> {
             'Invalid Employee ID or Password/PIN.';
         // If backend returned 401/403/400, still check if the user registered purely locally in Hive while previously offline
         final regBox = _getBoxIfOpen(HiveBoxes.registeredUsersBox);
-        final localUserRaw = regBox?.get(cleanId);
+        final localUserRaw = regBox?.get(cleanId) ?? regBox?.get(rawTrimmed);
         if (localUserRaw is Map) {
           final localMap = Map<String, dynamic>.from(localUserRaw);
           final storedSecret = (localMap['password'] ?? localMap['pin'] ?? '').toString().trim();
-          if (storedSecret == secret) {
+          if (storedSecret == secret || storedSecret.padLeft(4, '0') == secret.padLeft(4, '0')) {
             final session = UserSession.fromJson(localMap);
             await _persistLocalLogin(session);
             return true;
@@ -732,7 +1220,7 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     // 2. Offline / Local Hive registered_users fallback
     final regBox = _getBoxIfOpen(HiveBoxes.registeredUsersBox);
     if (regBox != null) {
-      dynamic localRaw = regBox.get(cleanId);
+      dynamic localRaw = regBox.get(cleanId) ?? regBox.get(rawTrimmed);
       if (localRaw == null) {
         final altId = cleanId.startsWith('CPL-')
             ? cleanId.replaceFirst('CPL-', 'CP-')
@@ -742,7 +1230,9 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       if (localRaw is Map) {
         final localMap = Map<String, dynamic>.from(localRaw);
         final storedSecret = (localMap['password'] ?? localMap['pin'] ?? '').toString().trim();
-        if (storedSecret.isNotEmpty && storedSecret != secret) {
+        if (storedSecret.isNotEmpty &&
+            storedSecret != secret &&
+            storedSecret.padLeft(4, '0') != secret.padLeft(4, '0')) {
           emit(state.copyWith(lastAuthError: () => 'Incorrect Password or Security PIN.'));
           return false;
         }
@@ -753,9 +1243,14 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     }
 
     // 3. In-memory pendingUsers / roster fallback (e.g. headless widget tests)
-    final pending = state.pendingUsers.where((u) => u.empId.toUpperCase() == cleanId).firstOrNull;
+    final pending = state.pendingUsers
+        .where((u) => _normalizeEmpId(u.empId) == cleanId || u.empId.toUpperCase() == rawTrimmed)
+        .firstOrNull;
     if (pending != null) {
-      if (pending.pin != null && pending.pin!.isNotEmpty && pending.pin != secret) {
+      if (pending.pin != null &&
+          pending.pin!.isNotEmpty &&
+          pending.pin != secret &&
+          pending.pin!.padLeft(4, '0') != secret.padLeft(4, '0')) {
         emit(state.copyWith(lastAuthError: () => 'Incorrect Password or Security PIN.'));
         return false;
       }
@@ -766,34 +1261,66 @@ class CplSystemCubit extends Cubit<CplSystemState> {
         role: pending.role,
         shift: pending.shift,
         cnic: pending.cnic,
-        zone: pending.zone ?? 'Boiler House Unit-1',
+        zone: pending.zone ?? 'Boiler Area (Unit 1 & 2)',
       );
       await _persistLocalLogin(session);
       return true;
     }
 
-    // 4. Known CPL Preset Accounts offline validation
+    // 4. Real CPL Personnel Directory offline validation (27 real CPL employees + legacy aliases)
     final Map<String, Map<String, String>> presetAccounts = {
-      'CP-EMP-1001': {'pin': '1001', 'name': 'Engr. Tariq Khan', 'ur': 'انجینئر طارق خان', 'role': 'HSE Manager', 'zone': 'Plant Headquarters'},
-      'CPL-EMP-1001': {'pin': '1001', 'name': 'Engr. Tariq Khan', 'ur': 'انجینئر طارق خان', 'role': 'HSE Manager', 'zone': 'Plant Headquarters'},
-      'CP-EMP-1002': {'pin': '1002', 'name': 'Asim Raza', 'ur': 'عاصم رضا', 'role': 'HSE Manager', 'zone': 'Safety & Compliance'},
-      'CPL-EMP-1002': {'pin': '1002', 'name': 'Asim Raza', 'ur': 'عاصم رضا', 'role': 'HSE Manager', 'zone': 'Safety & Compliance'},
-      'CPL-EMP-1042': {'pin': '1042', 'name': 'Muhammad Tariq', 'ur': 'محمد طارق', 'role': 'Safety Officer', 'zone': 'Boiler House Unit-1'},
-      'CPL-EMP-1088': {'pin': '1088', 'name': 'Zeeshan Ahmed', 'ur': 'ذیشان احمد', 'role': 'Plant Worker', 'zone': 'Bagasse & Coal Yard'},
+      // HSE & Safety Leadership (Admin / HSE Manager Role)
+      'CPL-EMP-3648': {'pin': '3648', 'name': 'Sumaira Rafique', 'ur': 'سمیرہ رفیق', 'role': 'HSE Manager', 'shift': 'General Shift (08:00 - 17:00)', 'zone': 'Admin, Stores & Workshops (MMD / EMD / I&C)'},
+      'CPL-EMP-3845': {'pin': '3845', 'name': 'Faisal Nadeem', 'ur': 'فیصل ندیم', 'role': 'Safety Officer', 'shift': 'General Shift (08:00 - 17:00)', 'zone': 'Boiler Area (Unit 1 & 2)'},
+      'CPL-EMP-4503': {'pin': '4503', 'name': 'Shehryar Khan', 'ur': 'شہریار خان', 'role': 'Safety Officer', 'shift': 'Shift A (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'TG Building (Steam Turbine Hall)'},
+      'CPL-EMP-4504': {'pin': '4504', 'name': 'Umair', 'ur': 'عمیر', 'role': 'Safety Officer', 'shift': 'Shift B (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Fuel & Bagasse Yard (BC-1 to BC-5 / JT)'},
+      'CPL-EMP-4505': {'pin': '4505', 'name': 'M. Arslan', 'ur': 'محمد ارسلان', 'role': 'Safety Officer', 'shift': 'Shift C (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'ESP & Ash Handling (SCC / Silo)'},
+      'CPL-EMP-4506': {'pin': '4506', 'name': 'Asad Ali', 'ur': 'اسد علی', 'role': 'Safety Officer', 'shift': 'Shift D (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Water Treatment Plant (WTP)'},
+      'CPL-EMP-4507': {'pin': '4507', 'name': 'Mudassar', 'ur': 'مدثر', 'role': 'Safety Officer', 'shift': 'General Shift (08:00 - 17:00)', 'zone': '132kV Grid Switchyard'},
+      'CPL-EMP-4508': {'pin': '4508', 'name': 'Shahid', 'ur': 'شاہد', 'role': 'Safety Officer', 'shift': 'Shift A (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Balance of Plant (BOP & Cooling Tower)'},
+      'CPL-EMP-4509': {'pin': '4509', 'name': 'Ijaz', 'ur': 'اعجاز', 'role': 'Safety Officer', 'shift': 'Shift B (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Bagasse Piling & Shredder (BPL / RSML)'},
+      'CPL-EMP-4510': {'pin': '4510', 'name': 'Ahsan', 'ur': 'احسن', 'role': 'Safety Officer', 'shift': 'Shift C (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Boiler Area (Unit 1 & 2)'},
+      'CPL-EMP-4511': {'pin': '4511', 'name': 'Saqib', 'ur': 'ثاقب', 'role': 'Safety Officer', 'shift': 'Shift D (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Central Control Room (CCR)'},
+      // Operations Leadership & Shift Managers
+      'CPL-EMP-0299': {'pin': '0299', 'name': 'Imran Mahmood', 'ur': 'عمران محمود', 'role': 'GM Operations (GM Ops)', 'shift': 'General Shift (08:00 - 17:00)', 'zone': 'Central Control Room (CCR)'},
+      'CPL-EMP-0509': {'pin': '0509', 'name': 'Muhammad Shahbaz', 'ur': 'محمد شہباز', 'role': 'Shift Manager (Shift A)', 'shift': 'Shift A (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Central Control Room (CCR)'},
+      'CPL-EMP-0095': {'pin': '0095', 'name': 'Bilal Khan', 'ur': 'بلال خان', 'role': 'Shift Manager (Shift B)', 'shift': 'Shift B (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Central Control Room (CCR)'},
+      'CPL-EMP-0315': {'pin': '0315', 'name': 'Majid Hussain', 'ur': 'ماجد حسین', 'role': 'Shift Manager (Shift C)', 'shift': 'Shift C (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Central Control Room (CCR)'},
+      'CPL-EMP-0187': {'pin': '0187', 'name': 'Masab Latif', 'ur': 'مصعب لطیف', 'role': 'Shift Manager (Shift D)', 'shift': 'Shift D (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Central Control Room (CCR)'},
+      'CPL-EMP-1736': {'pin': '1736', 'name': 'Waqas Ali', 'ur': 'وقاص علی', 'role': 'Shift Manager (General)', 'shift': 'General Shift (08:00 - 17:00)', 'zone': 'Central Control Room (CCR)'},
+      // CCR Engineers, Area Engineers & Plant Technicians
+      'CPL-EMP-0808': {'pin': '0808', 'name': 'Umer Asghar', 'ur': 'عمر اصغر', 'role': 'Lead Engineer CCR (Shift A)', 'shift': 'Shift A (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Central Control Room (CCR)'},
+      'CPL-EMP-0237': {'pin': '0237', 'name': 'Amir Ali', 'ur': 'عامر علی', 'role': 'Lead Engineer CCR (Shift B)', 'shift': 'Shift B (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Central Control Room (CCR)'},
+      'CPL-EMP-0807': {'pin': '0807', 'name': 'Adnan Ghani', 'ur': 'عدنان غنی', 'role': 'Lead Engineer CCR (Shift C)', 'shift': 'Shift C (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Central Control Room (CCR)'},
+      'CPL-EMP-0806': {'pin': '0806', 'name': 'Syed Asad', 'ur': 'سید اسد', 'role': 'Lead Engineer CCR (Shift D)', 'shift': 'Shift D (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Central Control Room (CCR)'},
+      'CPL-EMP-0244': {'pin': '0244', 'name': 'Qaisar Abbas', 'ur': 'قیصر عباس', 'role': 'Area Engineer Boiler (Shift A)', 'shift': 'Shift A (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Boiler Area (Unit 1 & 2)'},
+      'CPL-EMP-0379': {'pin': '0379', 'name': 'Mazhar Ghafoor', 'ur': 'مظہر غفور', 'role': 'Area Engineer Boiler (Shift C)', 'shift': 'Shift C (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Boiler Area (Unit 1 & 2)'},
+      'CPL-EMP-1748': {'pin': '1748', 'name': 'Imran Baig', 'ur': 'عمران بیگ', 'role': 'Senior Lab Chemist (WTP)', 'shift': 'General Shift (08:00 - 17:00)', 'zone': 'Water Treatment Plant (WTP)'},
+      'CPL-EMP-1859': {'pin': '1859', 'name': 'Muhammad Ameer', 'ur': 'محمد امیر', 'role': 'Chargehand BPL (General)', 'shift': 'General Shift (08:00 - 17:00)', 'zone': 'Bagasse Piling & Shredder (BPL / RSML)'},
+      'CPL-EMP-0069': {'pin': '0069', 'name': 'Qamar Abbas', 'ur': 'قمر عباس', 'role': 'Plant Operator I TG (Shift A)', 'shift': 'Shift A (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'TG Building (Steam Turbine Hall)'},
+      'CPL-EMP-0238': {'pin': '0238', 'name': 'Haq Nawaz', 'ur': 'حق نواز', 'role': 'Plant Operator I Boiler (Shift B)', 'shift': 'Shift B (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'Boiler Area (Unit 1 & 2)'},
+      // Legacy compatibility IDs for existing unit tests
+      'CPL-EMP-1001': {'pin': '1001', 'name': 'Sumaira Rafique', 'ur': 'سمیرہ رفیق', 'role': 'HSE Manager', 'shift': 'General Shift (08:00 - 17:00)', 'zone': 'Admin, Stores & Workshops (MMD / EMD / I&C)'},
+      'CPL-EMP-1002': {'pin': '1002', 'name': 'Imran Mahmood', 'ur': 'عمران محمود', 'role': 'HSE Manager', 'shift': 'General Shift (08:00 - 17:00)', 'zone': 'Central Control Room (CCR)'},
+      'CPL-EMP-1042': {'pin': '1042', 'name': 'Faisal Nadeem', 'ur': 'فیصل ندیم', 'role': 'Safety Officer', 'shift': 'General Shift (08:00 - 17:00)', 'zone': 'Boiler Area (Unit 1 & 2)'},
+      'CPL-EMP-1088': {'pin': '1088', 'name': 'Qamar Abbas', 'ur': 'قمر عباس', 'role': 'Plant Worker', 'shift': 'Shift A (07:00 - 19:00 / 19:00 - 07:00)', 'zone': 'TG Building (Steam Turbine Hall)'},
     };
 
     final preset = presetAccounts[cleanId];
     if (preset != null) {
-      if (preset['pin'] != secret && secret != 'admin123') {
+      final expectedPin = preset['pin']!;
+      if (expectedPin != secret &&
+          expectedPin.padLeft(4, '0') != secret.padLeft(4, '0') &&
+          secret != 'admin123') {
         emit(state.copyWith(lastAuthError: () => 'Incorrect Password or Security PIN.'));
         return false;
       }
       final session = UserSession(
-        empId: cleanId,
+        empId: rawTrimmed.startsWith('CP-EMP-') ? rawTrimmed : cleanId,
         name: preset['name']!,
         urduName: preset['ur']!,
         role: preset['role']!,
-        shift: shift,
+        shift: preset['shift'] ?? shift,
         cnic: '33202-0000000-1',
         zone: preset['zone']!,
       );
@@ -862,14 +1389,15 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     String? password,
     String? assignedZone,
   }) async {
-    final cleanId = empId.trim().toUpperCase();
+    final rawTrimmed = empId.trim().toUpperCase();
+    final cleanId = _normalizeEmpId(rawTrimmed);
     final cleanName = fullName.trim();
     final cleanSecret = (password ?? pin ?? '').trim();
     final resolvedZone = (assignedZone != null && assignedZone.trim().isNotEmpty)
         ? assignedZone.trim()
-        : 'Boiler House Unit-1';
+        : 'Boiler Area (Unit 1 & 2)';
 
-    if (cleanId.isEmpty || cleanName.isEmpty) {
+    if (rawTrimmed.isEmpty || cleanName.isEmpty) {
       emit(state.copyWith(lastAuthError: () => 'Employee ID and Full Name are required.'));
       return false;
     }
@@ -919,6 +1447,9 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     // Save locally into Hive `registered_users` box for offline login continuity
     final regBox = _getBoxIfOpen(HiveBoxes.registeredUsersBox);
     await regBox?.put(cleanId, localRecord);
+    if (rawTrimmed != cleanId) {
+      await regBox?.put(rawTrimmed, localRecord);
+    }
 
     final newReg = PendingUserRegistration(
       empId: cleanId,
@@ -933,18 +1464,30 @@ class CplSystemCubit extends Cubit<CplSystemState> {
 
     final updatedList = [
       newReg,
-      ...state.pendingUsers.where((u) => u.empId.toUpperCase() != cleanId),
+      ...state.pendingUsers.where((u) => _normalizeEmpId(u.empId) != cleanId),
     ];
 
     // Also add immediately to roster so live metrics update
     final updatedRoster = List<WorkerRosterItem>.from(state.roster);
-    if (!updatedRoster.any((w) => w.empId.toUpperCase() == cleanId)) {
+    if (!updatedRoster.any((w) => _normalizeEmpId(w.empId) == cleanId)) {
       updatedRoster.add(WorkerRosterItem(
         empId: cleanId,
         name: cleanName,
         ur: cleanName,
         role: role,
         zone: resolvedZone,
+        shift: shift.contains('Shift A')
+            ? 'Shift A'
+            : shift.contains('Shift B')
+                ? 'Shift B'
+                : shift.contains('Shift C')
+                    ? 'Shift C'
+                    : shift.contains('Shift D')
+                        ? 'Shift D'
+                        : 'General',
+        designation: role,
+        attendanceStatus: 'D',
+        nightsPerformed: 0,
         helmet: true,
         shoes: true,
         gloves: true,
@@ -976,10 +1519,15 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     required String coords,
     String? photoPath,
     String? voicePath,
+    String observationType = 'Unsafe Condition',
+    String responsibleTeam = 'MMD / HSE',
+    String suggestion = 'Immediate engineering inspection and isolation required.',
   }) {
+    final nmNum = '26-CPL-${475 + state.hazards.length}';
     final newHazard = HazardItem(
-      id: 'HAZ-${310 + state.hazards.length}',
-      title: '$category Alert — $zone',
+      id: nmNum,
+      nmNumber: nmNum,
+      title: description.trim().isNotEmpty ? '$category — ${description.trim()}' : '$category Alert — $zone',
       zone: zone,
       severity: severity,
       reporter: '${state.currentUser.name} (${state.currentUser.empId})',
@@ -988,6 +1536,10 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       coords: coords,
       photoAttached: photoPath != null,
       voiceSaved: voicePath != null,
+      observationType: observationType,
+      categoryType: category,
+      responsibleTeam: responsibleTeam,
+      suggestion: suggestion,
     );
     final updated = [newHazard, ...state.hazards];
     emit(state.copyWith(hazards: updated, activeScreenIndex: 1)); // Return to Dashboard
@@ -996,11 +1548,12 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       action: 'HAZARD_REPORTED',
       targetResource: newHazard.id,
       coords: coords,
-      details: '${newHazard.severity} hazard: "${newHazard.title}" reported at $zone. Geotagged: $coords.',
+      details: '${newHazard.severity} hazard ($nmNum): "${newHazard.title}" reported at $zone. Geotagged: $coords.',
     );
 
     final payload = {
       'id': newHazard.id,
+      'nmNumber': nmNum,
       'title': newHazard.title,
       'zone': newHazard.zone,
       'severity': newHazard.severity,
@@ -1008,6 +1561,10 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       'reporterId': state.currentUser.empId,
       'coords': coords,
       'description': description,
+      'observationType': observationType,
+      'categoryType': category,
+      'responsibleTeam': responsibleTeam,
+      'suggestion': suggestion,
     };
 
     _syncQueue?.enqueue(id: newHazard.id, actionType: 'CREATE_HAZARD', payload: payload);
@@ -1324,6 +1881,15 @@ class CplSystemCubit extends Cubit<CplSystemState> {
 
   void toggleWorkerPpe(String empId, String ppeKey) => togglePpe(empId, ppeKey);
 
+  // Roster Shift & Area Filters
+  void setRosterShiftFilter(String shift) {
+    emit(state.copyWith(rosterShiftFilter: shift));
+  }
+
+  void setRosterAreaFilter(String area) {
+    emit(state.copyWith(rosterAreaFilter: area));
+  }
+
   // Analytics Period
   void setAnalyticsPeriod(String period) {
     emit(state.copyWith(analyticsPeriod: period));
@@ -1354,7 +1920,11 @@ class CplSystemCubit extends Cubit<CplSystemState> {
           name: targetUser!.name,
           ur: targetUser!.name,
           role: targetUser!.role,
-          zone: targetUser!.zone ?? 'Boiler House Unit-1',
+          zone: targetUser!.zone ?? 'Boiler Area (Unit 1 & 2)',
+          shift: targetUser!.shift,
+          designation: targetUser!.role,
+          attendanceStatus: 'D',
+          nightsPerformed: 0,
           helmet: true,
           shoes: true,
           gloves: true,

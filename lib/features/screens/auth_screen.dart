@@ -23,17 +23,19 @@ class _AuthScreenState extends State<AuthScreen> {
   final _cnicMobileController = TextEditingController();
   final BiometricAuthService _biometricAuth = BiometricAuthService();
 
-  String _selectedShift = 'Shift A: Morning';
+  String _selectedShift = 'General Shift (08:00 - 17:00)';
   String _selectedRole = 'HSE Manager';
-  String _selectedZone = 'Boiler House Unit-1';
+  String _selectedZone = 'Boiler Area (Unit 1 & 2)';
   String? _errorMessage;
   String? _successMessage;
   bool _isSubmitting = false;
 
   final List<String> _shifts = [
-    'Shift A: Morning',
-    'Shift B: Evening',
-    'Shift C: Night',
+    'General Shift (08:00 - 17:00)',
+    'Shift A (07:00 - 19:00 / 19:00 - 07:00)',
+    'Shift B (07:00 - 19:00 / 19:00 - 07:00)',
+    'Shift C (07:00 - 19:00 / 19:00 - 07:00)',
+    'Shift D (07:00 - 19:00 / 19:00 - 07:00)',
   ];
 
   final List<String> _roles = [
@@ -43,13 +45,16 @@ class _AuthScreenState extends State<AuthScreen> {
   ];
 
   final List<String> _zones = [
-    'Boiler House Unit-1',
-    'Steam Turbine Hall',
-    'Bagasse & Coal Yard',
+    'Boiler Area (Unit 1 & 2)',
+    'TG Building (Steam Turbine Hall)',
+    'Central Control Room (CCR)',
+    'Fuel & Bagasse Yard (BC-1 to BC-5 / JT)',
     '132kV Grid Switchyard',
-    'Water Treatment Plant',
-    'Cooling Tower',
-    'Plant Headquarters',
+    'Water Treatment Plant (WTP)',
+    'Balance of Plant (BOP & Cooling Tower)',
+    'ESP & Ash Handling (SCC / Silo)',
+    'Bagasse Piling & Shredder (BPL / RSML)',
+    'Admin, Stores & Workshops (MMD / EMD / I&C)',
   ];
 
   @override
@@ -342,10 +347,10 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Fast Switch Demo Account Chips
+              // Fast Switch Real CPL Personnel Chips
               Row(
                 children: const [
-                  Text('PRESET ROLES • فوری کردار منتخب کریں:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: CplColors.slate600)),
+                  Text('CPL VERIFIED STAFF • فوری عملہ لاگ ان:', style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: CplColors.slate600)),
                 ],
               ),
               const SizedBox(height: 6),
@@ -355,23 +360,30 @@ class _AuthScreenState extends State<AuthScreen> {
                   children: [
                     ActionChip(
                       avatar: const Icon(Icons.admin_panel_settings, size: 14, color: Colors.white),
-                      label: const Text('CPL-EMP-1001 (Manager)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
+                      label: const Text('3648 Sumaira Rafique (HSE Lead)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
                       backgroundColor: CplColors.corporateNavy,
-                      onPressed: () => _fillAccount(empId: 'CPL-EMP-1001', role: 'HSE Manager', pin: '1001', name: 'Engr. Tariq Khan'),
+                      onPressed: () => _fillAccount(empId: 'CPL-EMP-3648', role: 'HSE Manager', pin: '3648', name: 'Sumaira Rafique'),
+                    ),
+                    const SizedBox(width: 6),
+                    ActionChip(
+                      avatar: const Icon(Icons.engineering, size: 14, color: Colors.white),
+                      label: const Text('0509 M. Shahbaz (SM Shift A)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
+                      backgroundColor: CplColors.emerald600,
+                      onPressed: () => _fillAccount(empId: 'CPL-EMP-0509', role: 'HSE Manager', pin: '0509', name: 'Muhammad Shahbaz'),
                     ),
                     const SizedBox(width: 6),
                     ActionChip(
                       avatar: const Icon(Icons.verified_user, size: 14, color: Colors.white),
-                      label: const Text('CPL-EMP-1042 (Safety)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
+                      label: const Text('3845 Faisal Nadeem (Safety)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
                       backgroundColor: CplColors.safety500,
-                      onPressed: () => _fillAccount(empId: 'CPL-EMP-1042', role: 'Safety Officer', pin: '1042', name: 'Muhammad Tariq'),
+                      onPressed: () => _fillAccount(empId: 'CPL-EMP-3845', role: 'Safety Officer', pin: '3845', name: 'Faisal Nadeem'),
                     ),
                     const SizedBox(width: 6),
                     ActionChip(
                       avatar: const Icon(Icons.person, size: 14, color: Colors.white),
-                      label: const Text('CPL-EMP-1088 (Worker)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
+                      label: const Text('0808 Umer Asghar (CCR Engr)', style: TextStyle(fontSize: 10.5, color: Colors.white, fontWeight: FontWeight.bold)),
                       backgroundColor: CplColors.slate700,
-                      onPressed: () => _fillAccount(empId: 'CPL-EMP-1088', role: 'Plant Worker', pin: '1088', name: 'Zeeshan Ahmed'),
+                      onPressed: () => _fillAccount(empId: 'CPL-EMP-0808', role: 'Plant Worker', pin: '0808', name: 'Umer Asghar'),
                     ),
                   ],
                 ),
