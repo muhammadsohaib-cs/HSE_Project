@@ -25,9 +25,20 @@ class CplBrandLogo extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Brand Image with Vector Emblem Fallback
-        ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+        // Official CPL Brand Logo Container with Vector Fallback
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha((0.12 * 255).round()),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
           child: Image.asset(
             'assets/images/cpl_logo.png',
             height: logoH,

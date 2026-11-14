@@ -668,6 +668,78 @@ class _AuthScreenState extends State<AuthScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                 ),
+                const SizedBox(height: 12),
+
+                // Quick Operator Demo Access
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: CplColors.slate200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: const [
+                          Icon(Icons.bolt, size: 14, color: CplColors.energyAmber),
+                          SizedBox(width: 4),
+                          Text(
+                            'QUICK OPERATOR SIGN IN',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              color: CplColors.slate500,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 6,
+                        children: [
+                          ActionChip(
+                            avatar: const CircleAvatar(
+                              radius: 10,
+                              backgroundColor: Color(0xFF0B1F3A),
+                              child: Text('TK', style: TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.bold)),
+                            ),
+                            label: const Text('Engr. Tariq Khan (HSE)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                            backgroundColor: CplColors.slate50,
+                            side: const BorderSide(color: CplColors.slate200),
+                            onPressed: () {
+                              setState(() {
+                                _empIdController.text = 'CPL-EMP-1002';
+                                _pinController.text = '1002';
+                              });
+                              _handleSubmit();
+                            },
+                          ),
+                          ActionChip(
+                            avatar: const CircleAvatar(
+                              radius: 10,
+                              backgroundColor: Color(0xFF059669),
+                              child: Text('SR', style: TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.bold)),
+                            ),
+                            label: const Text('Sumaira Rafique (EMP 3648)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                            backgroundColor: CplColors.slate50,
+                            side: const BorderSide(color: CplColors.slate200),
+                            onPressed: () {
+                              setState(() {
+                                _empIdController.text = '3648';
+                                _pinController.text = '3648';
+                              });
+                              _handleSubmit();
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ],
           ),

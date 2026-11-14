@@ -1324,6 +1324,26 @@
   ],
   "auditLogs": [
     {
+      "id": "LOG-1794641479782-676",
+      "actorId": "CPL-EMP-3648",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGIN",
+      "targetResource": "Central Control Room (CCR)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T07:31:19.782Z",
+      "details": "Staff member CPL-EMP-3648 (Sumaira Rafique) authenticated via CPL Backend Gateway."
+    },
+    {
+      "id": "LOG-1794641477768-502",
+      "actorId": "CPL-EMP-3648",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGIN",
+      "targetResource": "Central Control Room (CCR)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-14T07:31:17.768Z",
+      "details": "Employee CPL-EMP-3648 (Sumaira Rafique - HSE Manager) authenticated successfully."
+    },
+    {
       "id": "LOG-1794634832551-226",
       "actorId": "CPL-EMP-3648",
       "actorRole": "HSE Manager",
