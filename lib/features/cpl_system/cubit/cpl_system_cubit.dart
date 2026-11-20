@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hive/hive.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../../../../core/constants/api_endpoints.dart';
+import '../../../../core/constants/cpl_checklists_data.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/platform/audio_service.dart';
 import '../../../../core/storage/hive_boxes.dart';
@@ -263,44 +264,10 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     ],
     checklistZone: 'Boiler Area (Unit 1 & 2)',
     checklistSigned: false,
-    checklistItems: const [
-      ChecklistAuditItem(
-        id: 1,
-        en: 'Main Steam Line (105 bar) expansion joints & soot-blower S.B-8 railing verified',
-        ur: 'مین سٹیم لائن (105 بار) اور سوٹ بلوئر ریلنگ کا معائنہ مکمل ہے',
-        status: 'pass',
-      ),
-      ChecklistAuditItem(
-        id: 2,
-        en: 'Unit-02 EDG room manholes & floor trench covers securely seated',
-        ur: 'یونٹ 2 ای ڈی جی روم کے مین ہولز اور فلور کورز محفوظ ہیں',
-        status: 'pass',
-      ),
-      ChecklistAuditItem(
-        id: 3,
-        en: 'FD & ID Fan lubrication oil level & vibration within limits',
-        ur: 'ایف ڈی اور آئی ڈی فین کا لوبریکیشن آئل لیول اور وائبریشن نارمل ہے',
-        status: 'pass',
-      ),
-      ChecklistAuditItem(
-        id: 4,
-        en: 'SCC DE-Side & BC-3 push-button boxes free from combustible bagasse dust',
-        ur: 'ایس سی سی اور بی سی 3 پش بٹن باکس بگاس ڈسٹ سے صاف ہیں',
-        status: 'pass',
-      ),
-      ChecklistAuditItem(
-        id: 5,
-        en: 'Monitor #03 and fire hydrant ring pressure >= 8.5 bar & unobstructed',
-        ur: 'فائر مانیٹر 03 اور ہائیڈرنٹ لائن پریشر 8.5 بار سے زائد اور صاف ہے',
-        status: 'pass',
-      ),
-      ChecklistAuditItem(
-        id: 6,
-        en: 'Unit 2 CCR HVAC outdoor platform edge protection & harness anchor verified',
-        ur: 'یونٹ 2 سی سی آر ایچ وی اے سی پلیٹ فارم ریلنگ تصدیق شدہ ہے',
-        status: 'pass',
-      ),
-    ],
+    checklistTemplates: kCplChecklistTemplates,
+    activeChecklistTemplateId: 'CPL-HSEFEIC-01',
+    checklistCategoryFilter: 'All',
+    checklistItems: kCplChecklistTemplates.first.items,
     ptwFilter: 'All',
     permits: const [
       PtwItem(
@@ -988,17 +955,27 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     try {
       final res = await client.dio.get('/checklists/templates');
       if (res.statusCode == 200 && res.data['templates'] != null) {
-        final tpls = res.data['templates'] as List;
-        if (tpls.isNotEmpty && tpls.first['items'] != null) {
-          final items = (tpls.first['items'] as List)
-              .map((it) => ChecklistAuditItem(
-                    id: it['id'] is int ? it['id'] : int.tryParse(it['id'].toString()) ?? 1,
-                    en: it['en'] ?? '',
-                    ur: it['ur'] ?? '',
-                    status: 'pass',
-                  ))
-              .toList();
-          emit(state.copyWith(checklistItems: items));
+        final rawTpls = res.data['templates'] as List;
+        final parsed = <String, ChecklistTemplate>{};
+        for (final raw in rawTpls) {
+          if (raw is Map) {
+            final tpl = ChecklistTemplate.fromJson(Map<String, dynamic>.from(raw));
+            if (tpl.id.isNotEmpty) {
+              parsed[tpl.id] = tpl;
+            }
+          }
+        }
+        if (parsed.isNotEmpty) {
+          final templates = parsed.values.toList();
+          final currentActive = templates.firstWhere(
+            (t) => t.id == state.activeChecklistTemplateId || t.docNo == state.activeChecklistTemplateId,
+            orElse: () => templates.first,
+          );
+          emit(state.copyWith(
+            checklistTemplates: templates,
+            activeChecklistTemplateId: currentActive.id,
+            checklistItems: currentActive.items.isNotEmpty ? currentActive.items : state.checklistItems,
+          ));
         }
       }
     } catch (_) {}
@@ -1685,6 +1662,96 @@ class CplSystemCubit extends Cubit<CplSystemState> {
 
   void setChecklistZone(String zone) {
     emit(state.copyWith(checklistZone: zone));
+  }
+
+  void selectChecklistTemplate(String templateId) {
+    final tpl = state.checklistTemplates.firstWhere(
+      (t) => t.id == templateId || t.docNo == templateId,
+      orElse: () => state.checklistTemplates.first,
+    );
+    emit(state.copyWith(
+      activeChecklistTemplateId: tpl.id,
+      checklistZone: tpl.targetZone,
+      checklistItems: tpl.items,
+      checklistSigned: false,
+    ));
+    _recordAudit(
+      action: 'CHECKLIST_TEMPLATE_SELECTED',
+      targetResource: tpl.id,
+      details: 'Switched active checklist to ${tpl.title} (${tpl.docNo}).',
+    );
+  }
+
+  void setChecklistCategoryFilter(String category) {
+    final matching = category == 'All'
+        ? state.checklistTemplates
+        : state.checklistTemplates.where((t) => t.category == category).toList();
+    final currentStillVisible = matching.any(
+      (t) => t.id == state.activeChecklistTemplateId || t.docNo == state.activeChecklistTemplateId,
+    );
+    if (!currentStillVisible && matching.isNotEmpty) {
+      final nextTpl = matching.first;
+      emit(state.copyWith(
+        checklistCategoryFilter: category,
+        activeChecklistTemplateId: nextTpl.id,
+        checklistZone: nextTpl.targetZone,
+        checklistItems: nextTpl.items,
+        checklistSigned: false,
+      ));
+    } else {
+      emit(state.copyWith(checklistCategoryFilter: category));
+    }
+  }
+
+  Future<void> submitChecklistAudit() async {
+    final currentTpl = state.activeChecklistTemplate;
+    final items = state.checklistItems;
+    final passCount = items.where((i) => i.status == 'pass').length;
+    final failCount = items.where((i) => i.status == 'fail').length;
+    final total = items.length;
+    final completionRate = total > 0 ? ((passCount / total) * 100).toStringAsFixed(1) : '0';
+
+    final auditId = 'AUD-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+    final payload = {
+      'id': auditId,
+      'templateId': currentTpl?.id ?? state.activeChecklistTemplateId,
+      'docNo': currentTpl?.docNo ?? 'CPL-HSE-GEN',
+      'title': currentTpl?.title ?? 'Safety Inspection',
+      'plantZone': state.checklistZone,
+      'shiftType': state.currentUser.shift,
+      'inspectorId': state.currentUser.empId,
+      'inspectorName': state.currentUser.name,
+      'completionRate': double.tryParse(completionRate) ?? 0.0,
+      'passCount': passCount,
+      'failCount': failCount,
+      'items': items.map((i) => i.toJson()).toList(),
+      'signatureVerified': state.checklistSigned,
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+
+    // Auto-record audit log
+    _recordAudit(
+      action: 'CHECKLIST_SUBMITTED',
+      targetResource: auditId,
+      details: '${currentTpl?.title ?? "Checklist"} submitted for ${state.checklistZone}. Pass: $passCount, Fail: $failCount ($completionRate%).',
+    );
+
+    // If client available, post to backend
+    if (_dioClient != null) {
+      try {
+        await _dioClient!.dio.post('/checklists', data: payload);
+      } catch (e) {
+        debugPrint('Submitting checklist to server failed, queuing offline: $e');
+        if (_syncQueue != null) {
+          await _syncQueue!.enqueue(
+            id: auditId,
+            actionType: 'SUBMIT_CHECKLIST',
+            payload: payload,
+          );
+          emit(state.copyWith(pendingOfflineCount: _syncQueue!.pendingCount));
+        }
+      }
+    }
   }
 
   void toggleChecklistSignature() {

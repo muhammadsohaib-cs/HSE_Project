@@ -267,25 +267,129 @@ class ChecklistAuditItem extends Equatable {
   final String en;
   final String ur;
   final String status; // 'pass', 'fail', 'na'
+  final String standard;
+  final String category;
 
   const ChecklistAuditItem({
     required this.id,
     required this.en,
     required this.ur,
     this.status = 'pass',
+    this.standard = '',
+    this.category = '',
   });
 
-  ChecklistAuditItem copyWith({String? status}) {
+  ChecklistAuditItem copyWith({
+    int? id,
+    String? en,
+    String? ur,
+    String? status,
+    String? standard,
+    String? category,
+  }) {
     return ChecklistAuditItem(
-      id: id,
-      en: en,
-      ur: ur,
+      id: id ?? this.id,
+      en: en ?? this.en,
+      ur: ur ?? this.ur,
       status: status ?? this.status,
+      standard: standard ?? this.standard,
+      category: category ?? this.category,
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'en': en,
+    'ur': ur,
+    'status': status,
+    'standard': standard,
+    'category': category,
+  };
+
+  factory ChecklistAuditItem.fromJson(Map<String, dynamic> json) => ChecklistAuditItem(
+    id: json['id'] is int ? json['id'] as int : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
+    en: json['en']?.toString() ?? '',
+    ur: json['ur']?.toString() ?? '',
+    status: json['status']?.toString() ?? 'pass',
+    standard: json['standard']?.toString() ?? '',
+    category: json['category']?.toString() ?? '',
+  );
+
   @override
-  List<Object?> get props => [id, en, ur, status];
+  List<Object?> get props => [id, en, ur, status, standard, category];
+}
+
+class ChecklistTemplate extends Equatable {
+  final String id;
+  final String docNo;
+  final String title;
+  final String titleUr;
+  final String category;
+  final String categoryUr;
+  final String frequency;
+  final String frequencyUr;
+  final String targetZone;
+  final String description;
+  final List<ChecklistAuditItem> items;
+
+  const ChecklistTemplate({
+    required this.id,
+    required this.docNo,
+    required this.title,
+    required this.titleUr,
+    required this.category,
+    this.categoryUr = '',
+    required this.frequency,
+    this.frequencyUr = '',
+    required this.targetZone,
+    this.description = '',
+    required this.items,
+  });
+
+  factory ChecklistTemplate.fromJson(Map<String, dynamic> json) {
+    return ChecklistTemplate(
+      id: json['id']?.toString() ?? '',
+      docNo: json['docNo']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      titleUr: json['titleUr']?.toString() ?? '',
+      category: json['category']?.toString() ?? 'Fire Protection & Life Safety',
+      categoryUr: json['categoryUr']?.toString() ?? '',
+      frequency: json['frequency']?.toString() ?? 'Daily',
+      frequencyUr: json['frequencyUr']?.toString() ?? '',
+      targetZone: json['targetZone']?.toString() ?? 'Boiler Area (Unit 1 & 2)',
+      description: json['description']?.toString() ?? '',
+      items: (json['items'] as List<dynamic>? ?? []).map((i) {
+        if (i is ChecklistAuditItem) return i;
+        if (i is Map<String, dynamic>) {
+          return ChecklistAuditItem.fromJson(i);
+        }
+        return ChecklistAuditItem(
+          id: i['id'] is int ? i['id'] as int : int.tryParse(i['id']?.toString() ?? '0') ?? 0,
+          en: i['en']?.toString() ?? '',
+          ur: i['ur']?.toString() ?? '',
+          status: i['status']?.toString() ?? 'pass',
+          standard: i['standard']?.toString() ?? '',
+        );
+      }).toList(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'docNo': docNo,
+    'title': title,
+    'titleUr': titleUr,
+    'category': category,
+    'categoryUr': categoryUr,
+    'frequency': frequency,
+    'frequencyUr': frequencyUr,
+    'targetZone': targetZone,
+    'description': description,
+    'items': items.map((i) => i.toJson()).toList(),
+  };
+
+  @override
+  List<Object?> get props => [id, docNo, title, titleUr, category, frequency, targetZone, items];
 }
 
 class PtwItem extends Equatable {

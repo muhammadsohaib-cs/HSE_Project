@@ -19,9 +19,13 @@ class ChecklistRemoteDataSourceImpl implements ChecklistRemoteDataSource {
   Future<List<ChecklistTemplateModel>> fetchTemplates() async {
     try {
       final response = await _dio.get(ApiEndpoints.checklistTemplates);
-      return (response.data['data'] as List)
-          .map((item) => ChecklistTemplateModel.fromJson(item as Map<String, dynamic>))
-          .toList();
+      final rawList = response.data['data'] ?? response.data['templates'];
+      if (rawList is List) {
+        return rawList
+            .map((item) => ChecklistTemplateModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+      }
+      return _getSeedTemplates();
     } catch (_) {
       return _getSeedTemplates();
     }

@@ -13,6 +13,9 @@ class CplSystemState extends Equatable {
   final List<ChecklistAuditItem> checklistItems;
   final String checklistZone;
   final bool checklistSigned;
+  final List<ChecklistTemplate> checklistTemplates;
+  final String activeChecklistTemplateId;
+  final String checklistCategoryFilter;
   final List<PtwItem> permits;
   final String ptwFilter;
   final String? activeAlarm;
@@ -42,6 +45,9 @@ class CplSystemState extends Equatable {
     required this.checklistItems,
     required this.checklistZone,
     required this.checklistSigned,
+    this.checklistTemplates = const [],
+    this.activeChecklistTemplateId = 'CPL-HSEFEIC-01',
+    this.checklistCategoryFilter = 'All',
     required this.permits,
     required this.ptwFilter,
     this.activeAlarm,
@@ -100,6 +106,27 @@ class CplSystemState extends Equatable {
     return 'Low';
   }
 
+  ChecklistTemplate? get activeChecklistTemplate {
+    if (checklistTemplates.isEmpty) return null;
+    return checklistTemplates.firstWhere(
+      (t) => t.id == activeChecklistTemplateId || t.docNo == activeChecklistTemplateId,
+      orElse: () => checklistTemplates.first,
+    );
+  }
+
+  List<String> get checklistCategories {
+    final cats = <String>{'All'};
+    for (var t in checklistTemplates) {
+      if (t.category.isNotEmpty) cats.add(t.category);
+    }
+    return cats.toList();
+  }
+
+  List<ChecklistTemplate> get filteredChecklistTemplates {
+    if (checklistCategoryFilter == 'All') return checklistTemplates;
+    return checklistTemplates.where((t) => t.category == checklistCategoryFilter).toList();
+  }
+
   CplSystemState copyWith({
     String? language,
     int? activeScreenIndex,
@@ -112,6 +139,9 @@ class CplSystemState extends Equatable {
     List<ChecklistAuditItem>? checklistItems,
     String? checklistZone,
     bool? checklistSigned,
+    List<ChecklistTemplate>? checklistTemplates,
+    String? activeChecklistTemplateId,
+    String? checklistCategoryFilter,
     List<PtwItem>? permits,
     String? ptwFilter,
     String? Function()? activeAlarm,
@@ -141,6 +171,9 @@ class CplSystemState extends Equatable {
       checklistItems: checklistItems ?? this.checklistItems,
       checklistZone: checklistZone ?? this.checklistZone,
       checklistSigned: checklistSigned ?? this.checklistSigned,
+      checklistTemplates: checklistTemplates ?? this.checklistTemplates,
+      activeChecklistTemplateId: activeChecklistTemplateId ?? this.activeChecklistTemplateId,
+      checklistCategoryFilter: checklistCategoryFilter ?? this.checklistCategoryFilter,
       permits: permits ?? this.permits,
       ptwFilter: ptwFilter ?? this.ptwFilter,
       activeAlarm: activeAlarm != null ? activeAlarm() : this.activeAlarm,
@@ -173,6 +206,9 @@ class CplSystemState extends Equatable {
         checklistItems,
         checklistZone,
         checklistSigned,
+        checklistTemplates,
+        activeChecklistTemplateId,
+        checklistCategoryFilter,
         permits,
         ptwFilter,
         activeAlarm,

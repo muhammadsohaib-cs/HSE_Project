@@ -12,9 +12,9 @@ class ChecklistItemModel extends ChecklistItem {
 
   factory ChecklistItemModel.fromJson(Map<String, dynamic> json) {
     return ChecklistItemModel(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      category: json['category'] as String,
+      id: (json['id'] ?? '').toString(),
+      title: (json['title'] ?? json['en'] ?? '').toString(),
+      category: (json['category'] ?? 'General').toString(),
       status: ChecklistItemStatus.fromString(json['status'] as String? ?? ''),
       deviationNotes: json['deviation_notes'] as String?,
       deviationPhotoUrl: json['deviation_photo_url'] as String?,
@@ -116,12 +116,13 @@ class ChecklistTemplateModel extends ChecklistTemplate {
   });
 
   factory ChecklistTemplateModel.fromJson(Map<String, dynamic> json) {
+    final rawItems = json['default_items'] ?? json['items'] ?? [];
     return ChecklistTemplateModel(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      plantUnit: json['plant_unit'] as String,
-      targetRole: json['target_role'] as String,
-      defaultItems: (json['default_items'] as List)
+      id: (json['id'] ?? json['docNo'] ?? '').toString(),
+      title: (json['title'] ?? '').toString(),
+      plantUnit: (json['plant_unit'] ?? json['targetZone'] ?? 'Boiler Area (Unit 1 & 2)').toString(),
+      targetRole: (json['target_role'] ?? 'Inspector').toString(),
+      defaultItems: (rawItems as List)
           .map((i) => ChecklistItemModel.fromJson(Map<String, dynamic>.from(i as Map)))
           .toList(),
     );

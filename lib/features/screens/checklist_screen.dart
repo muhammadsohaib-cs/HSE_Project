@@ -4,6 +4,7 @@ import '../../core/localization/cpl_localizations.dart';
 import '../../core/theme/cpl_theme.dart';
 import '../cpl_system/cubit/cpl_system_cubit.dart';
 import '../cpl_system/cubit/cpl_system_state.dart';
+import '../cpl_system/models/cpl_models.dart';
 
 class ChecklistScreen extends StatelessWidget {
   const ChecklistScreen({super.key});
@@ -16,8 +17,24 @@ class ChecklistScreen extends StatelessWidget {
         final items = state.checklistItems;
         final passCount = items.where((i) => i.status == 'pass').length;
         final failCount = items.where((i) => i.status == 'fail').length;
+        final naCount = items.where((i) => i.status == 'na').length;
         final totalCount = items.length;
         final progress = totalCount > 0 ? (passCount / totalCount) : 0.0;
+        final currentTpl = state.activeChecklistTemplate;
+        final filteredTemplates = state.filteredChecklistTemplates;
+        final uniqueTemplates = <String, ChecklistTemplate>{
+          for (final t in filteredTemplates) t.id: t,
+        }.values.toList();
+        final selectedTemplateId = uniqueTemplates.any((t) => t.id == state.activeChecklistTemplateId)
+            ? state.activeChecklistTemplateId
+            : (uniqueTemplates.isNotEmpty ? uniqueTemplates.first.id : null);
+        final uniqueZones = <String, PlantZone>{
+          for (final z in state.zones) z.name: z,
+        }.values.toList();
+        final selectedZone = uniqueZones.any((z) => z.name == state.checklistZone)
+            ? state.checklistZone
+            : (uniqueZones.isNotEmpty ? uniqueZones.first.name : null);
+        final categories = state.checklistCategories;
 
         return Scaffold(
           backgroundColor: CplColors.slate50,
@@ -31,14 +48,16 @@ class ChecklistScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isUr ? 'روزانہ حفاظتی چیک لسٹ' : 'Daily Safety Checklist',
+                  isUr ? 'سیفٹی معائنہ چیک لسٹس' : 'HSE Inspection Checklists',
                   style: CplTypography.subheading(context).copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  'Pre-Shift Operational Audit • Shift A',
+                  isUr
+                      ? 'چنیوٹ پاور لمیٹڈ • 12 فعال آپریشنل آڈٹس'
+                      : 'Chiniot Power Limited • 12 Active Operational Checklists',
                   style: CplTypography.caption(context).copyWith(color: CplColors.slate400),
                 ),
               ],
@@ -46,12 +65,13 @@ class ChecklistScreen extends StatelessWidget {
             actions: [
               IconButton(
                 icon: const Icon(Icons.language, color: Colors.white),
+                tooltip: 'Toggle English / اردو',
                 onPressed: () => context.read<CplSystemCubit>().toggleLanguage(),
               ),
             ],
           ),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -82,38 +102,180 @@ class ChecklistScreen extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(width: 10),
                     // Zone Selector Chip
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: CplColors.slate200),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: state.zones.any((z) => z.name == state.checklistZone)
-                              ? state.checklistZone
-                              : (state.zones.isNotEmpty ? state.zones.first.name : 'Boiler Area (Unit 1 & 2)'),
-                          items: state.zones.map((z) {
-                            return DropdownMenuItem(
-                              value: z.name,
-                              child: Text(
-                                z.name,
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              context.read<CplSystemCubit>().setChecklistZone(val);
-                            }
-                          },
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: CplColors.slate200),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: selectedZone,
+                            items: uniqueZones.map((z) {
+                              return DropdownMenuItem(
+                                value: z.name,
+                                child: Text(
+                                  z.name,
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                context.read<CplSystemCubit>().setChecklistZone(val);
+                              }
+                            },
+                          ),
                         ),
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 14),
+
+                // Category Filter Pills
+                SizedBox(
+                  height: 38,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (context, idx) {
+                      final cat = categories[idx];
+                      final isSelected = state.checklistCategoryFilter == cat;
+                      return ChoiceChip(
+                        label: Text(cat),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                          if (selected) {
+                            context.read<CplSystemCubit>().setChecklistCategoryFilter(cat);
+                          }
+                        },
+                        selectedColor: CplColors.slate900,
+                        backgroundColor: Colors.white,
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : CplColors.slate700,
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                        ),
+                        side: BorderSide(
+                          color: isSelected ? CplColors.slate900 : CplColors.slate300,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Active Template Header Card
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: CplColors.slate200),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: CplColors.safety500.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: CplColors.safety500.withOpacity(0.3)),
+                            ),
+                            child: Text(
+                              'DOC# ${currentTpl?.docNo ?? state.activeChecklistTemplateId}',
+                              style: const TextStyle(
+                                color: CplColors.safety600,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: CplColors.emerald500.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              currentTpl?.frequency ?? 'Daily',
+                              style: const TextStyle(
+                                color: CplColors.emerald500,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            isUr
+                                ? 'ٹیمپلیٹس: ${uniqueTemplates.length}/${state.checklistTemplates.length}'
+                                : '${uniqueTemplates.length}/${state.checklistTemplates.length} CPL SOPs',
+                            style: const TextStyle(color: CplColors.slate400, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Dropdown to switch between all templates
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: CplColors.slate50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: CplColors.slate300),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            isExpanded: true,
+                            value: selectedTemplateId,
+                            items: uniqueTemplates.map((t) {
+                              return DropdownMenuItem<String>(
+                                value: t.id,
+                                child: Text(
+                                  '${t.docNo}: ${isUr && t.titleUr.isNotEmpty ? t.titleUr : t.title}',
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (val) {
+                              if (val != null) {
+                                context.read<CplSystemCubit>().selectChecklistTemplate(val);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                      if (currentTpl != null && currentTpl.description.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Text(
+                          currentTpl.description,
+                          style: const TextStyle(fontSize: 12, color: CplColors.slate600, height: 1.4),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 14),
 
@@ -132,7 +294,7 @@ class ChecklistScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            isUr ? 'شفٹ تیاری کی پیش رفت' : 'Shift Readiness Score',
+                            isUr ? 'آڈٹ مکمل ہونے کی شرح' : 'Checklist Audit Score',
                             style: CplTypography.subheading(context).copyWith(fontWeight: FontWeight.bold),
                           ),
                           Text(
@@ -162,14 +324,14 @@ class ChecklistScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '$passCount Passed • $failCount Deficiencies',
+                            '$passCount Pass • $failCount Fail • $naCount N/A',
                             style: CplTypography.caption(context).copyWith(
                               color: failCount > 0 ? CplColors.red600 : CplColors.slate600,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           Text(
-                            'Operator: ${state.currentUser.empId}',
+                            'Inspector: ${state.currentUser.empId}',
                             style: CplTypography.caption(context).copyWith(color: CplColors.slate600),
                           ),
                         ],
@@ -180,9 +342,18 @@ class ChecklistScreen extends StatelessWidget {
                 const SizedBox(height: 18),
 
                 // Checklist Items Section Title
-                Text(
-                  isUr ? 'آڈٹ کے نکات کی جانچ کریں' : 'Inspect Audit Items',
-                  style: CplTypography.subheading(context).copyWith(fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      isUr ? 'آڈٹ کے نکات کی جانچ کریں' : 'Inspect Audit Checkpoints',
+                      style: CplTypography.subheading(context).copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '${items.length} items',
+                      style: const TextStyle(fontSize: 12, color: CplColors.slate400, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
 
@@ -206,7 +377,35 @@ class ChecklistScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // English text
+                        // Checkpoint Header with ID & Category
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: CplColors.slate100,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '#${item.id}',
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: CplColors.slate700),
+                              ),
+                            ),
+                            if (item.category.isNotEmpty) ...[
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  item.category,
+                                  style: const TextStyle(fontSize: 11, color: CplColors.slate400),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+
+                        // English description
                         Text(
                           item.en,
                           style: const TextStyle(
@@ -216,7 +415,8 @@ class ChecklistScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        // Urdu text
+
+                        // Urdu description
                         Text(
                           item.ur,
                           style: CplTypography.urduText(context).copyWith(
@@ -226,6 +426,32 @@ class ChecklistScreen extends StatelessWidget {
                           ),
                           textAlign: isUr ? TextAlign.right : TextAlign.left,
                         ),
+
+                        // Standard / Acceptance Criteria
+                        if (item.standard.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: CplColors.slate50,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: CplColors.slate200),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.rule, size: 14, color: CplColors.slate500),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    'Standard: ${item.standard}',
+                                    style: const TextStyle(fontSize: 11, color: CplColors.slate600),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+
                         if (isFail) ...[
                           const SizedBox(height: 8),
                           Container(
@@ -252,10 +478,11 @@ class ChecklistScreen extends StatelessWidget {
                           ),
                         ],
                         const SizedBox(height: 12),
-                        // Pass / Fail / NA Button Bar
+
+                        // Glove-Friendly 48dp Pass / Fail / NA buttons
                         Row(
                           children: [
-                            // PASS BUTTON (48dp Glove-Friendly)
+                            // PASS Button
                             Expanded(
                               child: InkWell(
                                 onTap: () {
@@ -264,28 +491,38 @@ class ChecklistScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                                 child: Container(
                                   height: 48,
-                                  alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: isPass ? CplColors.emerald500 : CplColors.slate50,
+                                    color: isPass ? CplColors.emerald500 : CplColors.slate100,
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
                                       color: isPass ? CplColors.emerald500 : CplColors.slate300,
-                                      width: isPass ? 2 : 1,
                                     ),
                                   ),
-                                  child: Text(
-                                    isUr ? 'ٹھیک ہے ✓' : 'Pass ✓',
-                                    style: TextStyle(
-                                      color: isPass ? Colors.white : CplColors.slate800,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.check_circle,
+                                        size: 18,
+                                        color: isPass ? Colors.white : CplColors.slate500,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        isUr ? 'پاس' : 'PASS',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: isPass ? Colors.white : CplColors.slate700,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // FAIL BUTTON (48dp Glove-Friendly)
+
+                            // FAIL Button
                             Expanded(
                               child: InkWell(
                                 onTap: () {
@@ -294,28 +531,38 @@ class ChecklistScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                                 child: Container(
                                   height: 48,
-                                  alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: isFail ? CplColors.red600 : CplColors.slate50,
+                                    color: isFail ? CplColors.red600 : CplColors.slate100,
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
                                       color: isFail ? CplColors.red600 : CplColors.slate300,
-                                      width: isFail ? 2 : 1,
                                     ),
                                   ),
-                                  child: Text(
-                                    isUr ? 'خرابی ✕' : 'Fail ✕',
-                                    style: TextStyle(
-                                      color: isFail ? Colors.white : CplColors.slate800,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.cancel,
+                                        size: 18,
+                                        color: isFail ? Colors.white : CplColors.slate500,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        isUr ? 'فیل' : 'FAIL',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: isFail ? Colors.white : CplColors.slate700,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
                             ),
                             const SizedBox(width: 8),
-                            // N/A BUTTON (48dp Glove-Friendly)
+
+                            // NA Button
                             Expanded(
                               child: InkWell(
                                 onTap: () {
@@ -324,22 +571,31 @@ class ChecklistScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(10),
                                 child: Container(
                                   height: 48,
-                                  alignment: Alignment.center,
                                   decoration: BoxDecoration(
-                                    color: isNa ? CplColors.slate800 : CplColors.slate50,
+                                    color: isNa ? CplColors.slate700 : CplColors.slate100,
                                     borderRadius: BorderRadius.circular(10),
                                     border: Border.all(
-                                      color: isNa ? CplColors.slate800 : CplColors.slate300,
-                                      width: isNa ? 2 : 1,
+                                      color: isNa ? CplColors.slate700 : CplColors.slate300,
                                     ),
                                   ),
-                                  child: Text(
-                                    'N / A',
-                                    style: TextStyle(
-                                      color: isNa ? Colors.white : CplColors.slate800,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.do_not_disturb_on_outlined,
+                                        size: 18,
+                                        color: isNa ? Colors.white : CplColors.slate500,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'N/A',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: isNa ? Colors.white : CplColors.slate700,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -352,58 +608,60 @@ class ChecklistScreen extends StatelessWidget {
                 }),
                 const SizedBox(height: 16),
 
-                // Digital Verification & Thumb Signature Pad
+                // Digital Sign-Off & Verification Box
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: state.checklistSigned ? CplColors.emerald500 : CplColors.slate200,
-                      width: state.checklistSigned ? 1.5 : 1,
-                    ),
+                    border: Border.all(color: CplColors.slate200),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            isUr ? 'آپریٹر ڈیجیٹل تصدیق اور انگوٹھا' : 'Operator Digital Signature Pad',
-                            style: CplTypography.subheading(context).copyWith(fontWeight: FontWeight.bold),
-                          ),
                           Icon(
-                            state.checklistSigned ? Icons.verified : Icons.fingerprint,
-                            color: state.checklistSigned ? CplColors.emerald500 : CplColors.safety500,
-                            size: 24,
+                            Icons.draw_outlined,
+                            size: 20,
+                            color: state.checklistSigned ? CplColors.emerald500 : CplColors.slate600,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            isUr ? 'ڈیجیٹل تصدیق اور دستخط' : 'Operator Digital Sign-off',
+                            style: CplTypography.subheading(context).copyWith(fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
                       const SizedBox(height: 8),
                       Text(
                         isUr
-                            ? 'میں تصدیق کرتا ہوں کہ درج بالا بوائلر اور سیفٹی چیکس میری نگرانی میں مکمل ہوئے ہیں۔'
-                            : 'I hereby certify that all pre-shift boiler house safety checks have been physically audited.',
+                            ? 'میں تصدیق کرتا ہوں کہ درج بالا معائنہ اور حفاظتی چیکس میری نگرانی میں مکمل ہوئے ہیں۔'
+                            : 'I hereby certify that all safety inspection items listed in ${currentTpl?.docNo ?? "this SOP"} have been physically audited.',
                         style: TextStyle(fontSize: 12, color: CplColors.slate600, height: isUr ? 1.8 : 1.4),
                       ),
                       const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${state.currentUser.name} (${state.currentUser.empId})',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                              ),
-                              Text(
-                                'Shift A • Chiniot Co-Gen 62.4 MW',
-                                style: TextStyle(fontSize: 11, color: CplColors.slate600),
-                              ),
-                            ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${state.currentUser.name} (${state.currentUser.empId})',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  '${state.currentUser.shift} • Chiniot Co-Gen 62.4 MW',
+                                  style: TextStyle(fontSize: 11, color: CplColors.slate600),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 10),
                           ElevatedButton(
                             onPressed: () {
                               context.read<CplSystemCubit>().toggleChecklistSignature();
@@ -430,18 +688,21 @@ class ChecklistScreen extends StatelessWidget {
 
                 // Submit Shift Audit Button
                 ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          isUr
-                              ? 'شفٹ آڈٹ رپورٹ کامیابی کے ساتھ سرور پر جمع ہو گئی ہے۔'
-                              : 'Shift Safety Audit Submitted & Archived to CPL Cloud.',
+                  onPressed: () async {
+                    await context.read<CplSystemCubit>().submitChecklistAudit();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            isUr
+                                ? 'آڈٹ رپورٹ (${currentTpl?.docNo ?? ""}) کامیابی کے ساتھ سرور پر جمع ہو گئی ہے۔'
+                                : 'Checklist Audit ${currentTpl?.docNo ?? ""} Submitted & Recorded to CPL Cloud.',
+                          ),
+                          backgroundColor: CplColors.emerald500,
                         ),
-                        backgroundColor: CplColors.emerald500,
-                      ),
-                    );
-                    context.read<CplSystemCubit>().setScreenIndex(1); // Return to Dashboard
+                      );
+                      context.read<CplSystemCubit>().setScreenIndex(1); // Return to Dashboard
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: CplColors.safety500,
@@ -456,8 +717,10 @@ class ChecklistScreen extends StatelessWidget {
                       const Icon(Icons.check_circle_outline, size: 20),
                       const SizedBox(width: 8),
                       Text(
-                        isUr ? 'مکمل آڈٹ رپورٹ جمع کروائیں' : 'Submit Shift Safety Audit',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        isUr
+                            ? 'مکمل آڈٹ رپورٹ جمع کروائیں (${currentTpl?.docNo ?? ""})'
+                            : 'Submit Shift Safety Audit (${currentTpl?.docNo ?? "CPL"})',
+                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),

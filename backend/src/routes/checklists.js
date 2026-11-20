@@ -5,18 +5,38 @@ const { readDb, writeDb, addAuditLog } = require('../config/db');
 // GET /api/v1/checklists/templates
 router.get('/templates', (req, res) => {
   const db = readDb();
+  const templates = db.checklistTemplates || [];
   return res.json({
     success: true,
-    templates: db.checklistTemplates
+    data: templates,
+    templates: templates
+  });
+});
+
+// GET /api/v1/checklists/templates/:id
+router.get('/templates/:id', (req, res) => {
+  const db = readDb();
+  const tpl = (db.checklistTemplates || []).find(
+    t => t.id === req.params.id || t.docNo === req.params.id
+  );
+  if (!tpl) {
+    return res.status(404).json({ success: false, message: 'Checklist template not found' });
+  }
+  return res.json({
+    success: true,
+    data: tpl,
+    template: tpl
   });
 });
 
 // GET /api/v1/checklists (audits history)
 router.get('/', (req, res) => {
   const db = readDb();
+  const audits = db.checklistAudits || [];
   return res.json({
     success: true,
-    audits: db.checklistAudits || []
+    data: audits,
+    audits: audits
   });
 });
 
