@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chiniot Power HSE — Database Studio (SQLite &amp; MongoDB)</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --surface: #111827;
+      --surface-2: #1e293b;
+      --border: #243045;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --blue: #38bdf8;
+      --mongo: #00ed64;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    /* Top Header */
+    header {
+      height: 60px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-badge {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 13px; color: #052e16;
+    }
+    .brand h1 { font-size: 15px; font-weight: 800; letter-spacing: 0.2px; }
+    .brand p { font-size: 11px; color: var(--muted); }
+    .header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 11px; border-radius: 20px; font-size: 11px; font-weight: 700;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      border: 1px solid var(--border); background: var(--surface);
+    }
+    .pill.sqlite { color: #6ee7b7; border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.1); }
+    .pill.mongo-on { color: #00ed64; border-color: rgba(0,237,100,0.45); background: rgba(0,237,100,0.1); }
+    .pill.mongo-off { color: #fbbf24; border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.1); cursor: pointer; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 13px; border-radius: 8px; font-size: 12px; font-weight: 600;
+      border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+      cursor: pointer; transition: all 0.15s; text-decoration: none;
+    }
+    .btn:hover { background: #2c3b55; border-color: #3b4f73; }
+    .btn.primary { background: #10b981; border-color: #059669; color: #022c22; font-weight: 700; }
+    .btn.primary:hover { background: #34d399; }
+    .btn.mongo { background: rgba(0,237,100,0.14); border-color: rgba(0,237,100,0.45); color: #00ed64; }
+    .btn.mongo:hover { background: rgba(0,237,100,0.24); }
+    .btn.danger { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); color: #fca5a5; }
+
+    /* Workspace Layout */
+    .workspace { display: flex; flex: 1; overflow: hidden; }
+    aside {
+      width: 270px;
+      background: #0d1424;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .sidebar-section {
+      padding: 14px 16px 8px;
+      font-size: 10.5px; font-weight: 800; letter-spacing: 0.9px;
+      color: var(--muted); text-transform: uppercase;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .collection-list { list-style: none; overflow-y: auto; flex: 1; padding: 4px 10px 14px; }
+    .collection-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 12px; border-radius: 8px; cursor: pointer;
+      margin-bottom: 3px; font-size: 13px; color: #cbd5e1;
+      transition: background 0.12s;
+    }
+    .collection-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+    .collection-item.active {
+      background: rgba(16,185,129,0.15); color: #6ee7b7;
+      border: 1px solid rgba(16,185,129,0.35); font-weight: 700;
+    }
+    .col-name { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+    .col-count {
+      font-size: 11px; font-weight: 700; font-family: monospace;
+      padding: 2px 7px; border-radius: 10px;
+      background: rgba(255,255,255,0.07); color: var(--muted);
+    }
+    .collection-item.active .col-count { background: rgba(16,185,129,0.25); color: #a7f3d0; }
+
+    .sidebar-footer {
+      padding: 12px 14px; border-top: 1px solid var(--border);
+      font-size: 11px; color: var(--muted); line-height: 1.5;
+      background: #0a0f1d;
+    }
+    .sidebar-footer code { color: var(--blue); font-size: 10.5px; word-break: break-all; }
+
+    /* Main Panel */
+    main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+    .toolbar {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; flex-wrap: wrap;
+    }
+    .tabs { display: flex; gap: 4px; background: var(--bg); padding: 3px; border-radius: 9px; border: 1px solid var(--border); }
+    .tab {
+      padding: 6px 13px; border-radius: 6px; font-size: 12px; font-weight: 600;
+      color: var(--muted); cursor: pointer; border: none; background: transparent;
+    }
+    .tab.active { background: var(--surface-2); color: #fff; }
+    .search-box {
+      display: flex; align-items: center; gap: 8px; flex: 1; max-width: 380px;
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 6px 11px;
+    }
+    .search-box input {
+      background: transparent; border: none; outline: none; color: #fff;
+      font-size: 12.5px; width: 100%;
+    }
+    .content-area { flex: 1; overflow: auto; padding: 16px 20px; }
+
+    /* Data Table */
+    .table-wrap {
+      border: 1px solid var(--border); border-radius: 10px; overflow: auto;
+      background: var(--surface); max-height: calc(100vh - 205px);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    thead th {
+      position: sticky; top: 0; background: #162033; color: #94a3b8;
+      text-align: left; padding: 10px 12px; font-weight: 700;
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px;
+    }
+    tbody td {
+      padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: #e2e8f0; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    tbody tr:hover { background: rgba(56,189,248,0.06); }
+    .badge-val {
+      display: inline-block; padding: 2px 7px; border-radius: 5px;
+      font-size: 10.5px; font-weight: 700;
+    }
+    .badge-crit { background: rgba(239,68,68,0.18); color: #fca5a5; }
+    .badge-ok { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+    .badge-warn { background: rgba(245,158,11,0.18); color: #fcd34d; }
+
+    /* JSON Document Cards (MongoDB Compass Style) */
+    .doc-grid { display: flex; flex-direction: column; gap: 10px; }
+    .doc-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
+      line-height: 1.55; overflow-x: auto;
+    }
+    .doc-card:hover { border-color: rgba(16,185,129,0.45); }
+    .j-key { color: #38bdf8; }
+    .j-str { color: #86efac; }
+    .j-num { color: #fbbf24; }
+    .j-bool { color: #c084fc; }
+    .j-null { color: #64748b; }
+
+    /* SQL Console */
+    .sql-panel { display: flex; flex-direction: column; gap: 12px; }
+    .sql-presets { display: flex; gap: 8px; flex-wrap: wrap; }
+    .preset-chip {
+      padding: 5px 10px; border-radius: 6px; font-size: 11.5px; cursor: pointer;
+      background: var(--surface-2); border: 1px solid var(--border); color: #cbd5e1;
+    }
+    .preset-chip:hover { border-color: var(--emerald); color: #fff; }
+    textarea.sql-editor {
+      width: 100%; height: 110px; background: #070b15; color: #a7f3d0;
+      border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
+      resize: vertical; outline: none;
+    }
+    textarea.sql-editor:focus { border-color: var(--emerald); }
+    .sql-meta { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(2,6,23,0.75);
+      display: none; align-items: center; justify-content: center; z-index: 50;
+      padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      width: 100%; max-width: 560px; background: #0f172a;
+      border: 1px solid var(--border); border-radius: 14px; padding: 22px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
+    .modal h2 { font-size: 17px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .modal p.sub { font-size: 12.5px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 11.5px; font-weight: 700; color: #cbd5e1; margin-bottom: 6px; }
+    .field input {
+      width: 100%; padding: 10px 12px; border-radius: 8px;
+      background: #070b15; border: 1px solid var(--border); color: #fff;
+      font-family: ui-monospace, monospace; font-size: 12.5px; outline: none;
+    }
+    .field input:focus { border-color: var(--mongo); }
+    .status-msg {
+      padding: 10px 12px; border-radius: 8px; font-size: 12px; margin-bottom: 12px; display: none;
+    }
+    .status-msg.ok { display: block; background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.4); }
+    .status-msg.err { display: block; background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.4); }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
+    .empty-state { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-badge">DB</div>
+      <div>
+        <h1>Chiniot Power HSE — Live Database Studio</h1>
+        <p>Real-Time SQLite Relational Engine &amp; MongoDB Atlas / Local Sync Viewer</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span id="sqlitePill" class="pill sqlite"><span class="dot"></span> SQLite: Loading...</span>
+      <span id="mongoPill" class="pill mongo-off" onclick="openMongoModal()"><span class="dot"></span> MongoDB: Connect</span>
+      <a class="btn" href="/api/v1/db/download-sqlite" download>Download .db</a>
+      <button class="btn mongo" onclick="openMongoModal()">MongoDB Sync</button>
+      <button class="btn primary" onclick="refreshAll()">Refresh Live</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside>
+      <div class="sidebar-section">
+        <span>Collections / Tables</span>
+        <span id="totalCountBadge" style="color:#6ee7b7;font-family:monospace;">0 rows</span>
+      </div>
+      <ul id="collectionList" class="collection-list"></ul>
+      <div class="sidebar-footer">
+        <div><strong>SQLite File:</strong></div>
+        <code id="sqlitePath">chiniot_power_hse.db</code>
+        <div style="margin-top:6px;">Open this <code>.db</code> file in DB Browser for SQLite, DBeaver, or connect MongoDB Atlas / Compass above.</div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="toolbar">
+        <div class="tabs">
+          <button id="tabTable" class="tab active" onclick="setView('table')">Table Grid</button>
+          <button id="tabJson" class="tab" onclick="setView('json')">MongoDB JSON Documents</button>
+          <button id="tabSql" class="tab" onclick="setView('sql')">SQL Query Console</button>
+        </div>
+
+        <div class="search-box" id="searchWrap">
+          <span style="color:#64748b;font-size:12px;">Search</span>
+          <input id="searchInput" type="text" placeholder="Filter records by any field (name, empId, zone, docNo)..." oninput="debouncedLoadCollection()" />
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select id="sourceSelect" class="btn" onchange="loadCollection()" style="padding:6px 10px;">
+            <option value="sqlite">Source: SQLite (.db)</option>
+            <option value="mongodb" id="mongoSourceOpt" disabled>Source: MongoDB (Disconnected)</option>
+          </select>
+          <button class="btn" onclick="exportCurrent('json')">Export JSON</button>
+          <button class="btn" onclick="exportCurrent('csv')">Export CSV</button>
+        </div>
+      </div>
+
+      <div class="content-area" id="contentArea">
+        <div class="empty-state">Loading Chiniot Power HSE database records...</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MongoDB Connection Modal -->
+  <div id="mongoModal" class="modal-backdrop">
+    <div class="modal">
+      <h2><span style="color:#00ed64;">●</span> Connect &amp; Sync to MongoDB (Atlas or Local)</h2>
+      <p class="sub">
+        Paste your <strong>MongoDB Atlas</strong> connection string (<code>mongodb+srv://user:pass@cluster...</code>) or local MongoDB URI (<code>mongodb://127.0.0.1:27017</code>). All 11 CPL HSE collections will be created and synced in real time so you can inspect them in <strong>MongoDB Compass</strong> or <strong>MongoDB Atlas</strong>.
+      </p>
+      <div id="mongoStatusMsg" class="status-msg"></div>
+      <div class="field">
+        <label>MongoDB Connection URI</label>
+        <input id="mongoUriInput" type="text" placeholder="mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/?retryWrites=true&w=majority" />
+      </div>
+      <div class="field">
+        <label>Database Name</label>
+        <input id="mongoDbNameInput" type="text" value="chiniot_power_hse" />
+      </div>
+      <div class="modal-footer">
+        <button id="mongoDisconnectBtn" class="btn danger" style="display:none;margin-right:auto;" onclick="disconnectMongo()">Disconnect</button>
+        <button class="btn" onclick="closeMongoModal()">Close</button>
+        <button id="mongoConnectBtn" class="btn primary" onclick="connectMongo()">Connect &amp; Sync All 11 Collections</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let overviewData = null;
+    let activeCollection = 'users';
+    let currentView = 'table';
+    let currentDocs = [];
+    let searchTimer = null;
+
+    async function fetchJson(url, opts) {
+      const res = await fetch(url, opts);
+      const data = await res.json();
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || `HTTP ${res.status}`);
+      }
+      return data;
+    }
+
+    async function refreshAll() {
+      try {
+        overviewData = await fetchJson('/api/v1/db/overview');
+        renderSidebar();
+        updateHeaderPills();
+        if (currentView !== 'sql') {
+          await loadCollection();
+        }
+      } catch (err) {
+        document.getElementById('contentArea').innerHTML =
+          `<div class="empty-state" style="color:#fca5a5;">Error loading database overview: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function updateHeaderPills() {
+      const sq = overviewData.engines.sqlite;
+      const mg = overviewData.engines.mongodb;
+      const sqPill = document.getElementById('sqlitePill');
+      sqPill.innerHTML = `<span class="dot"></span> SQLite: ${sq.active ? `${sq.sizeKb} KB Live` : 'Offline'}`;
+      document.getElementById('sqlitePath').textContent = sq.file || 'chiniot_power_hse.db';
+      document.getElementById('totalCountBadge').textContent = `${overviewData.totalRecords} rows`;
+
+      const mgPill = document.getElementById('mongoPill');
+      const mgOpt = document.getElementById('mongoSourceOpt');
+      const discBtn = document.getElementById('mongoDisconnectBtn');
+      if (mg.connected) {
+        mgPill.className = 'pill mongo-on';
+        mgPill.innerHTML = `<span class="dot"></span> MongoDB: ${escapeHtml(mg.dbName)}`;
+        mgOpt.disabled = false;
+        mgOpt.textContent = `Source: MongoDB (${mg.dbName})`;
+        discBtn.style.display = 'inline-flex';
+      } else {
+        mgPill.className = 'pill mongo-off';
+        mgPill.innerHTML = `<span class="dot"></span> MongoDB: Not Connected`;
+        mgOpt.disabled = true;
+        mgOpt.textContent = 'Source: MongoDB (Disconnected)';
+        if (document.getElementById('sourceSelect').value === 'mongodb') {
+          document.getElementById('sourceSelect').value = 'sqlite';
+        }
+        discBtn.style.display = 'none';
+      }
+    }
+
+    function renderSidebar() {
+      const ul = document.getElementById('collectionList');
+      ul.innerHTML = overviewData.collections.map(c => `
+        <li class="collection-item ${c.tableName === activeCollection ? 'active' : ''}" onclick="selectCollection('${c.tableName}')">
+          <span class="col-name">${escapeHtml(c.tableName)}</span>
+          <span class="col-count">${c.count}</span>
+        </li>
+      `).join('');
+    }
+
+    function selectCollection(tableName) {
+      activeCollection = tableName;
+      if (currentView === 'sql') {
+        setView('table');
+      } else {
+        renderSidebar();
+        loadCollection();
+      }
+    }
+
+    function setView(view) {
+      currentView = view;
+      document.getElementById('tabTable').classList.toggle('active', view === 'table');
+      document.getElementById('tabJson').classList.toggle('active', view === 'json');
+      document.getElementById('tabSql').classList.toggle('active', view === 'sql');
+      document.getElementById('searchWrap').style.display = view === 'sql' ? 'none' : 'flex';
+      renderSidebar();
+      if (view === 'sql') {
+        renderSqlConsole();
+      } else {
+        loadCollection();
+      }
+    }
+
+    function debouncedLoadCollection() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(loadCollection, 180);
+    }
+
+    async function loadCollection() {
+      const search = encodeURIComponent(document.getElementById('searchInput').value.trim());
+      const source = document.getElementById('sourceSelect').value;
+      try {
+        const data = await fetchJson(`/api/v1/db/collection/${activeCollection}?source=${source}&search=${search}`);
+        currentDocs = data.documents || [];
+        if (currentView === 'table') {
+          renderTable(currentDocs, data);
+        } else {
+          renderJsonDocs(currentDocs, data);
+        }
+      } catch (err) {
+        document.getElementById('contentArea').innerHTML =
+          `<div class="empty-state" style="color:#fca5a5;">${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function renderTable(docs, meta) {
+      const area = document.getElementById('contentArea');
+      if (!docs.length) {
+        area.innerHTML = `<div class="empty-state">No records found in <strong>${escapeHtml(meta.collection)}</strong>.</div>`;
+        return;
+      }
+      const cols = Array.from(new Set(docs.flatMap(d => Object.keys(d))));
+      const headerHtml = cols.map(c => `<th>${escapeHtml(c)}</th>`).join('');
+      const bodyHtml = docs.map(doc => {
+        const tds = cols.map(c => {
+          const val = doc[c];
+          if (val === null || val === undefined) return `<td style="color:#475569;">null</td>`;
+          if (typeof val === 'object') {
+            const s = JSON.stringify(val);
+            return `<td title="${escapeHtml(s)}" style="color:#94a3b8;font-family:monospace;font-size:11px;">${escapeHtml(s.length > 60 ? s.slice(0, 60) + '…' : s)}</td>`;
+          }
+          const str = String(val);
+          if (c === 'severity' || c === 'riskLevel' || c === 'status') {
+            const lower = str.toLowerCase();
+            let cls = 'badge-warn';
+            if (['critical', 'high', 'open', 'rejected'].includes(lower)) cls = 'badge-crit';
+            if (['closed', 'resolved', 'approved', 'active', 'low', 'sent'].includes(lower)) cls = 'badge-ok';
+            return `<td><span class="badge-val ${cls}">${escapeHtml(str)}</span></td>`;
+          }
+          return `<td title="${escapeHtml(str)}">${escapeHtml(str)}</td>`;
+        }).join('');
+        return `<tr>${tds}</tr>`;
+      }).join('');
+
+      area.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:12px;color:#94a3b8;">
+          <span>Collection: <strong style="color:#fff;font-family:monospace;">${escapeHtml(meta.collection)}</strong> &bull; Engine: <strong style="color:#6ee7b7;">${escapeHtml(meta.source.toUpperCase())}</strong></span>
+          <span>Showing <strong style="color:#fff;">${meta.count}</strong> of ${meta.total} documents</span>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr>${headerHtml}</tr></thead><tbody>${bodyHtml}</tbody></table>
+        </div>
+      `;
+    }
+
+    function renderJsonDocs(docs, meta) {
+      const area = document.getElementById('contentArea');
+      if (!docs.length) {
+        area.innerHTML = `<div class="empty-state">No JSON documents found in <strong>${escapeHtml(meta.collection)}</strong>.</div>`;
+        return;
+      }
+      const cards = docs.map((d, i) => `
+        <div class="doc-card">
+          <div style="color:#64748b;font-size:10.5px;margin-bottom:6px;">// Document #${i + 1} &bull; ${escapeHtml(meta.collection)}</div>
+          <pre>${syntaxHighlight(d)}</pre>
+        </div>
+      `).join('');
+      area.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:12px;color:#94a3b8;">
+          <span>MongoDB Document Inspector &bull; <strong style="color:#fff;font-family:monospace;">${escapeHtml(meta.collection)}</strong></span>
+          <span>${meta.count} documents</span>
+        </div>
+        <div class="doc-grid">${cards}</div>
+      `;
+    }
+
+    function renderSqlConsole() {
+      const area = document.getElementById('contentArea');
+      const defaultSql = `SELECT employee_id, name, role, department, shift, plant_zone FROM users LIMIT 25;`;
+      area.innerHTML = `
+        <div class="sql-panel">
+          <div class="sql-presets">
+            <button class="preset-chip" onclick="runPreset('SELECT employee_id, name, role, department, shift, plant_zone FROM users;')">All Registered Employees</button>
+            <button class="preset-chip" onclick="runPreset('SELECT nm_number, title, zone, severity, status, responsible_team FROM hazards ORDER BY score DESC;')">Hazards by Risk Score</button>
+            <button class="preset-chip" onclick="runPreset('SELECT doc_no, title, category, frequency, target_zone, items_count FROM checklist_templates;')">12 CPL HSE Checklists</button>
+            <button class="preset-chip" onclick="runPreset('SELECT id, name, workers, risk_level, coords FROM zones ORDER BY workers DESC;')">Plant Zones Headcount</button>
+            <button class="preset-chip" onclick="runPreset('SELECT id, actor_id, action, target_resource, timestamp, details FROM audit_logs ORDER BY timestamp DESC LIMIT 25;')">Recent Audit Logs</button>
+          </div>
+          <textarea id="sqlEditor" class="sql-editor">${defaultSql}</textarea>
+          <div class="sql-meta">
+            <span id="sqlMetaText">Connected to live SQLite database: <code>chiniot_power_hse.db</code></span>
+            <button class="btn primary" onclick="executeSql()">Run SQL Query (Ctrl+Enter)</button>
+          </div>
+          <div id="sqlResultArea"></div>
+        </div>
+      `;
+      document.getElementById('sqlEditor').addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') executeSql();
+      });
+      executeSql();
+    }
+
+    function runPreset(sql) {
+      document.getElementById('sqlEditor').value = sql;
+      executeSql();
+    }
+
+    async function executeSql() {
+      const sql = document.getElementById('sqlEditor').value;
+      const out = document.getElementById('sqlResultArea');
+      try {
+        const res = await fetchJson('/api/v1/db/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sql }),
+        });
+        document.getElementById('sqlMetaText').innerHTML =
+          `Returned <strong style="color:#6ee7b7;">${res.rowCount} rows</strong> in <strong>${res.executionMs} ms</strong>`;
+        if (!res.rows.length) {
+          out.innerHTML = `<div class="empty-state">Query returned 0 rows.</div>`;
+          return;
+        }
+        const ths = res.columns.map(c => `<th>${escapeHtml(c)}</th>`).join('');
+        const trs = res.rows.map(r => `<tr>${res.columns.map(c => `<td>${escapeHtml(r[c] === null || r[c] === undefined ? 'null' : String(r[c]))}</td>`).join('')}</tr>`).join('');
+        out.innerHTML = `<div class="table-wrap" style="max-height:calc(100vh - 380px);"><table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table></div>`;
+      } catch (err) {
+        out.innerHTML = `<div class="status-msg err" style="display:block;">SQL Error: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    function exportCurrent(format) {
+      window.open(`/api/v1/db/export/${activeCollection}?format=${format}`, '_blank');
+    }
+
+    function openMongoModal() {
+      document.getElementById('mongoModal').classList.add('open');
+      const msg = document.getElementById('mongoStatusMsg');
+      if (overviewData && overviewData.engines.mongodb.connected) {
+        msg.className = 'status-msg ok';
+        msg.textContent = `Connected to ${overviewData.engines.mongodb.host} (DB: ${overviewData.engines.mongodb.dbName}) • Last sync: ${overviewData.engines.mongodb.lastSync || 'just now'}`;
+      } else {
+        msg.className = 'status-msg';
+        msg.textContent = '';
+      }
+    }
+
+    function closeMongoModal() {
+      document.getElementById('mongoModal').classList.remove('open');
+    }
+
+    async function connectMongo() {
+      const uri = document.getElementById('mongoUriInput').value.trim();
+      const dbName = document.getElementById('mongoDbNameInput').value.trim() || 'chiniot_power_hse';
+      const msg = document.getElementById('mongoStatusMsg');
+      const btn = document.getElementById('mongoConnectBtn');
+      if (!uri) {
+        msg.className = 'status-msg err';
+        msg.textContent = 'Please paste a MongoDB connection string (mongodb+srv://... or mongodb://127.0.0.1:27017).';
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'Connecting & Syncing...';
+      msg.className = 'status-msg';
+      try {
+        const res = await fetchJson('/api/v1/db/mongo/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uri, dbName, persist: true }),
+        });
+        msg.className = 'status-msg ok';
+        msg.textContent = res.message;
+        await refreshAll();
+        document.getElementById('sourceSelect').value = 'mongodb';
+        await loadCollection();
+      } catch (err) {
+        msg.className = 'status-msg err';
+        msg.textContent = err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Connect & Sync All 11 Collections';
+      }
+    }
+
+    async function disconnectMongo() {
+      await fetchJson('/api/v1/db/mongo/disconnect', { method: 'POST' });
+      await refreshAll();
+      closeMongoModal();
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function syntaxHighlight(obj) {
+      const json = escapeHtml(JSON.stringify(obj, null, 2));
+      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, (m) => {
+        if (/^"/.test(m)) return /:$/.test(m) ? `<span class="j-key">${m}</span>` : `<span class="j-str">${m}</span>`;
+        if (/true|false/.test(m)) return `<span class="j-bool">${m}</span>`;
+        if (/null/.test(m)) return `<span class="j-null">${m}</span>`;
+        return `<span class="j-num">${m}</span>`;
+      });
+    }
+
+    refreshAll();
+  </script>
+</body>
+</html>

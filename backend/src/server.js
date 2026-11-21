@@ -11,6 +11,7 @@ const alarmsRoutes = require('./routes/alarms');
 const rosterRoutes = require('./routes/roster');
 const analyticsRoutes = require('./routes/analytics');
 const auditRoutes = require('./routes/audit');
+const databaseRoutes = require('./routes/database');
 
 const http = require('http');
 const { Server } = require('socket.io');
@@ -42,6 +43,11 @@ app.use(morgan('dev'));
 // Static files for photo and voice note uploads
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Live Database Studio Web GUI (SQLite & MongoDB Viewer)
+app.get('/db-studio', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/db-studio.html'));
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
@@ -63,6 +69,7 @@ const registerRoutes = (prefix) => {
   app.use(`${prefix}/roster`, rosterRoutes);
   app.use(`${prefix}/analytics`, analyticsRoutes);
   app.use(`${prefix}/audit`, auditRoutes);
+  app.use(`${prefix}/db`, databaseRoutes);
 };
 
 registerRoutes('/api/v1');
@@ -80,6 +87,7 @@ app.use((err, req, res, next) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`================================================================`);
   console.log(` CPL HSE Backend API Gateway running on port ${PORT}`);
+  console.log(` Database Studio GUI: http://localhost:${PORT}/db-studio`);
   console.log(` Health Check: http://localhost:${PORT}/health`);
   console.log(` Static Uploads: http://localhost:${PORT}/uploads`);
   console.log(` Target Plant: UNIT-1 62.4 MW (Chiniot, Punjab • 31.7204° N, 72.9791° E)`);
