@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shad;
+import 'package:chiniot_power_hse/core/widgets/desktop_command_center.dart';
 import 'package:chiniot_power_hse/features/cpl_system/cubit/cpl_system_cubit.dart';
 import 'package:chiniot_power_hse/features/screens/analytics_screen.dart';
 import 'package:chiniot_power_hse/features/screens/dashboard_screen.dart';
@@ -105,6 +106,62 @@ void main() {
         await tester.pump(const Duration(milliseconds: 200));
         expect(tester.takeException(), isNull, reason: '${entry.key} threw an exception when rendering!');
       }
+
+      await cubit.close();
+    });
+
+    testWidgets('DesktopCommandCenter shows clean navbar, dynamic User Profile/Designation/Safety Score/Logout hero (no Safe Work Days), and Logout works', (tester) async {
+      tester.view.physicalSize = const Size(1440, 900);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final cubit = CplSystemCubit();
+      await cubit.login(
+        empId: '3648',
+        shift: 'General Shift (08:00 - 17:00)',
+        role: 'HSE Manager',
+        pin: '3648',
+      );
+
+      await tester.pumpWidget(
+        shad.Theme(
+          data: shad.ThemeData(
+            colorScheme: shad.ColorSchemes.lightZinc,
+            radius: 0.5,
+          ),
+          child: MaterialApp(
+            home: BlocProvider<CplSystemCubit>.value(
+              value: cubit,
+              child: const DesktopCommandCenter(),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+
+      // Safe Work Days / Safe Man-Hours milestone card completely removed from Dashboard hero
+      expect(find.textContaining('Safe Work Days'), findsNothing);
+      expect(find.textContaining('Plant Milestone Target'), findsNothing);
+      expect(find.text('218'), findsNothing);
+
+      // Dynamic User Name, Profile Initials, Employee ID, Designation, Safety Score & Logout present in Hero
+      expect(find.text('Sumaira Rafique'), findsOneWidget);
+      expect(find.text('SR'), findsOneWidget);
+      expect(find.text('CPL-EMP-3648'), findsOneWidget);
+      expect(find.text('HSE Manager'), findsOneWidget);
+      expect(find.text('SAFETY SCORE'), findsOneWidget);
+      expect(find.text('Logout'), findsOneWidget);
+
+      // Tapping Logout clears session cleanly & returns to AuthScreen
+      await tester.tap(find.text('Logout'));
+      await tester.pumpAndSettle();
+
+      expect(cubit.state.isAuthenticated, isFalse);
+      expect(cubit.state.activeScreenIndex, equals(0));
+      expect(cubit.state.currentUser.empId, isEmpty);
 
       await cubit.close();
     });

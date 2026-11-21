@@ -61,13 +61,25 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
 
   static const List<Map<String, dynamic>> _topNavLinks = [
     {'title': 'Dashboard', 'ur': 'ڈیش بورڈ', 'icon': LucideIcons.layoutDashboard, 'index': 1},
-    {'title': 'Report Hazard', 'ur': 'خطرہ رپورٹ', 'icon': LucideIcons.triangleAlert, 'index': 2},
+    {'title': 'Hazards', 'ur': 'خطرات', 'icon': LucideIcons.triangleAlert, 'index': 2},
     {'title': 'Risk & CAPA', 'ur': 'رسک میٹرکس', 'icon': LucideIcons.grid3x3, 'index': 3},
-    {'title': 'Daily Audit', 'ur': 'چیک لسٹ', 'icon': LucideIcons.clipboardCheck, 'index': 4},
+    {'title': 'Checklists', 'ur': 'چیک لسٹ', 'icon': LucideIcons.clipboardCheck, 'index': 4},
     {'title': 'PTW & LOTO', 'ur': 'ورک پرمٹ', 'icon': LucideIcons.lock, 'index': 5},
-    {'title': 'Shift Roster', 'ur': 'ٹیم روسٹر', 'icon': LucideIcons.users, 'index': 8},
+    {'title': 'Roster', 'ur': 'روسٹر', 'icon': LucideIcons.users, 'index': 8},
     {'title': 'Analytics', 'ur': 'اینالیٹکس', 'icon': LucideIcons.barChart3, 'index': 9},
   ];
+
+  String _getUserInitials(String name) {
+    final clean = name
+        .replaceAll(RegExp(r'^(Engr\.|Dr\.|Mr\.|Ms\.|Mrs\.)\s*', caseSensitive: false), '')
+        .trim();
+    final parts = clean.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return 'CP';
+    if (parts.length == 1) {
+      return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
+    }
+    return '${parts[0][0]}${parts[parts.length - 1][0]}'.toUpperCase();
+  }
 
   static const List<Map<String, dynamic>> _drawerSections = [
     {
@@ -209,16 +221,17 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
     bool isAuth,
     int activeIdx,
   ) {
-    final user = state.currentUser;
-
     return Container(
-      height: 66,
+      height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: CplColors.slate900,
+        color: Colors.white,
+        border: const Border(
+          bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha((0.16 * 255).round()),
+            color: const Color(0xFF0F172A).withAlpha((0.04 * 255).round()),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -226,146 +239,185 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
       ),
       child: Row(
         children: [
-          // Hamburger Menu Toggle Button (when signed in)
+          // Sleek Sidebar Toggle Button (when signed in)
           if (isAuth) ...[
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  _isSidebarExpanded = !_isSidebarExpanded;
-                });
-              },
-              tooltip: _isSidebarExpanded
-                  ? (isUr ? 'مینو بند کریں' : 'Collapse Navigation Menu')
-                  : (isUr ? 'مینو کھولیں' : 'Expand Navigation Menu'),
-              icon: Icon(
-                _isSidebarExpanded ? LucideIcons.chevronLeft : LucideIcons.menu,
-                color: Colors.white,
-                size: 20,
+            Tooltip(
+              message: _isSidebarExpanded
+                  ? (isUr ? 'مینو بند کریں' : 'Collapse Sidebar')
+                  : (isUr ? 'مینو کھولیں' : 'Expand Sidebar'),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    _isSidebarExpanded = !_isSidebarExpanded;
+                  });
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    _isSidebarExpanded ? LucideIcons.panelLeftClose : LucideIcons.panelLeftOpen,
+                    color: const Color(0xFF334155),
+                    size: 17,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
           ],
 
-          // CPL Brand Logo
+          // Official CPL Brand Identity (Light Executive Surface)
           InkWell(
             onTap: isAuth
                 ? () => context.read<CplSystemCubit>().setScreenIndex(1)
                 : null,
             borderRadius: BorderRadius.circular(8),
             child: const CplBrandLogo(
-              height: 34,
-              isDark: true,
+              height: 30,
+              isDark: false,
               showSubtitle: true,
             ),
           ),
           const SizedBox(width: 24),
 
-          // Center Horizontal Navigation Links (when authenticated)
+          // Center Segmented Pill Navigation (Clean & Spacious)
           if (isAuth)
             Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: _topNavLinks.map((item) {
-                    final idx = item['index'] as int;
-                    final isSelected = activeIdx == idx;
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: InkWell(
-                        onTap: () => context.read<CplSystemCubit>().setScreenIndex(idx),
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? Colors.white.withAlpha((0.1 * 255).round())
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border(
-                              bottom: BorderSide(
-                                color: isSelected ? CplColors.safety500 : Colors.transparent,
-                                width: 2.5,
-                              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: _topNavLinks.map((item) {
+                        final idx = item['index'] as int;
+                        final isSelected = activeIdx == idx;
+                        return InkWell(
+                          onTap: () => context.read<CplSystemCubit>().setScreenIndex(idx),
+                          borderRadius: BorderRadius.circular(8),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 160),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: isSelected ? Colors.white : Colors.transparent,
+                              borderRadius: BorderRadius.circular(7),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFF0F172A).withAlpha((0.07 * 255).round()),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  item['icon'] as IconData,
+                                  size: 14,
+                                  color: isSelected ? const Color(0xFFEA580C) : const Color(0xFF64748B),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  isUr ? item['ur'] as String : item['title'] as String,
+                                  style: TextStyle(
+                                    color: isSelected ? const Color(0xFF0F172A) : const Color(0xFF64748B),
+                                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                    fontSize: 12.5,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                item['icon'] as IconData,
-                                size: 16,
-                                color: isSelected ? CplColors.safety500 : CplColors.slate300,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                isUr ? item['ur'] as String : item['title'] as String,
-                                style: TextStyle(
-                                  color: isSelected ? Colors.white : CplColors.slate300,
-                                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                  fontSize: 12.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                        );
+                      }).toList(),
+                    ),
+                  ),
                 ),
               ),
             )
           else
             const Spacer(),
 
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
 
-          // Live Co-Gen Plant Status Indicator
+          // Live Unit Telemetry Status Pill
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: CplColors.emerald500.withAlpha((0.15 * 255).round()),
+              color: const Color(0xFFECFDF5),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: CplColors.emerald500.withAlpha((0.45 * 255).round())),
+              border: Border.all(color: const Color(0xFFA7F3D0)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: const [
-                CircleAvatar(radius: 3.5, backgroundColor: CplColors.emerald500),
+                CircleAvatar(radius: 3.5, backgroundColor: Color(0xFF10B981)),
                 SizedBox(width: 6),
                 Text(
-                  'UNIT-1 62.4 MW ONLINE',
+                  'UNIT-1 • 62.4 MW',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Color(0xFF065F46),
                     fontSize: 10.5,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
                     fontFamily: 'monospace',
+                    letterSpacing: 0.2,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 8),
 
-          if (isAuth) ...[
-            // Emergency Siren Quick Action
-            ElevatedButton.icon(
-              onPressed: () => context.read<CplSystemCubit>().setScreenIndex(6),
-              icon: const Icon(LucideIcons.siren, size: 15),
-              label: Text(
-                isUr ? 'ایمرجنسی' : 'SOS Siren',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
+          // Language Switcher Pill
+          InkWell(
+            onTap: () => context.read<CplSystemCubit>().toggleLanguage(),
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              height: 36,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: CplColors.red600,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                elevation: 0,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(LucideIcons.languages, size: 14, color: Color(0xFFD97706)),
+                  const SizedBox(width: 5),
+                  Text(
+                    isUr ? 'اردو' : 'EN / اردو',
+                    style: const TextStyle(
+                      color: Color(0xFF334155),
+                      fontWeight: FontWeight.w700,
+                      fontSize: 11.5,
+                    ),
+                  ),
+                ],
               ),
             ),
+          ),
+
+          if (isAuth) ...[
             const SizedBox(width: 8),
 
-            // PDF Export Button
+            // Clean Outline PDF Export Action
             OutlinedButton.icon(
               onPressed: () async {
                 final pdfBytes = await PdfReportGenerator.generateShiftTurnoverPdf(
@@ -393,94 +445,36 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
                   );
                 }
               },
-              icon: const Icon(LucideIcons.download, size: 14, color: Colors.white),
+              icon: const Icon(LucideIcons.download, size: 14, color: Color(0xFF334155)),
               label: Text(
                 isUr ? 'رپورٹ' : 'Export PDF',
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11.5, color: Colors.white),
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF0F172A)),
               ),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.white24),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                backgroundColor: Colors.white,
+                side: const BorderSide(color: Color(0xFFCBD5E1)),
+                minimumSize: const Size(0, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
             const SizedBox(width: 8),
-          ],
 
-          // Language Switcher
-          InkWell(
-            onTap: () => context.read<CplSystemCubit>().toggleLanguage(),
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha((0.1 * 255).round()),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white24),
+            // Sleek Emergency SOS Trigger
+            ElevatedButton.icon(
+              onPressed: () => context.read<CplSystemCubit>().setScreenIndex(6),
+              icon: const Icon(LucideIcons.siren, size: 15),
+              label: Text(
+                isUr ? 'ایمرجنسی' : 'SOS Siren',
+                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(LucideIcons.languages, size: 14, color: CplColors.energyAmber),
-                  const SizedBox(width: 5),
-                  Text(
-                    isUr ? 'اردو' : 'EN / اردو',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 11.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Authenticated User Profile Chip & Logout
-          if (isAuth) ...[
-            const SizedBox(width: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white.withAlpha((0.08 * 255).round()),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircleAvatar(
-                    radius: 13,
-                    backgroundColor: CplColors.safety500,
-                    child: Text(
-                      user.name.isNotEmpty ? user.name[0].toUpperCase() : 'C',
-                      style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user.name,
-                        style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '${user.empId} • ${user.role}',
-                        style: const TextStyle(color: CplColors.slate400, fontSize: 9.5, fontFamily: 'monospace'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    constraints: const BoxConstraints(),
-                    padding: const EdgeInsets.all(4),
-                    icon: const Icon(LucideIcons.logOut, size: 16, color: Color(0xFFF87171)),
-                    tooltip: isUr ? 'لاگ آؤٹ' : 'Sign Out',
-                    onPressed: () => context.read<CplSystemCubit>().logout(),
-                  ),
-                ],
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFDC2626),
+                foregroundColor: Colors.white,
+                minimumSize: const Size(0, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 13),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 0,
               ),
             ),
           ],
@@ -506,44 +500,24 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
       ),
       child: Column(
         children: [
-          // Sidebar Header Strip
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: _isSidebarExpanded ? 16 : 12,
-              vertical: 12,
-            ),
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: CplColors.slate100)),
-            ),
-            child: Row(
-              mainAxisAlignment:
-                  _isSidebarExpanded ? MainAxisAlignment.spaceBetween : MainAxisAlignment.center,
-              children: [
-                if (_isSidebarExpanded)
-                  Text(
-                    isUr ? 'نیویگیشن مینو' : 'PLANT NAVIGATION',
-                    style: const TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w800,
-                      color: CplColors.slate500,
-                      letterSpacing: 0.7,
-                    ),
-                  ),
-                InkWell(
-                  onTap: () => setState(() => _isSidebarExpanded = !_isSidebarExpanded),
-                  borderRadius: BorderRadius.circular(6),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: Icon(
-                      _isSidebarExpanded ? LucideIcons.chevronLeft : LucideIcons.chevronRight,
-                      size: 18,
-                      color: CplColors.slate600,
-                    ),
-                  ),
+          // Sidebar Header Strip (Clean — collapse controlled from Top Navbar)
+          if (_isSidebarExpanded)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: CplColors.slate100)),
+              ),
+              child: Text(
+                isUr ? 'نیویگیشن مینو' : 'PLANT NAVIGATION',
+                style: const TextStyle(
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
+                  color: CplColors.slate500,
+                  letterSpacing: 0.7,
                 ),
-              ],
+              ),
             ),
-          ),
 
           // Categorized Navigation Items
           Expanded(
@@ -662,8 +636,6 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
     CplSystemState state,
     bool isUr,
   ) {
-    final user = state.currentUser;
-
     final openHazards = state.hazards
         .where((h) =>
             h.status.toLowerCase() != 'resolved' &&
@@ -694,12 +666,12 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
     final totalRosterCount = state.roster.length;
     final compliantRosterCount =
         state.roster.where((w) => w.isFullPpe).length;
+    final ppePct = totalRosterCount > 0
+        ? ((compliantRosterCount / totalRosterCount) * 100).round()
+        : 100;
+    final safetyScore = ((checklistPct * 0.5) + (ppePct * 0.5)).round().clamp(0, 100);
 
     final recentActivities = _buildDesktopActivities(state);
-
-    final safeDays = user.empId == 'CPL-EMP-2050'
-        ? 142
-        : (user.empId.isEmpty ? 0 : 218);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
@@ -709,8 +681,20 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 1. Executive Safety Streak & Milestone Banner
-              _buildExecutiveMilestoneBanner(context, state, isUr, safeDays),
+              // 1. Dynamic Logged-In Employee Profile, Designation, Safety Score & Logout Hero Banner
+              _buildEmployeeProfileHeroBanner(
+                context: context,
+                state: state,
+                isUr: isUr,
+                safetyScore: safetyScore,
+                checklistPct: checklistPct,
+                passedChecklist: passedChecklist,
+                totalChecklist: totalChecklist,
+                ppePct: ppePct,
+                compliantRosterCount: compliantRosterCount,
+                totalRosterCount: totalRosterCount,
+                openHazardsCount: openHazards.length,
+              ),
               const SizedBox(height: 16),
 
               // 2. 4-Card Executive KPI Grid
@@ -772,175 +756,447 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
     );
   }
 
-  Widget _buildExecutiveMilestoneBanner(
-    BuildContext context,
-    CplSystemState state,
-    bool isUr,
-    int safeDays,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F1E36),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F1E36).withAlpha((0.25 * 255).round()),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF064E3B).withAlpha((0.8 * 255).round()),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(LucideIcons.shieldCheck, size: 14, color: Color(0xFF10B981)),
-                    SizedBox(width: 6),
-                    Text(
-                      'Chiniot Power Safety Streak',
-                      style: TextStyle(
-                        color: Color(0xFFD1FAE5),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha((0.1 * 255).round()),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'ISO 45001 & NEPRA COMPLIANT',
-                  style: TextStyle(
-                    color: Color(0xFFF59E0B),
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'monospace',
-                  ),
-                ),
+  Widget _buildEmployeeProfileHeroBanner({
+    required BuildContext context,
+    required CplSystemState state,
+    required bool isUr,
+    required int safetyScore,
+    required int checklistPct,
+    required int passedChecklist,
+    required int totalChecklist,
+    required int ppePct,
+    required int compliantRosterCount,
+    required int totalRosterCount,
+    required int openHazardsCount,
+  }) {
+    final user = state.currentUser;
+    final initials = _getUserInitials(user.name);
+    final scoreColor = safetyScore >= 85
+        ? const Color(0xFF10B981)
+        : (safetyScore >= 65 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
+    final scoreBand = safetyScore >= 85
+        ? (isUr ? 'بہترین تعمیل' : 'EXCELLENT')
+        : (safetyScore >= 65
+            ? (isUr ? 'توجہ درکار' : 'MODERATE')
+            : (isUr ? 'فوری اصلاح' : 'ACTION NEEDED'));
+
+    final avatarWidget = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFFF97316), Color(0xFFEA580C)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.white.withAlpha((0.25 * 255).round()),
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFEA580C).withAlpha((0.35 * 255).round()),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Safe Days Big Stat
               Text(
-                '$safeDays',
+                initials,
                 style: const TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w900,
                   color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
                   height: 1.0,
                 ),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      isUr ? 'محفوظ ورک ڈیز (زیرو LTI)' : 'Safe Work Days (Zero LTI)',
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    const Text(
-                      '84,730 Safe Man-Hours Accumulated • 434 Active Personnel (388 CPL + 46 EKL)',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF94A3B8),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Plant Record Milestone Progress
-              Container(
-                width: 280,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha((0.06 * 255).round()),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withAlpha((0.1 * 255).round())),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text(
-                          'Plant Milestone Target: 250 Days',
-                          style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          '87.2%',
-                          style: TextStyle(color: Color(0xFF10B981), fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(6),
-                      child: const LinearProgressIndicator(
-                        value: 0.872,
-                        minHeight: 8,
-                        backgroundColor: Color(0xFF1E293B),
-                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      '32 Safe Days Remaining to Record Breaker',
-                      style: TextStyle(color: Color(0xFFCBD5E1), fontSize: 10),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-
-              // Shield Badge
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E2D4A),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                alignment: Alignment.center,
-                child: const Icon(
-                  LucideIcons.shieldCheck,
-                  color: Color(0xFFF59E0B),
-                  size: 28,
+              const SizedBox(height: 2),
+              const Text(
+                'CPL',
+                style: TextStyle(
+                  color: Color(0xFFFFEDD5),
+                  fontSize: 8.5,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
                 ),
               ),
             ],
           ),
+        ),
+        Positioned(
+          right: -3,
+          bottom: -3,
+          child: Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981),
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF0B1628), width: 2.5),
+            ),
+          ),
+        ),
+      ],
+    );
+
+    final identityWidget = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF59E0B).withAlpha((0.18 * 255).round()),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: const Color(0xFFF59E0B).withAlpha((0.45 * 255).round())),
+              ),
+              child: Text(
+                user.empId.isNotEmpty ? user.empId : 'NOT SIGNED IN',
+                style: const TextStyle(
+                  color: Color(0xFFFBBF24),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w800,
+                  fontFamily: 'monospace',
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withAlpha((0.16 * 255).round()),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF10B981).withAlpha((0.4 * 255).round())),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircleAvatar(radius: 3, backgroundColor: Color(0xFF10B981)),
+                  const SizedBox(width: 5),
+                  Text(
+                    isUr ? 'ڈیوٹی پر فعال' : 'ON DUTY • VERIFIED',
+                    style: const TextStyle(
+                      color: Color(0xFFA7F3D0),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (user.shift.isNotEmpty)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(LucideIcons.clock, size: 12, color: Color(0xFF94A3B8)),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      user.shift,
+                      style: const TextStyle(
+                        color: Color(0xFFCBD5E1),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          user.name.isNotEmpty
+              ? (isUr && user.urduName.isNotEmpty ? user.urduName : user.name)
+              : (isUr ? 'سائن ان نہیں' : 'Not Signed In'),
+          style: const TextStyle(
+            fontSize: 23,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+            letterSpacing: -0.3,
+            height: 1.15,
+          ),
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 16,
+          runSpacing: 4,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(LucideIcons.briefcase, size: 13.5, color: Color(0xFFF59E0B)),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    user.role.isNotEmpty ? user.role : 'Staff',
+                    style: const TextStyle(
+                      color: Color(0xFFE2E8F0),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(LucideIcons.mapPin, size: 13.5, color: Color(0xFF38BDF8)),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    user.zone.isNotEmpty ? user.zone : 'Boiler Area (Unit 1 & 2)',
+                    style: const TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+
+    final scoreCardWidget = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha((0.06 * 255).round()),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withAlpha((0.12 * 255).round())),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: 54,
+            height: 54,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 54,
+                  height: 54,
+                  child: CircularProgressIndicator(
+                    value: safetyScore / 100.0,
+                    strokeWidth: 5.5,
+                    backgroundColor: Colors.white.withAlpha((0.12 * 255).round()),
+                    valueColor: AlwaysStoppedAnimation<Color>(scoreColor),
+                  ),
+                ),
+                Text(
+                  '$safetyScore%',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w900,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isUr ? 'سیفٹی سکور' : 'SAFETY SCORE',
+                      style: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: scoreColor.withAlpha((0.18 * 255).round()),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        scoreBand,
+                        style: TextStyle(
+                          color: scoreColor,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  isUr
+                      ? 'چیک لسٹ $checklistPct% • پی پی ای $ppePct%'
+                      : 'Checklist $checklistPct% ($passedChecklist/$totalChecklist) • PPE $ppePct%',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  isUr
+                      ? '$openHazardsCount کھلے خطرات • $compliantRosterCount/$totalRosterCount پی پی ای تصدیق شدہ'
+                      : '$openHazardsCount Open Hazards • $compliantRosterCount/$totalRosterCount PPE Verified',
+                  style: const TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 10.5,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
         ],
+      ),
+    );
+
+    final actionsWidget = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        ElevatedButton.icon(
+          onPressed: () => context.read<CplSystemCubit>().logout(),
+          icon: const Icon(LucideIcons.logOut, size: 16),
+          label: Text(
+            isUr ? 'لاگ آؤٹ' : 'Logout',
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFDC2626),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            elevation: 0,
+          ),
+        ),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: () {
+            context.read<CplSystemCubit>().loadLiveData();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  isUr
+                      ? 'لائیو پلانٹ ڈیٹا سنک ہو رہا ہے...'
+                      : 'Syncing live CPL metrics from gateway...',
+                ),
+                duration: const Duration(seconds: 1),
+                backgroundColor: CplColors.slate900,
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(6),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(LucideIcons.refreshCw, size: 12, color: Color(0xFF94A3B8)),
+                const SizedBox(width: 5),
+                Text(
+                  isUr ? 'ڈیٹا ریفریش' : 'Sync Live Data',
+                  style: const TextStyle(
+                    color: Color(0xFF94A3B8),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0B1628), Color(0xFF132544)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withAlpha((0.08 * 255).round())),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0B1628).withAlpha((0.22 * 255).round()),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= 900) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                avatarWidget,
+                const SizedBox(width: 18),
+                Expanded(child: identityWidget),
+                const SizedBox(width: 20),
+                scoreCardWidget,
+                const SizedBox(width: 16),
+                actionsWidget,
+              ],
+            );
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  avatarWidget,
+                  const SizedBox(width: 16),
+                  Expanded(child: identityWidget),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(child: scoreCardWidget),
+                  const SizedBox(width: 14),
+                  actionsWidget,
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -1356,28 +1612,34 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: CplColors.corporateNavy.withAlpha((0.08 * 255).round()),
-                      borderRadius: BorderRadius.circular(8),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: CplColors.corporateNavy.withAlpha((0.08 * 255).round()),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(LucideIcons.clipboardCheck, size: 16, color: CplColors.corporateNavy),
                     ),
-                    child: const Icon(LucideIcons.clipboardCheck, size: 16, color: CplColors.corporateNavy),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    isUr ? 'آپریشنل پرمٹ اور HSE رجسٹر' : 'OPERATIONAL PERMIT & HSE AUDIT REGISTER',
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w800,
-                      color: CplColors.slate800,
-                      letterSpacing: 0.5,
+                    const SizedBox(width: 10),
+                    Flexible(
+                      child: Text(
+                        isUr ? 'آپریشنل پرمٹ اور HSE رجسٹر' : 'OPERATIONAL PERMIT & HSE AUDIT REGISTER',
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: CplColors.slate800,
+                          letterSpacing: 0.5,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 10),
               InkWell(
                 onTap: () => context.read<CplSystemCubit>().setScreenIndex(5),
                 child: const Text(
@@ -1791,28 +2053,34 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: CplColors.corporateNavy.withAlpha((0.08 * 255).round()),
-                      borderRadius: BorderRadius.circular(8),
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: CplColors.corporateNavy.withAlpha((0.08 * 255).round()),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(LucideIcons.history, size: 16, color: CplColors.corporateNavy),
                     ),
-                    child: const Icon(LucideIcons.history, size: 16, color: CplColors.corporateNavy),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    isUr ? 'حالیہ لائیو آڈٹ لاگ' : 'RECENT HSE AUDIT LOGS',
-                    style: const TextStyle(
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w800,
-                      color: CplColors.slate800,
-                      letterSpacing: 0.5,
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        isUr ? 'حالیہ لائیو آڈٹ لاگ' : 'RECENT HSE AUDIT LOGS',
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w800,
+                          color: CplColors.slate800,
+                          letterSpacing: 0.5,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
                 '${activities.length} Events',
                 style: const TextStyle(fontSize: 10, color: CplColors.slate500, fontFamily: 'monospace'),
