@@ -60,6 +60,7 @@ function initSqlite() {
         shift TEXT,
         cnic TEXT,
         plant_zone TEXT,
+        profile_image_url TEXT,
         is_active INTEGER,
         raw_json TEXT
       );
@@ -189,6 +190,7 @@ function initSqlite() {
       CREATE TABLE IF NOT EXISTS pending_users (
         emp_id TEXT PRIMARY KEY,
         name TEXT,
+        email TEXT,
         cnic TEXT,
         role TEXT,
         shift TEXT,
@@ -198,6 +200,9 @@ function initSqlite() {
         raw_json TEXT
       );
     `);
+    // Safe additive column migrations for existing .db files
+    try { sqliteDb.exec('ALTER TABLE users ADD COLUMN profile_image_url TEXT'); } catch (_) {}
+    try { sqliteDb.exec('ALTER TABLE pending_users ADD COLUMN email TEXT'); } catch (_) {}
     isSqliteActive = true;
     console.log(`[Database] Native SQLite database active: ${SQLITE_FILE}`);
   } catch (err) {
@@ -214,8 +219,8 @@ function syncJsonToSqlite(data) {
     // users
     sqliteDb.exec('DELETE FROM users');
     const insUser = sqliteDb.prepare(
-      `INSERT OR REPLACE INTO users (id, employee_id, name, urdu_name, email, role, department, shift, cnic, plant_zone, is_active, raw_json)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT OR REPLACE INTO users (id, employee_id, name, urdu_name, email, role, department, shift, cnic, plant_zone, profile_image_url, is_active, raw_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
     for (const u of data.users || []) {
       insUser.run(
@@ -229,6 +234,7 @@ function syncJsonToSqlite(data) {
         String(u.shift || ''),
         String(u.cnic || ''),
         String(u.plantZone || u.assignedZone || ''),
+        String(u.profileImageUrl || ''),
         u.isActive === false ? 0 : 1,
         JSON.stringify(u)
       );
@@ -431,13 +437,14 @@ function syncJsonToSqlite(data) {
     // pending_users
     sqliteDb.exec('DELETE FROM pending_users');
     const insPending = sqliteDb.prepare(
-      `INSERT OR REPLACE INTO pending_users (emp_id, name, cnic, role, shift, zone, status, created_at, raw_json)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT OR REPLACE INTO pending_users (emp_id, name, email, cnic, role, shift, zone, status, created_at, raw_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     );
     for (const p of data.pendingUsers || []) {
       insPending.run(
         String(p.empId || ''),
         String(p.fullName || p.name || ''),
+        String(p.email || ''),
         String(p.cnic || ''),
         String(p.role || ''),
         String(p.shift || ''),

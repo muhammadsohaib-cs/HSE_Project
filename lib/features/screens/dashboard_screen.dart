@@ -5,6 +5,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shad;
 import '../../core/localization/cpl_localizations.dart';
 import '../../core/theme/cpl_theme.dart';
 import '../../core/widgets/cpl_brand_logo.dart';
+import '../../core/widgets/cpl_user_avatar.dart';
 import '../cpl_system/cubit/cpl_system_cubit.dart';
 import '../cpl_system/cubit/cpl_system_state.dart';
 import '../cpl_system/models/cpl_models.dart';
@@ -197,45 +198,13 @@ class DashboardScreen extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        InkWell(
-                          onTap: () => context.read<CplSystemCubit>().setScreenIndex(10),
-                          borderRadius: BorderRadius.circular(22),
-                          child: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF0B1F3A),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF0B1F3A).withAlpha((0.2 * 255).round()),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  initials,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const Text(
-                                  'CPL',
-                                  style: TextStyle(
-                                    color: Color(0xFFF59E0B),
-                                    fontSize: 7.5,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                        CplUserAvatar(
+                          user: user,
+                          size: 44,
+                          borderRadius: 22,
+                          showOnlineDot: false,
+                          showCplBadge: true,
+                          onTap: () => context.read<CplSystemCubit>().setScreenIndex(11),
                         ),
                       ],
                     ),

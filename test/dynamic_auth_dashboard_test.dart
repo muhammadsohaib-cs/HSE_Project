@@ -8,13 +8,14 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('Dynamic Registration, Auth Validation & Home Dashboard Tests', () {
-    testWidgets('Seamless registration -> login -> Home Dashboard renders CPL-EMP-2050 and live metrics', (tester) async {
+    testWidgets('Approval-gated registration -> HSE Manager approval -> login -> Home Dashboard & Profile management -> logout', (tester) async {
       final cubit = CplSystemCubit();
 
-      // 1. Register brand-new Employee ID CPL-EMP-2050
+      // 1. Register brand-new Employee ID CPL-EMP-2050 (starts as Pending until HSE Manager approves)
       final signupOk = await cubit.signup(
         empId: 'cpl-emp-2050',
         fullName: 'Hamza Ali',
+        email: 'hamza.ali@chiniotpower.com.pk',
         cnic: '33202-9876543-1',
         shift: 'Shift C: Night',
         role: 'Safety Officer',
@@ -24,7 +25,30 @@ void main() {
 
       expect(signupOk, isTrue);
       expect(cubit.state.lastAuthError, isNull);
-      // Immediately approved (no lockout)
+      expect(
+        cubit.state.pendingUsers.any((u) => u.empId == 'CPL-EMP-2050' && u.status == 'Pending'),
+        isTrue,
+      );
+
+      // 1b. Attempting to login BEFORE HSE Manager approval is strictly blocked!
+      final blockedBeforeApproval = await cubit.login(
+        empId: 'cpl-emp-2050',
+        shift: 'Shift C: Night',
+        role: 'Safety Officer',
+        password: 'pass2050',
+      );
+      expect(blockedBeforeApproval, isFalse);
+      expect(cubit.state.lastAuthError, contains('awaiting HSE Manager approval'));
+
+      // 1c. HSE Manager (Sumaira Rafique) approves registration
+      await cubit.login(
+        empId: '3648',
+        shift: 'General Shift (08:00 - 17:00)',
+        role: 'HSE Manager',
+        pin: '3648',
+      );
+      await cubit.updateUserApproval('CPL-EMP-2050', 'Approved');
+      await cubit.logout();
       expect(
         cubit.state.pendingUsers.any((u) => u.empId == 'CPL-EMP-2050' && u.status == 'Approved'),
         isTrue,
@@ -41,7 +65,7 @@ void main() {
       expect(badLogin, isFalse);
       expect(cubit.state.lastAuthError, isNotNull);
 
-      // 3. Login with case-insensitive Employee ID and exact password
+      // 3. Login after approval with case-insensitive Employee ID and exact password
       final goodLogin = await cubit.login(
         empId: 'cpl-emp-2050',
         shift: 'Shift C: Night',
@@ -55,6 +79,18 @@ void main() {
       expect(cubit.state.currentUser.role, equals('Safety Officer'));
       expect(cubit.state.currentUser.zone, equals('132kV Grid Switchyard'));
       expect(cubit.state.currentUser.shift, equals('Shift C: Night'));
+
+      // 3b. Profile Management: update user name & upload avatar bytes -> reflects immediately on dashboard!
+      final profileErr = await cubit.updateUserProfile(
+        fullName: 'Hamza Ali Khan',
+        email: 'hamza.khan@chiniotpower.com.pk',
+      );
+      expect(profileErr, isNull);
+      expect(cubit.state.currentUser.name, equals('Hamza Ali Khan'));
+
+      // Restore name for dashboard assertion checks below
+      await cubit.updateUserProfile(fullName: 'Hamza Ali');
+      expect(cubit.state.currentUser.name, equals('Hamza Ali'));
 
       // 4. Render Home Dashboard
       await tester.pumpWidget(

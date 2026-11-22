@@ -1045,6 +1045,24 @@ class CplSystemCubit extends Cubit<CplSystemState> {
         emit(state.copyWith(auditLogs: list));
       }
     } catch (_) {}
+
+    // 8. Refresh authenticated user's live profile (name, avatar, zone, role) from DB
+    if (state.isAuthenticated) {
+      try {
+        final res = await client.dio.get('/auth/me');
+        if (res.statusCode == 200 && res.data['user'] is Map) {
+          final refreshed = UserSession.fromJson(Map<String, dynamic>.from(res.data['user'] as Map));
+          await _secureStorage?.saveUserSession(
+            employeeId: refreshed.empId,
+            role: refreshed.role,
+            userJson: jsonEncode(refreshed.toJson()),
+          );
+          final userBox = _getBoxIfOpen(HiveBoxes.userBox);
+          await userBox?.put('currentUser', refreshed.toJson());
+          emit(state.copyWith(currentUser: refreshed));
+        }
+      } catch (_) {}
+    }
   }
 
   // Language Toggle
@@ -1175,6 +1193,7 @@ class CplSystemCubit extends Cubit<CplSystemState> {
             currentUser: session,
             activeScreenIndex: 1,
             lastAuthError: () => null,
+            lastAuthInfo: () => null,
           ));
         }
 
@@ -1191,56 +1210,44 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       if (e.response != null) {
         final msg = (e.response?.data is Map ? e.response?.data['message'] : null)?.toString() ??
             'Invalid Employee ID or Password/PIN.';
-        // If backend returned 401/403/400, still check if the user registered purely locally in Hive while previously offline
-        final regBox = _getBoxIfOpen(HiveBoxes.registeredUsersBox);
-        final localUserRaw = regBox?.get(cleanId) ?? regBox?.get(rawTrimmed);
-        if (localUserRaw is Map) {
-          final localMap = Map<String, dynamic>.from(localUserRaw);
-          final storedSecret = (localMap['password'] ?? localMap['pin'] ?? '').toString().trim();
-          if (storedSecret == secret || storedSecret.padLeft(4, '0') == secret.padLeft(4, '0')) {
-            final session = UserSession.fromJson(localMap);
-            await _persistLocalLogin(session);
-            return true;
-          }
-        }
-        emit(state.copyWith(lastAuthError: () => msg));
+        // Strict server truth: NEVER bypass backend 401/403 (Pending approval / Rejected / Wrong password)
+        emit(state.copyWith(
+          lastAuthError: () => msg,
+          lastAuthInfo: () => null,
+        ));
         return false;
       }
-      debugPrint('Backend unreachable ($e); checking Hive registered_users fallback.');
+      debugPrint('Backend unreachable ($e); checking offline validation.');
     } catch (e) {
-      debugPrint('Backend login notice: $e (checking local/offline validation)');
+      debugPrint('Backend login notice: $e');
     }
 
-    // 2. Offline / Local Hive registered_users fallback
-    final regBox = _getBoxIfOpen(HiveBoxes.registeredUsersBox);
-    if (regBox != null) {
-      dynamic localRaw = regBox.get(cleanId) ?? regBox.get(rawTrimmed);
-      if (localRaw == null) {
-        final altId = cleanId.startsWith('CPL-')
-            ? cleanId.replaceFirst('CPL-', 'CP-')
-            : cleanId.replaceFirst('CP-', 'CPL-');
-        localRaw = regBox.get(altId);
-      }
-      if (localRaw is Map) {
-        final localMap = Map<String, dynamic>.from(localRaw);
-        final storedSecret = (localMap['password'] ?? localMap['pin'] ?? '').toString().trim();
-        if (storedSecret.isNotEmpty &&
-            storedSecret != secret &&
-            storedSecret.padLeft(4, '0') != secret.padLeft(4, '0')) {
-          emit(state.copyWith(lastAuthError: () => 'Incorrect Password or Security PIN.'));
-          return false;
-        }
-        final session = UserSession.fromJson(localMap);
-        await _persistLocalLogin(session);
-        return true;
-      }
+    // If running with a configured backend client and backend is offline, do not silently fake-auth unapproved accounts
+    if (_dioClient != null) {
+      emit(state.copyWith(
+        lastAuthError: () => 'Cannot reach CPL Backend Server (${ApiEndpoints.baseUrl}). Please verify the server is running.',
+      ));
+      return false;
     }
 
-    // 3. In-memory pendingUsers / roster fallback (e.g. headless widget tests)
+    // Headless unit test / offline mode: strictly enforce Approval status on pendingUsers
     final pending = state.pendingUsers
         .where((u) => _normalizeEmpId(u.empId) == cleanId || u.empId.toUpperCase() == rawTrimmed)
         .firstOrNull;
     if (pending != null) {
+      if (pending.status == 'Pending') {
+        emit(state.copyWith(
+          lastAuthError: () =>
+              'Account ${pending.empId} is awaiting HSE Manager approval (Sumaira Rafique • muhammadsohaib.19477@gmail.com).',
+        ));
+        return false;
+      }
+      if (pending.status == 'Rejected' || pending.status == 'Blocked') {
+        emit(state.copyWith(
+          lastAuthError: () => 'Registration for ${pending.empId} was ${pending.status.toLowerCase()} by HSE Administration.',
+        ));
+        return false;
+      }
       if (pending.pin != null &&
           pending.pin!.isNotEmpty &&
           pending.pin != secret &&
@@ -1252,6 +1259,7 @@ class CplSystemCubit extends Cubit<CplSystemState> {
         empId: pending.empId,
         name: pending.name,
         urduName: pending.name,
+        email: pending.email,
         role: pending.role,
         shift: pending.shift,
         cnic: pending.cnic,
@@ -1352,17 +1360,27 @@ class CplSystemCubit extends Cubit<CplSystemState> {
   Future<void> logout() async {
     final prevEmpId = state.currentUser.empId;
     final prevZone = state.currentUser.zone;
+    final prevRole = state.currentUser.role;
     if (prevEmpId.isNotEmpty) {
       _recordAudit(
         action: 'USER_LOGOUT',
         targetResource: prevZone.isNotEmpty ? prevZone : 'AUTH_GATEWAY',
         details: 'Employee $prevEmpId signed out.',
       );
+      try {
+        await _dioClient?.dio.post('/auth/logout', data: {
+          'empId': prevEmpId,
+          'zone': prevZone,
+          'role': prevRole,
+        });
+      } catch (_) {}
     }
     await _secureStorage?.clearSession();
     final userBox = _getBoxIfOpen(HiveBoxes.userBox);
     await userBox?.delete('currentUser');
     await userBox?.clear();
+    final regBox = _getBoxIfOpen(HiveBoxes.registeredUsersBox);
+    await regBox?.clear();
     emit(state.copyWith(
       currentUser: UserSession.empty,
       activeScreenIndex: 0,
@@ -1370,15 +1388,18 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       qrCheckedIn: false,
       activeQuizId: () => null,
       lastAuthError: () => null,
+      lastAuthInfo: () => null,
     ));
   }
 
+  /// Registration creates a Pending approval request and dispatches Nodemailer approval mail to HSE Manager
   Future<bool> signup({
     required String empId,
     required String fullName,
     required String cnic,
     required String shift,
     required String role,
+    String? email,
     String? pin,
     String? password,
     String? assignedZone,
@@ -1386,6 +1407,7 @@ class CplSystemCubit extends Cubit<CplSystemState> {
     final rawTrimmed = empId.trim().toUpperCase();
     final cleanId = _normalizeEmpId(rawTrimmed);
     final cleanName = fullName.trim();
+    final cleanEmail = (email ?? '').trim();
     final cleanSecret = (password ?? pin ?? '').trim();
     final resolvedZone = (assignedZone != null && assignedZone.trim().isNotEmpty)
         ? assignedZone.trim()
@@ -1395,17 +1417,18 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       emit(state.copyWith(lastAuthError: () => 'Employee ID and Full Name are required.'));
       return false;
     }
-    if (cleanSecret.isEmpty) {
-      emit(state.copyWith(lastAuthError: () => 'Please enter a Password or Security PIN.'));
+    if (cleanSecret.length < 4) {
+      emit(state.copyWith(lastAuthError: () => 'Password must be at least 4 characters long.'));
       return false;
     }
 
-    final localRecord = <String, dynamic>{
+    final payload = <String, dynamic>{
       'empId': cleanId,
       'employeeId': cleanId,
       'fullName': cleanName,
       'name': cleanName,
       'urduName': cleanName,
+      'email': cleanEmail,
       'cnic': cnic.trim(),
       'password': cleanSecret,
       'pin': cleanSecret,
@@ -1413,45 +1436,44 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       'shift': shift,
       'assignedZone': resolvedZone,
       'zone': resolvedZone,
-      'status': 'Approved',
     };
 
-    // Attempt backend registration first if reachable
-    try {
-      final res = await _dioClient?.dio.post('/auth/register', data: localRecord);
-      if (res != null && (res.statusCode == 201 || res.statusCode == 200) && res.data['success'] == true) {
-        final token = res.data['token'] as String?;
-        final refreshToken = res.data['refreshToken'] as String?;
-        if (token != null && refreshToken != null) {
-          await _secureStorage?.saveAuthTokens(accessToken: token, refreshToken: refreshToken);
+    String infoMessage =
+        'Registration submitted for $cleanId! Official approval email sent to HSE Manager (Sumaira Rafique • muhammadsohaib.19477@gmail.com). You can sign in once she approves your request.';
+
+    if (_dioClient != null) {
+      try {
+        final res = await _dioClient!.dio.post('/auth/register', data: payload);
+        if (res.statusCode == 202 || res.statusCode == 201 || res.statusCode == 200) {
+          if (res.data is Map && res.data['message'] != null) {
+            infoMessage = res.data['message'].toString();
+          }
         }
-      }
-    } on DioException catch (e) {
-      if (e.response != null) {
+      } on DioException catch (e) {
         final msg = (e.response?.data is Map ? e.response?.data['message'] : null)?.toString() ??
-            'Registration failed for $cleanId.';
-        emit(state.copyWith(lastAuthError: () => msg));
+            'Could not submit registration to CPL server (${ApiEndpoints.baseUrl}).';
+        emit(state.copyWith(
+          lastAuthError: () => msg,
+          lastAuthInfo: () => null,
+        ));
+        return false;
+      } catch (e) {
+        emit(state.copyWith(
+          lastAuthError: () => 'Registration failed: $e',
+          lastAuthInfo: () => null,
+        ));
         return false;
       }
-      debugPrint('Backend offline during signup; saving locally in Hive registered_users box.');
-    } catch (e) {
-      debugPrint('Registration fallback notice: $e');
-    }
-
-    // Save locally into Hive `registered_users` box for offline login continuity
-    final regBox = _getBoxIfOpen(HiveBoxes.registeredUsersBox);
-    await regBox?.put(cleanId, localRecord);
-    if (rawTrimmed != cleanId) {
-      await regBox?.put(rawTrimmed, localRecord);
     }
 
     final newReg = PendingUserRegistration(
       empId: cleanId,
       name: cleanName,
+      email: cleanEmail,
       cnic: cnic.trim(),
       role: role,
       shift: shift,
-      status: 'Approved',
+      status: 'Pending',
       pin: cleanSecret,
       zone: resolvedZone,
     );
@@ -1461,47 +1483,276 @@ class CplSystemCubit extends Cubit<CplSystemState> {
       ...state.pendingUsers.where((u) => _normalizeEmpId(u.empId) != cleanId),
     ];
 
-    // Also add immediately to roster so live metrics update
-    final updatedRoster = List<WorkerRosterItem>.from(state.roster);
-    if (!updatedRoster.any((w) => _normalizeEmpId(w.empId) == cleanId)) {
-      updatedRoster.add(WorkerRosterItem(
-        empId: cleanId,
-        name: cleanName,
-        ur: cleanName,
-        role: role,
-        zone: resolvedZone,
-        shift: shift.contains('Shift A')
-            ? 'Shift A'
-            : shift.contains('Shift B')
-                ? 'Shift B'
-                : shift.contains('Shift C')
-                    ? 'Shift C'
-                    : shift.contains('Shift D')
-                        ? 'Shift D'
-                        : 'General',
-        designation: role,
-        attendanceStatus: 'D',
-        nightsPerformed: 0,
-        helmet: true,
-        shoes: true,
-        gloves: true,
-        ear: true,
-      ));
-    }
-
     emit(state.copyWith(
       pendingUsers: updatedList,
-      roster: updatedRoster,
       lastAuthError: () => null,
+      lastAuthInfo: () => infoMessage,
     ));
 
     _recordAudit(
-      action: 'STAFF_SIGNUP',
+      action: 'STAFF_SIGNUP_PENDING',
       targetResource: cleanId,
-      details: 'Employee $cleanName ($cleanId) registered as $role at $resolvedZone (Status: Approved).',
+      details: 'Employee $cleanName ($cleanId) submitted registration for $role ($resolvedZone). Awaiting HSE Manager approval.',
     );
 
     return true;
+  }
+
+  /// Resolve relative backend upload path (e.g. /uploads/avatars/...) to full HTTP URL
+  String? resolveMediaUrl(String? rawUrl) {
+    if (rawUrl == null || rawUrl.trim().isEmpty) return null;
+    final trimmed = rawUrl.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+      return trimmed;
+    }
+    final uri = Uri.parse(ApiEndpoints.baseUrl);
+    final origin = '${uri.scheme}://${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
+    return trimmed.startsWith('/') ? '$origin$trimmed' : '$origin/$trimmed';
+  }
+
+  /// Profile Management: Update full name, email, shift, assigned zone, CNIC, or remove avatar
+  Future<String?> updateUserProfile({
+    required String fullName,
+    String? email,
+    String? shift,
+    String? assignedZone,
+    String? cnic,
+    bool removeAvatar = false,
+  }) async {
+    if (!state.isAuthenticated) return 'Not signed in.';
+    final cleanName = fullName.trim();
+    if (cleanName.isEmpty) return 'Full Name cannot be empty.';
+
+    UserSession updatedUser = state.currentUser.copyWith(
+      name: cleanName,
+      urduName: cleanName,
+      email: email?.trim() ?? state.currentUser.email,
+      shift: (shift != null && shift.trim().isNotEmpty) ? shift.trim() : state.currentUser.shift,
+      zone: (assignedZone != null && assignedZone.trim().isNotEmpty) ? assignedZone.trim() : state.currentUser.zone,
+      cnic: (cnic != null && cnic.trim().isNotEmpty) ? cnic.trim() : state.currentUser.cnic,
+      profileImageUrl: removeAvatar ? () => null : null,
+    );
+
+    if (_dioClient != null) {
+      try {
+        final res = await _dioClient!.dio.put('/auth/profile', data: {
+          'fullName': cleanName,
+          'email': updatedUser.email,
+          'shift': updatedUser.shift,
+          'assignedZone': updatedUser.zone,
+          'cnic': updatedUser.cnic,
+          'removeAvatar': removeAvatar,
+        });
+        if (res.statusCode == 200 && res.data['user'] is Map) {
+          updatedUser = UserSession.fromJson(Map<String, dynamic>.from(res.data['user'] as Map));
+        }
+      } on DioException catch (e) {
+        return (e.response?.data is Map ? e.response?.data['message'] : null)?.toString() ??
+            'Failed to update profile on server.';
+      } catch (e) {
+        return 'Profile update error: $e';
+      }
+    }
+
+    // Mirror updated name & zone into active roster
+    final updatedRoster = state.roster.map((w) {
+      if (_normalizeEmpId(w.empId) == _normalizeEmpId(updatedUser.empId)) {
+        return WorkerRosterItem(
+          empId: w.empId,
+          name: updatedUser.name,
+          ur: updatedUser.urduName,
+          role: w.role,
+          zone: updatedUser.zone,
+          shift: w.shift,
+          designation: w.designation,
+          attendanceStatus: w.attendanceStatus,
+          nightsPerformed: w.nightsPerformed,
+          helmet: w.helmet,
+          shoes: w.shoes,
+          gloves: w.gloves,
+          ear: w.ear,
+        );
+      }
+      return w;
+    }).toList();
+
+    await _secureStorage?.saveUserSession(
+      employeeId: updatedUser.empId,
+      role: updatedUser.role,
+      userJson: jsonEncode(updatedUser.toJson()),
+    );
+    final userBox = _getBoxIfOpen(HiveBoxes.userBox);
+    await userBox?.put('currentUser', updatedUser.toJson());
+
+    emit(state.copyWith(currentUser: updatedUser, roster: updatedRoster));
+
+    _recordAudit(
+      action: 'USER_PROFILE_UPDATED',
+      targetResource: updatedUser.empId,
+      details: 'Updated profile details for ${updatedUser.empId} (${updatedUser.name}).',
+    );
+    return null;
+  }
+
+  /// Profile Management: Upload profile photo (bytes -> base64 data URI -> backend /uploads/avatars)
+  Future<String?> uploadUserAvatar({
+    required List<int> bytes,
+    required String fileName,
+  }) async {
+    if (!state.isAuthenticated) return 'Not signed in.';
+    if (bytes.isEmpty) return 'Selected image is empty.';
+    if (bytes.length > 5 * 1024 * 1024) return 'Image must be smaller than 5 MB.';
+
+    final lower = fileName.toLowerCase();
+    final mime = lower.endsWith('.png')
+        ? 'image/png'
+        : lower.endsWith('.webp')
+            ? 'image/webp'
+            : lower.endsWith('.gif')
+                ? 'image/gif'
+                : 'image/jpeg';
+    final dataUri = 'data:$mime;base64,${base64Encode(bytes)}';
+
+    UserSession updatedUser = state.currentUser.copyWith(
+      profileImageUrl: () => dataUri,
+    );
+
+    if (_dioClient != null) {
+      try {
+        final res = await _dioClient!.dio.post('/auth/profile/avatar', data: {
+          'imageBase64': dataUri,
+          'fileName': fileName,
+        });
+        if (res.statusCode == 200 && res.data['user'] is Map) {
+          updatedUser = UserSession.fromJson(Map<String, dynamic>.from(res.data['user'] as Map));
+        }
+      } on DioException catch (e) {
+        return (e.response?.data is Map ? e.response?.data['message'] : null)?.toString() ??
+            'Failed to upload profile image.';
+      } catch (e) {
+        return 'Avatar upload error: $e';
+      }
+    }
+
+    await _secureStorage?.saveUserSession(
+      employeeId: updatedUser.empId,
+      role: updatedUser.role,
+      userJson: jsonEncode(updatedUser.toJson()),
+    );
+    final userBox = _getBoxIfOpen(HiveBoxes.userBox);
+    await userBox?.put('currentUser', updatedUser.toJson());
+
+    emit(state.copyWith(currentUser: updatedUser));
+    _recordAudit(
+      action: 'USER_AVATAR_UPDATED',
+      targetResource: updatedUser.empId,
+      details: 'Updated profile avatar for ${updatedUser.empId}.',
+    );
+    return null;
+  }
+
+  /// Profile Management: Change password with strict verification of current password
+  Future<String?> changeUserPassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (!state.isAuthenticated) return 'Not signed in.';
+    if (currentPassword.trim().isEmpty) return 'Current password is required.';
+    if (newPassword.trim().length < 4) return 'New password must be at least 4 characters long.';
+
+    if (_dioClient != null) {
+      try {
+        final res = await _dioClient!.dio.put('/auth/profile/password', data: {
+          'currentPassword': currentPassword.trim(),
+          'newPassword': newPassword.trim(),
+        });
+        if (res.statusCode == 200 && res.data['success'] == true) {
+          _recordAudit(
+            action: 'USER_PASSWORD_CHANGED',
+            targetResource: state.currentUser.empId,
+            details: 'Account password updated securely.',
+          );
+          return null;
+        }
+        return (res.data is Map ? res.data['message'] : null)?.toString() ?? 'Password update failed.';
+      } on DioException catch (e) {
+        return (e.response?.data is Map ? e.response?.data['message'] : null)?.toString() ??
+            'Current password is incorrect.';
+      } catch (e) {
+        return 'Password change error: $e';
+      }
+    }
+
+    // Headless unit test path: update matching pendingUsers PIN
+    final cleanId = _normalizeEmpId(state.currentUser.empId);
+    final updatedPending = state.pendingUsers.map((p) {
+      if (_normalizeEmpId(p.empId) == cleanId) {
+        return p.copyWith(pin: newPassword.trim());
+      }
+      return p;
+    }).toList();
+    emit(state.copyWith(pendingUsers: updatedPending));
+    return null;
+  }
+
+  /// Fetch live Gmail SMTP configuration status (HSE Manager only)
+  Future<Map<String, dynamic>?> fetchSmtpConfig() async {
+    if (_dioClient == null) return null;
+    try {
+      final res = await _dioClient!.dio.get('/auth/smtp-config');
+      if (res.statusCode == 200 && res.data is Map && res.data['smtp'] is Map) {
+        return Map<String, dynamic>.from(res.data['smtp'] as Map);
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /// Resend real Gmail approval email for a Pending staff member (HSE Manager only)
+  Future<Map<String, dynamic>> resendApprovalEmail(String empId) async {
+    if (_dioClient == null) {
+      return {'success': false, 'message': 'Backend server not connected.'};
+    }
+    try {
+      final res = await _dioClient!.dio.post('/auth/pending-users/$empId/resend-approval');
+      return Map<String, dynamic>.from(res.data as Map);
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': (e.response?.data is Map ? e.response?.data['message'] : null)?.toString() ??
+            'Failed to resend approval email.',
+      };
+    }
+  }
+
+  /// Configure Nodemailer SMTP credentials (Gmail App Password / Custom SMTP) from Admin Panel
+  Future<Map<String, dynamic>> configureSmtp({
+    required String host,
+    required String port,
+    required String user,
+    required String pass,
+    required String approverEmail,
+    bool sendTest = true,
+  }) async {
+    if (_dioClient == null) {
+      return {'success': false, 'message': 'Backend server not connected.'};
+    }
+    try {
+      final res = await _dioClient!.dio.post('/auth/smtp-config', data: {
+        'host': host,
+        'port': port,
+        'user': user,
+        'pass': pass,
+        'approverEmail': approverEmail,
+        'sendTest': sendTest,
+      });
+      return Map<String, dynamic>.from(res.data as Map);
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': (e.response?.data is Map ? e.response?.data['message'] : null)?.toString() ??
+            'Failed to save SMTP configuration.',
+      };
+    }
   }
 
   // Hazards: Report new hazard with real multipart photo and voice note upload

@@ -20,11 +20,12 @@ class _AuthScreenState extends State<AuthScreen> {
   final _empIdController = TextEditingController();
   final _pinController = TextEditingController();
   final _fullNameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _cnicMobileController = TextEditingController();
   final BiometricAuthService _biometricAuth = BiometricAuthService();
 
   String _selectedShift = 'General Shift (08:00 - 17:00)';
-  String _selectedRole = 'HSE Manager';
+  String _selectedRole = 'Plant Worker';
   String _selectedZone = 'Boiler Area (Unit 1 & 2)';
   String? _errorMessage;
   String? _successMessage;
@@ -62,6 +63,7 @@ class _AuthScreenState extends State<AuthScreen> {
     _empIdController.dispose();
     _pinController.dispose();
     _fullNameController.dispose();
+    _emailController.dispose();
     _cnicMobileController.dispose();
     super.dispose();
   }
@@ -193,7 +195,7 @@ class _AuthScreenState extends State<AuthScreen> {
     });
 
     if (cleanEmpId.isEmpty) {
-      setState(() => _errorMessage = 'Please enter your Employee ID (e.g., CPL-EMP-1042).');
+      setState(() => _errorMessage = 'Please enter your Employee ID (e.g., CPL-EMP-1042 or 3648).');
       return;
     }
     if (cleanSecret.isEmpty) {
@@ -215,7 +217,7 @@ class _AuthScreenState extends State<AuthScreen> {
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Authenticated $cleanEmpId ($_selectedShift)'),
+              content: Text('Signed in as ${cubit.state.currentUser.name} (${cubit.state.currentUser.empId})'),
               backgroundColor: CplColors.slate900,
             ),
           );
@@ -231,10 +233,15 @@ class _AuthScreenState extends State<AuthScreen> {
         setState(() => _errorMessage = 'Please enter your Full Name.');
         return;
       }
+      if (cleanSecret.length < 4) {
+        setState(() => _errorMessage = 'Password must be at least 4 characters.');
+        return;
+      }
       setState(() => _isSubmitting = true);
       final success = await cubit.signup(
         empId: cleanEmpId,
         fullName: cleanName,
+        email: _emailController.text.trim(),
         cnic: _cnicMobileController.text.trim(),
         shift: _selectedShift,
         role: _selectedRole,
@@ -248,8 +255,9 @@ class _AuthScreenState extends State<AuthScreen> {
           setState(() {
             _isLogin = true;
             _empIdController.text = cleanEmpId;
-            _pinController.text = cleanSecret;
-            _successMessage = 'Account Registered for $cleanEmpId! Please sign in.';
+            _pinController.clear();
+            _successMessage = cubit.state.lastAuthInfo ??
+                'Registration submitted for $cleanEmpId! Official approval email sent to HSE Manager (Sumaira Rafique). You can sign in once she approves your account.';
             _errorMessage = null;
           });
         } else {
@@ -378,13 +386,6 @@ class _AuthScreenState extends State<AuthScreen> {
                           _isLogin = false;
                           _errorMessage = null;
                           _successMessage = null;
-                          if (_empIdController.text.trim() == 'CPL-EMP-1001' &&
-                              _fullNameController.text.trim() == 'Engr. Tariq Khan') {
-                            _empIdController.clear();
-                            _pinController.clear();
-                            _fullNameController.clear();
-                            _cnicMobileController.clear();
-                          }
                         }),
                         borderRadius: BorderRadius.circular(10),
                         child: Container(
@@ -413,18 +414,19 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Inline Green Confirmation Banner (Registration -> Login)
+              // Inline Approval / Nodemailer Confirmation Banner (No self-approval links ever exposed!)
               if (_successMessage != null) ...[
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: CplColors.emerald50,
+                    color: const Color(0xFFFFFBEB),
                     borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: CplColors.emerald500),
+                    border: Border.all(color: CplColors.energyAmber),
                   ),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.check_circle, color: CplColors.emerald600, size: 20),
+                      const Icon(Icons.mark_email_read_outlined, color: CplColors.safety600, size: 20),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
@@ -432,7 +434,7 @@ class _AuthScreenState extends State<AuthScreen> {
                           style: CplTypography.body(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: CplColors.emerald700,
+                            color: const Color(0xFF92400E),
                           ),
                         ),
                       ),
@@ -518,6 +520,19 @@ class _AuthScreenState extends State<AuthScreen> {
                         decoration: const InputDecoration(
                           prefixIcon: Icon(Icons.person_outline, size: 18),
                           hintText: 'Enter full employee name',
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      Text('EMAIL ADDRESS • ای میل', style: CplTypography.body(fontSize: 10, fontWeight: FontWeight.bold, color: CplColors.slate500)),
+                      const SizedBox(height: 6),
+                      TextField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        style: CplTypography.body(fontSize: 13, fontWeight: FontWeight.w600),
+                        decoration: const InputDecoration(
+                          prefixIcon: Icon(Icons.email_outlined, size: 18),
+                          hintText: 'employee@chiniotpower.com.pk',
                         ),
                       ),
                       const SizedBox(height: 14),
@@ -668,74 +683,25 @@ class _AuthScreenState extends State<AuthScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                 ),
-                const SizedBox(height: 12),
-
-                // Quick Operator Demo Access
+              ],
+              if (!_isLogin) ...[
+                const SizedBox(height: 10),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(11),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
+                    color: CplColors.slate100,
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: CplColors.slate200),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: const [
-                          Icon(Icons.bolt, size: 14, color: CplColors.energyAmber),
-                          SizedBox(width: 4),
-                          Text(
-                            'QUICK OPERATOR SIGN IN',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              color: CplColors.slate500,
-                              letterSpacing: 0.6,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 6,
-                        children: [
-                          ActionChip(
-                            avatar: const CircleAvatar(
-                              radius: 10,
-                              backgroundColor: Color(0xFF0B1F3A),
-                              child: Text('TK', style: TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.bold)),
-                            ),
-                            label: const Text('Engr. Tariq Khan (HSE)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                            backgroundColor: CplColors.slate50,
-                            side: const BorderSide(color: CplColors.slate200),
-                            onPressed: () {
-                              setState(() {
-                                _empIdController.text = 'CPL-EMP-1002';
-                                _pinController.text = '1002';
-                              });
-                              _handleSubmit();
-                            },
-                          ),
-                          ActionChip(
-                            avatar: const CircleAvatar(
-                              radius: 10,
-                              backgroundColor: Color(0xFF059669),
-                              child: Text('SR', style: TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.bold)),
-                            ),
-                            label: const Text('Sumaira Rafique (EMP 3648)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                            backgroundColor: CplColors.slate50,
-                            side: const BorderSide(color: CplColors.slate200),
-                            onPressed: () {
-                              setState(() {
-                                _empIdController.text = '3648';
-                                _pinController.text = '3648';
-                              });
-                              _handleSubmit();
-                            },
-                          ),
-                        ],
+                  child: Row(
+                    children: const [
+                      Icon(Icons.verified_user_outlined, size: 16, color: CplColors.corporateNavy),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'New registrations require HSE Manager (Sumaira Rafique) email confirmation before account activation.',
+                          style: TextStyle(fontSize: 11, color: CplColors.slate700, fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ],
                   ),

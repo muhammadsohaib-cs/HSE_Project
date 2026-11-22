@@ -16,11 +16,41 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
   late TabController _tabController;
   final _checklistEnController = TextEditingController();
   final _checklistUrController = TextEditingController();
+  final _approverEmailController = TextEditingController(text: 'muhammadsohaib.19477@gmail.com');
+  final _smtpUserController = TextEditingController(text: 'muhammadsohaib.19477@gmail.com');
+  final _smtpPassController = TextEditingController();
+  bool _isSavingSmtp = false;
+  bool _smtpConfigured = false;
+  String _smtpStatusText = 'Checking Gmail SMTP status...';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadSmtpStatus());
+  }
+
+  Future<void> _loadSmtpStatus() async {
+    if (!mounted) return;
+    final smtp = await context.read<CplSystemCubit>().fetchSmtpConfig();
+    if (!mounted) return;
+    if (smtp == null) {
+      setState(() {
+        _smtpConfigured = false;
+        _smtpStatusText = 'Connect to backend to verify Gmail SMTP.';
+      });
+      return;
+    }
+    setState(() {
+      _smtpConfigured = smtp['isConfigured'] == true;
+      final user = smtp['user']?.toString() ?? '';
+      final approver = smtp['approverEmail']?.toString() ?? 'muhammadsohaib.19477@gmail.com';
+      if (approver.isNotEmpty) _approverEmailController.text = approver;
+      if (user.isNotEmpty) _smtpUserController.text = user;
+      _smtpStatusText = _smtpConfigured
+          ? 'Real Gmail SMTP Active ($user → $approver)'
+          : 'Gmail App Password Required — Real emails are paused until configured.';
+    });
   }
 
   @override
@@ -28,6 +58,9 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
     _tabController.dispose();
     _checklistEnController.dispose();
     _checklistUrController.dispose();
+    _approverEmailController.dispose();
+    _smtpUserController.dispose();
+    _smtpPassController.dispose();
     super.dispose();
   }
 
@@ -265,10 +298,27 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
                   style: TextStyle(fontSize: 12, color: CplColors.slate600),
                 ),
                 const Divider(height: 18),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                Wrap(
+                  alignment: WrapAlignment.end,
+                  spacing: 8,
+                  runSpacing: 6,
                   children: [
                     if (isPending) ...[
+                      TextButton.icon(
+                        onPressed: () async {
+                          final res = await context.read<CplSystemCubit>().resendApprovalEmail(user.empId);
+                          if (!context.mounted) return;
+                          final ok = res['success'] == true;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(res['message']?.toString() ?? (ok ? 'Approval email sent!' : 'Failed to send email')),
+                              backgroundColor: ok ? CplColors.corporateNavy : CplColors.red600,
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.forward_to_inbox, size: 15),
+                        label: Text(isUr ? 'ای میل دوبارہ بھیجیں' : 'Resend Mail', style: const TextStyle(fontSize: 12)),
+                      ),
                       OutlinedButton(
                         onPressed: () {
                           context.read<CplSystemCubit>().updateUserApproval(user.empId, 'Blocked');
@@ -287,7 +337,6 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
                         ),
                         child: Text(isUr ? 'مسترد کریں' : 'Block'),
                       ),
-                      const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () {
                           context.read<CplSystemCubit>().updateUserApproval(user.empId, 'Approved');
@@ -425,6 +474,147 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> with SingleTickerPr
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
+        // Nodemailer Approval Email & Gmail SMTP Configuration Card
+        Container(
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: CplColors.slate200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    _smtpConfigured ? Icons.verified_outlined : Icons.warning_amber_rounded,
+                    color: _smtpConfigured ? CplColors.emerald600 : CplColors.amber500,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      isUr ? 'نوڈ میلر جی میل اپروول سیٹنگز' : 'Nodemailer Real Gmail SMTP Gateway',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: _smtpConfigured
+                          ? CplColors.emerald500.withOpacity(0.14)
+                          : CplColors.red600.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      _smtpConfigured ? 'GMAIL ACTIVE' : 'SETUP REQUIRED',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: _smtpConfigured ? CplColors.emerald600 : CplColors.red600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _smtpStatusText,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: _smtpConfigured ? CplColors.emerald600 : CplColors.red700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: CplColors.slate50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: CplColors.slate200),
+                ),
+                child: const Text(
+                  'How to get your 16-character Gmail App Password:\n'
+                  '1. Open myaccount.google.com/security and turn ON 2-Step Verification.\n'
+                  '2. Open myaccount.google.com/apppasswords → Create app "CPL HSE".\n'
+                  '3. Paste the 16-character password below and click Verify & Save.',
+                  style: TextStyle(fontSize: 11, color: CplColors.slate700, height: 1.45),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _approverEmailController,
+                decoration: const InputDecoration(
+                  labelText: 'HSE Manager Approver Email (Testing / Production)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _smtpUserController,
+                decoration: const InputDecoration(
+                  labelText: 'Gmail SMTP Sender Address (SMTP_USER)',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _smtpPassController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Gmail 16-Character App Password (SMTP_PASS)',
+                  hintText: 'xxxx xxxx xxxx xxxx',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
+                onPressed: _isSavingSmtp
+                    ? null
+                    : () async {
+                        setState(() => _isSavingSmtp = true);
+                        final res = await context.read<CplSystemCubit>().configureSmtp(
+                              host: 'smtp.gmail.com',
+                              port: '587',
+                              user: _smtpUserController.text.trim(),
+                              pass: _smtpPassController.text.trim(),
+                              approverEmail: _approverEmailController.text.trim(),
+                              sendTest: true,
+                            );
+                        if (!context.mounted) return;
+                        setState(() => _isSavingSmtp = false);
+                        final ok = res['success'] == true;
+                        if (ok) {
+                          _smtpPassController.clear();
+                          await _loadSmtpStatus();
+                        }
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(res['message']?.toString() ?? (ok ? 'Gmail SMTP verified & test sent!' : 'SMTP error')),
+                            backgroundColor: ok ? CplColors.emerald600 : CplColors.red600,
+                          ),
+                        );
+                      },
+                icon: const Icon(Icons.send),
+                label: Text(
+                  _isSavingSmtp ? 'Verifying Gmail SMTP & Sending Test...' : 'Verify Gmail SMTP & Send Real Test Email',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: CplColors.corporateNavy,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
+        ),
+
         // Escalation Rules Card
         Container(
           padding: const EdgeInsets.all(16),

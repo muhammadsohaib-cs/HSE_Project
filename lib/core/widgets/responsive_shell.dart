@@ -16,6 +16,7 @@ import '../../features/screens/training_screen.dart';
 import '../../features/screens/roster_screen.dart';
 import '../../features/screens/analytics_screen.dart';
 import '../../features/screens/admin_panel_screen.dart';
+import '../../features/screens/profile_screen.dart';
 import 'desktop_command_center.dart';
 
 class ResponsiveShell extends StatelessWidget {
@@ -45,6 +46,8 @@ class ResponsiveShell extends StatelessWidget {
         return const AnalyticsScreen();
       case 10:
         return const AdminPanelScreen();
+      case 11:
+        return const ProfileScreen();
       default:
         return const DashboardScreen();
     }
@@ -60,6 +63,7 @@ class ResponsiveShell extends StatelessWidget {
     {'title': 'HSE Training & QR Pass', 'ur': 'سیفٹی ٹریننگ اور کیو آر', 'icon': LucideIcons.graduationCap, 'index': 7},
     {'title': 'Shift Roster & PPE Roll', 'ur': 'ٹیم روسٹر اور پی پی ای', 'icon': LucideIcons.users, 'index': 8},
     {'title': 'Safety Analytics & Reports', 'ur': 'اینالیٹکس اور پی ڈی ایف', 'icon': LucideIcons.barChart3, 'index': 9},
+    {'title': 'My Profile & Security', 'ur': 'میرا پروفائل اور پاس ورڈ', 'icon': LucideIcons.userCog, 'index': 11},
     {'title': 'Admin & Manager Control', 'ur': 'ایڈمن اور مینیجر پینل', 'icon': LucideIcons.shieldAlert, 'index': 10},
   ];
 

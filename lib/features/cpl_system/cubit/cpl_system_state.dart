@@ -30,6 +30,7 @@ class CplSystemState extends Equatable {
   final int pendingOfflineCount;
   final List<AuditLogItem> auditLogs;
   final String? lastAuthError;
+  final String? lastAuthInfo;
   final String rosterShiftFilter;
   final String rosterAreaFilter;
 
@@ -62,6 +63,7 @@ class CplSystemState extends Equatable {
     this.pendingOfflineCount = 0,
     this.auditLogs = const [],
     this.lastAuthError,
+    this.lastAuthInfo,
     this.rosterShiftFilter = 'All',
     this.rosterAreaFilter = 'All',
   });
@@ -156,6 +158,7 @@ class CplSystemState extends Equatable {
     int? pendingOfflineCount,
     List<AuditLogItem>? auditLogs,
     String? Function()? lastAuthError,
+    String? Function()? lastAuthInfo,
     String? rosterShiftFilter,
     String? rosterAreaFilter,
   }) {
@@ -188,6 +191,7 @@ class CplSystemState extends Equatable {
       pendingOfflineCount: pendingOfflineCount ?? this.pendingOfflineCount,
       auditLogs: auditLogs ?? this.auditLogs,
       lastAuthError: lastAuthError != null ? lastAuthError() : this.lastAuthError,
+      lastAuthInfo: lastAuthInfo != null ? lastAuthInfo() : this.lastAuthInfo,
       rosterShiftFilter: rosterShiftFilter ?? this.rosterShiftFilter,
       rosterAreaFilter: rosterAreaFilter ?? this.rosterAreaFilter,
     );
@@ -223,6 +227,7 @@ class CplSystemState extends Equatable {
         pendingOfflineCount,
         auditLogs,
         lastAuthError,
+        lastAuthInfo,
         rosterShiftFilter,
         rosterAreaFilter,
       ];

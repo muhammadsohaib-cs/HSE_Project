@@ -1,7 +1,10 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const morgan = require('morgan');
+const mailer = require('./services/mailer');
 
 const authRoutes = require('./routes/auth');
 const hazardsRoutes = require('./routes/hazards');
@@ -85,11 +88,14 @@ app.use((err, req, res, next) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
+  const smtp = mailer.getSmtpConfig();
   console.log(`================================================================`);
   console.log(` CPL HSE Backend API Gateway running on port ${PORT}`);
   console.log(` Database Studio GUI: http://localhost:${PORT}/db-studio`);
   console.log(` Health Check: http://localhost:${PORT}/health`);
   console.log(` Static Uploads: http://localhost:${PORT}/uploads`);
+  console.log(` HSE Approver Email: ${smtp.approverEmail}`);
+  console.log(` Nodemailer Gmail SMTP: ${smtp.isConfigured ? `CONFIGURED (${smtp.user} via ${smtp.host}:${smtp.port})` : 'NOT CONFIGURED — Set SMTP_PASS (16-char Gmail App Password) in backend/.env or Admin Panel'}`);
   console.log(` Target Plant: UNIT-1 62.4 MW (Chiniot, Punjab • 31.7204° N, 72.9791° E)`);
   console.log(` Socket.io Gateway Active on port ${PORT}`);
   console.log(`================================================================`);

@@ -5,6 +5,7 @@ import 'package:shadcn_flutter/shadcn_flutter.dart' as shad;
 import '../theme/cpl_theme.dart';
 import '../utils/pdf_generator.dart';
 import '../widgets/cpl_brand_logo.dart';
+import '../widgets/cpl_user_avatar.dart';
 import '../../features/cpl_system/cubit/cpl_system_cubit.dart';
 import '../../features/cpl_system/cubit/cpl_system_state.dart';
 import '../../features/cpl_system/models/cpl_models.dart';
@@ -19,6 +20,7 @@ import '../../features/screens/training_screen.dart';
 import '../../features/screens/roster_screen.dart';
 import '../../features/screens/analytics_screen.dart';
 import '../../features/screens/admin_panel_screen.dart';
+import '../../features/screens/profile_screen.dart';
 
 class DesktopCommandCenter extends StatefulWidget {
   const DesktopCommandCenter({super.key});
@@ -54,6 +56,8 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
         return const AnalyticsScreen();
       case 10:
         return const AdminPanelScreen();
+      case 11:
+        return const ProfileScreen();
       default:
         return const DashboardScreen();
     }
@@ -110,9 +114,10 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
       ],
     },
     {
-      'section': 'GOVERNANCE',
-      'sectionUr': 'ایڈمن گورننس',
+      'section': 'ACCOUNT & GOVERNANCE',
+      'sectionUr': 'پروفائل اور ایڈمن گورننس',
       'items': [
+        {'title': 'My Profile & Security', 'ur': 'میرا پروفائل اور پاس ورڈ', 'icon': LucideIcons.userCog, 'index': 11},
         {'title': 'Admin Control Panel', 'ur': 'ایڈمن اور مینیجر پینل', 'icon': LucideIcons.shieldAlert, 'index': 10},
       ],
     },
@@ -770,7 +775,6 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
     required int openHazardsCount,
   }) {
     final user = state.currentUser;
-    final initials = _getUserInitials(user.name);
     final scoreColor = safetyScore >= 85
         ? const Color(0xFF10B981)
         : (safetyScore >= 65 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444));
@@ -780,72 +784,16 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
             ? (isUr ? 'توجہ درکار' : 'MODERATE')
             : (isUr ? 'فوری اصلاح' : 'ACTION NEEDED'));
 
-    final avatarWidget = Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFF97316), Color(0xFFEA580C)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withAlpha((0.25 * 255).round()),
-              width: 2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFEA580C).withAlpha((0.35 * 255).round()),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          alignment: Alignment.center,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                initials,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
-                  height: 1.0,
-                ),
-              ),
-              const SizedBox(height: 2),
-              const Text(
-                'CPL',
-                style: TextStyle(
-                  color: Color(0xFFFFEDD5),
-                  fontSize: 8.5,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Positioned(
-          right: -3,
-          bottom: -3,
-          child: Container(
-            width: 16,
-            height: 16,
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981),
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF0B1628), width: 2.5),
-            ),
-          ),
-        ),
-      ],
+    final avatarWidget = Tooltip(
+      message: isUr ? 'پروفائل اور تصویر تبدیل کریں' : 'Manage Profile & Photo',
+      child: CplUserAvatar(
+        user: user,
+        size: 64,
+        borderRadius: 16,
+        showOnlineDot: true,
+        showCplBadge: true,
+        onTap: () => context.read<CplSystemCubit>().setScreenIndex(11),
+      ),
     );
 
     final identityWidget = Column(
@@ -1082,62 +1030,81 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
       ),
     );
 
-    final actionsWidget = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        ElevatedButton.icon(
-          onPressed: () => context.read<CplSystemCubit>().logout(),
-          icon: const Icon(LucideIcons.logOut, size: 16),
-          label: Text(
-            isUr ? 'لاگ آؤٹ' : 'Logout',
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFDC2626),
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            elevation: 0,
-          ),
-        ),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: () {
-            context.read<CplSystemCubit>().loadLiveData();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  isUr
-                      ? 'لائیو پلانٹ ڈیٹا سنک ہو رہا ہے...'
-                      : 'Syncing live CPL metrics from gateway...',
-                ),
-                duration: const Duration(seconds: 1),
-                backgroundColor: CplColors.slate900,
-              ),
-            );
-          },
-          borderRadius: BorderRadius.circular(6),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(LucideIcons.refreshCw, size: 12, color: Color(0xFF94A3B8)),
-                const SizedBox(width: 5),
-                Text(
-                  isUr ? 'ڈیٹا ریفریش' : 'Sync Live Data',
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
+    final actionsWidget = IntrinsicWidth(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          OutlinedButton.icon(
+            onPressed: () => context.read<CplSystemCubit>().setScreenIndex(11),
+            icon: const Icon(LucideIcons.userCog, size: 14, color: Colors.white),
+            label: Text(
+              isUr ? 'پروفائل' : 'Edit Profile',
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Colors.white),
+            ),
+            style: OutlinedButton.styleFrom(
+              backgroundColor: Colors.white.withAlpha((0.08 * 255).round()),
+              side: BorderSide(color: Colors.white.withAlpha((0.22 * 255).round())),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: () => context.read<CplSystemCubit>().logout(),
+            icon: const Icon(LucideIcons.logOut, size: 14),
+            label: Text(
+              isUr ? 'لاگ آؤٹ' : 'Logout',
+              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFDC2626),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+              elevation: 0,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Center(
+            child: InkWell(
+              onTap: () {
+                context.read<CplSystemCubit>().loadLiveData();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      isUr
+                          ? 'لائیو پلانٹ ڈیٹا سنک ہو رہا ہے...'
+                          : 'Syncing live CPL metrics from gateway...',
+                    ),
+                    duration: const Duration(seconds: 1),
+                    backgroundColor: CplColors.slate900,
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(6),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(LucideIcons.refreshCw, size: 11, color: Color(0xFF94A3B8)),
+                    const SizedBox(width: 5),
+                    Text(
+                      isUr ? 'ڈیٹا ریفریش' : 'Sync Live Data',
+                      style: const TextStyle(
+                        color: Color(0xFF94A3B8),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
 
     return Container(
@@ -1160,16 +1127,16 @@ class _DesktopCommandCenterState extends State<DesktopCommandCenter> {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          if (constraints.maxWidth >= 900) {
+          if (constraints.maxWidth >= 960) {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 avatarWidget,
-                const SizedBox(width: 18),
-                Expanded(child: identityWidget),
-                const SizedBox(width: 20),
-                scoreCardWidget,
                 const SizedBox(width: 16),
+                Expanded(flex: 5, child: identityWidget),
+                const SizedBox(width: 14),
+                Flexible(flex: 4, child: scoreCardWidget),
+                const SizedBox(width: 14),
                 actionsWidget,
               ],
             );

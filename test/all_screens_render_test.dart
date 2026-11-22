@@ -14,6 +14,7 @@ import 'package:chiniot_power_hse/features/screens/alarm_center_screen.dart';
 import 'package:chiniot_power_hse/features/screens/training_screen.dart';
 import 'package:chiniot_power_hse/features/screens/roster_screen.dart';
 import 'package:chiniot_power_hse/features/screens/admin_panel_screen.dart';
+import 'package:chiniot_power_hse/features/screens/profile_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -86,6 +87,7 @@ void main() {
         'RosterScreen': const RosterScreen(),
         'AnalyticsScreen': const AnalyticsScreen(),
         'AdminPanelScreen': const AdminPanelScreen(),
+        'ProfileScreen': const ProfileScreen(),
       };
 
       for (final entry in screens.entries) {

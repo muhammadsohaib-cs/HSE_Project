@@ -706,6 +706,30 @@
       "isActive": true,
       "status": "Approved",
       "createdAt": "2026-11-20T18:58:38.311Z"
+    },
+    {
+      "id": "u-1795385835886",
+      "employeeId": "CPL-EMP-1111",
+      "empId": "CPL-EMP-1111",
+      "fullName": "msohaib",
+      "name": "msohaib",
+      "urduName": "msohaib",
+      "email": "sohaibdev001@gmail.com",
+      "passwordHash": "$2a$10$3osHCsQuOxBDfi9h7Y1l9Or82jh/N/rdL391jINj54J3KQ3eM.ysm",
+      "role": "Plant Worker",
+      "department": "Operations & Maintenance",
+      "shift": "Shift D (07:00 - 19:00 / 19:00 - 07:00)",
+      "cnic": "1234567801",
+      "plantZone": "Balance of Plant (BOP & Cooling Tower)",
+      "assignedZone": "Balance of Plant (BOP & Cooling Tower)",
+      "profileImageUrl": "/uploads/avatars/avatar-CPL-EMP-1111-1795385876360.jpg",
+      "isActive": true,
+      "status": "Approved",
+      "approvedBy": "Sumaira Rafique (HSE Manager) (muhammadsohaib.19477@gmail.com)",
+      "approvedAt": "2026-11-22T22:17:15.886Z",
+      "createdAt": "2026-11-22T22:16:07.121Z",
+      "updatedAt": "2026-11-22T22:18:08.330Z",
+      "zone": "Balance of Plant (BOP & Cooling Tower)"
     }
   ],
   "checklistTemplates": [
@@ -1349,6 +1373,29 @@
   ],
   "hazards": [
     {
+      "id": "26-CPL-485",
+      "nmNumber": "26-CPL-485",
+      "title": "Steam Leak Alert — Boiler Area (Unit 1 & 2)",
+      "zone": "Boiler Area (Unit 1 & 2)",
+      "severity": "High",
+      "probability": 3,
+      "score": 12,
+      "reporter": "Sumaira Rafique (CPL-EMP-3648)",
+      "reporterId": "CPL-EMP-3648",
+      "status": "Open",
+      "time": "Just now",
+      "coords": "31.7204° N, 72.9791° E",
+      "observationType": "Unsafe Condition",
+      "categoryType": "Steam Leak",
+      "responsibleTeam": "MMD / HSE",
+      "suggestion": "Immediate engineering inspection and isolation required.",
+      "photoUrl": null,
+      "voiceNoteUrl": null,
+      "correctiveAction": "Immediate engineering inspection and isolation required.",
+      "assignedTo": "MMD / HSE",
+      "createdAt": "2026-11-22T21:41:04.591Z"
+    },
+    {
       "id": "26-CPL-474",
       "nmNumber": "26-CPL-474",
       "title": "Monitor lizard wandering near CPL colony plant-side gate posing venomous bite risk",
@@ -1946,9 +1993,474 @@
       "shoes": true,
       "gloves": true,
       "ear": true
+    },
+    {
+      "empId": "CPL-EMP-1111",
+      "name": "msohaib",
+      "ur": "msohaib",
+      "role": "Plant Worker",
+      "designation": "Plant Worker",
+      "shift": "Shift D",
+      "zone": "Balance of Plant (BOP & Cooling Tower)",
+      "attendanceStatus": "D",
+      "nightsPerformed": 0,
+      "helmet": true,
+      "shoes": true,
+      "gloves": true,
+      "ear": true
     }
   ],
   "auditLogs": [
+    {
+      "id": "LOG-1795386865390-631",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "USER_LOGIN",
+      "targetResource": "Balance of Plant (BOP & Cooling Tower)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:34:25.390Z",
+      "details": "Staff member CPL-EMP-1111 (msohaib) authenticated via CPL Backend Gateway."
+    },
+    {
+      "id": "LOG-1795386864933-322",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "USER_LOGIN",
+      "targetResource": "Balance of Plant (BOP & Cooling Tower)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:34:24.933Z",
+      "details": "Employee CPL-EMP-1111 (msohaib - Plant Worker) signed in."
+    },
+    {
+      "id": "LOG-1795386723971-123",
+      "actorId": "CPL-EMP-2222",
+      "actorRole": "Safety Officer",
+      "action": "STAFF_REGISTRATION_REQUESTED",
+      "targetResource": "Boiler Area (Unit 1 & 2)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:32:03.971Z",
+      "details": "Registration request saved as Pending for rohaan (CPL-EMP-2222), but Gmail SMTP delivery failed: Gmail SMTP is not configured. Set SMTP_USER and a 16-character Google App Password (SMTP_PASS) in backend/.env or Admin Control Panel -> Email Rules."
+    },
+    {
+      "id": "LOG-1795386681676-763",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "USER_LOGOUT",
+      "targetResource": "Balance of Plant (BOP & Cooling Tower)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:31:21.676Z",
+      "details": "Employee CPL-EMP-1111 signed out cleanly."
+    },
+    {
+      "id": "LOG-1795386681657-148",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "USER_LOGOUT",
+      "targetResource": "Balance of Plant (BOP & Cooling Tower)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:31:21.657Z",
+      "details": "Employee CPL-EMP-1111 signed out."
+    },
+    {
+      "id": "LOG-1795386600854-267",
+      "actorId": "CPL-EMP-7777",
+      "actorRole": "Plant Worker",
+      "action": "STAFF_REGISTRATION_REQUESTED",
+      "targetResource": "Boiler Area (Unit 1 & 2)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:30:00.854Z",
+      "details": "Registration request saved as Pending for Security Test User (CPL-EMP-7777), but Gmail SMTP delivery failed: Gmail SMTP is not configured. Set SMTP_USER and a 16-character Google App Password (SMTP_PASS) in backend/.env or Admin Control Panel -> Email Rules."
+    },
+    {
+      "id": "LOG-1795385933191-212",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "USER_LOGIN",
+      "targetResource": "Balance of Plant (BOP & Cooling Tower)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:18:53.191Z",
+      "details": "Staff member CPL-EMP-1111 (msohaib) authenticated via CPL Backend Gateway."
+    },
+    {
+      "id": "LOG-1795385933154-641",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "USER_LOGIN",
+      "targetResource": "Balance of Plant (BOP & Cooling Tower)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:18:53.154Z",
+      "details": "Employee CPL-EMP-1111 (msohaib - Plant Worker) signed in."
+    },
+    {
+      "id": "LOG-1795385888360-250",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "USER_PROFILE_UPDATED",
+      "targetResource": "CPL-EMP-1111",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:18:08.360Z",
+      "details": "Updated profile details for CPL-EMP-1111 (msohaib)."
+    },
+    {
+      "id": "LOG-1795385888342-320",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "USER_PROFILE_UPDATED",
+      "targetResource": "CPL-EMP-1111",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:18:08.342Z",
+      "details": "Employee CPL-EMP-1111 updated profile details (msohaib, Balance of Plant (BOP & Cooling Tower))."
+    },
+    {
+      "id": "LOG-1795385876390-571",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "USER_AVATAR_UPDATED",
+      "targetResource": "CPL-EMP-1111",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:17:56.390Z",
+      "details": "Updated profile avatar for CPL-EMP-1111."
+    },
+    {
+      "id": "LOG-1795385876367-697",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "USER_AVATAR_UPDATED",
+      "targetResource": "CPL-EMP-1111",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:17:56.367Z",
+      "details": "Employee CPL-EMP-1111 updated profile photo (/uploads/avatars/avatar-CPL-EMP-1111-1795385876360.jpg)."
+    },
+    {
+      "id": "LOG-1795385858728-325",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "USER_LOGIN",
+      "targetResource": "Balance of Plant (BOP & Cooling Tower)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:17:38.728Z",
+      "details": "Staff member CPL-EMP-1111 (msohaib) authenticated via CPL Backend Gateway."
+    },
+    {
+      "id": "LOG-1795385858695-579",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "USER_LOGIN",
+      "targetResource": "Balance of Plant (BOP & Cooling Tower)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:17:38.695Z",
+      "details": "Employee CPL-EMP-1111 (msohaib - Plant Worker) signed in."
+    },
+    {
+      "id": "LOG-1795385769548-540",
+      "actorId": "SYSTEM",
+      "actorRole": "worker",
+      "action": "STAFF_SIGNUP_PENDING",
+      "targetResource": "CPL-EMP-1111",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:16:09.548Z",
+      "details": "Employee msohaib (CPL-EMP-1111) submitted registration for Plant Worker (Balance of Plant (BOP & Cooling Tower)). Awaiting HSE Manager approval."
+    },
+    {
+      "id": "LOG-1795385769406-755",
+      "actorId": "CPL-EMP-1111",
+      "actorRole": "Plant Worker",
+      "action": "STAFF_REGISTRATION_REQUESTED",
+      "targetResource": "Balance of Plant (BOP & Cooling Tower)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:16:09.406Z",
+      "details": "Registration request submitted for msohaib (CPL-EMP-1111). Approval email sent to HSE Manager (muhammadsohaib.19477@gmail.com) via ethereal-smtp-preview."
+    },
+    {
+      "id": "LOG-1795385717046-779",
+      "actorId": "CPL-EMP-3648",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGOUT",
+      "targetResource": "Central Control Room (CCR)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:15:17.046Z",
+      "details": "Employee CPL-EMP-3648 signed out cleanly."
+    },
+    {
+      "id": "LOG-1795385717033-782",
+      "actorId": "CPL-EMP-3648",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGOUT",
+      "targetResource": "Central Control Room (CCR)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:15:17.033Z",
+      "details": "Employee CPL-EMP-3648 signed out."
+    },
+    {
+      "id": "LOG-1795384959837-380",
+      "actorId": "CPL-EMP-9988",
+      "actorRole": "Safety Officer",
+      "action": "USER_LOGIN",
+      "targetResource": "Boiler Area (Unit 1 & 2)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:02:39.837Z",
+      "details": "Employee CPL-EMP-9988 (Muhammad Sohaib Updated - Safety Officer) signed in."
+    },
+    {
+      "id": "LOG-1795384959762-815",
+      "actorId": "CPL-EMP-9988",
+      "actorRole": "Safety Officer",
+      "action": "USER_PASSWORD_CHANGED",
+      "targetResource": "CPL-EMP-9988",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:02:39.762Z",
+      "details": "Employee CPL-EMP-9988 changed account password securely."
+    },
+    {
+      "id": "LOG-1795384959615-601",
+      "actorId": "CPL-EMP-9988",
+      "actorRole": "Safety Officer",
+      "action": "USER_AVATAR_UPDATED",
+      "targetResource": "CPL-EMP-9988",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:02:39.615Z",
+      "details": "Employee CPL-EMP-9988 updated profile photo (/uploads/avatars/avatar-CPL-EMP-9988-1795384959609.png)."
+    },
+    {
+      "id": "LOG-1795384959599-493",
+      "actorId": "CPL-EMP-9988",
+      "actorRole": "Safety Officer",
+      "action": "USER_PROFILE_UPDATED",
+      "targetResource": "CPL-EMP-9988",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:02:39.599Z",
+      "details": "Employee CPL-EMP-9988 updated profile details (Muhammad Sohaib Updated, Boiler Area (Unit 1 & 2))."
+    },
+    {
+      "id": "LOG-1795384959574-890",
+      "actorId": "CPL-EMP-9988",
+      "actorRole": "Safety Officer",
+      "action": "USER_LOGIN",
+      "targetResource": "Boiler Area (Unit 1 & 2)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:02:39.574Z",
+      "details": "Employee CPL-EMP-9988 (Muhammad Sohaib Test - Safety Officer) signed in."
+    },
+    {
+      "id": "LOG-1795384959393-895",
+      "actorId": "CPL-EMP-9988",
+      "actorRole": "Safety Officer",
+      "action": "STAFF_REGISTRATION_REQUESTED",
+      "targetResource": "Boiler Area (Unit 1 & 2)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T22:02:39.393Z",
+      "details": "Registration request submitted for Muhammad Sohaib Test (CPL-EMP-9988). Approval email sent to HSE Manager (muhammadsohaib.19477@gmail.com) via ethereal-smtp-preview."
+    },
+    {
+      "id": "LOG-1795384092375-892",
+      "actorId": "CPL-EMP-3648",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGIN",
+      "targetResource": "Central Control Room (CCR)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T21:48:12.375Z",
+      "details": "Staff member CPL-EMP-3648 (Sumaira Rafique) authenticated via CPL Backend Gateway."
+    },
+    {
+      "id": "LOG-1795384092109-791",
+      "actorId": "CPL-EMP-3648",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGIN",
+      "targetResource": "Central Control Room (CCR)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T21:48:12.109Z",
+      "details": "Employee CPL-EMP-3648 (Sumaira Rafique - HSE Manager) authenticated successfully."
+    },
+    {
+      "id": "LOG-1795383783562-284",
+      "actorId": "CPL-EMP-3648",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGOUT",
+      "targetResource": "Central Control Room (CCR)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T21:43:03.562Z",
+      "details": "Employee CPL-EMP-3648 signed out."
+    },
+    {
+      "id": "LOG-1795383664598-297",
+      "actorId": "CPL-EMP-3648",
+      "actorRole": "worker",
+      "action": "HAZARD_REPORTED",
+      "targetResource": "26-CPL-485",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T21:41:04.598Z",
+      "details": "New High severity hazard logged: \"Steam Leak Alert — Boiler Area (Unit 1 & 2)\" at Boiler Area (Unit 1 & 2). Score: 12/25."
+    },
+    {
+      "id": "LOG-1795383664574-555",
+      "actorId": "CPL-EMP-3648",
+      "actorRole": "HSE Manager",
+      "action": "HAZARD_REPORTED",
+      "targetResource": "26-CPL-485",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T21:41:04.574Z",
+      "details": "High hazard (26-CPL-485): \"Steam Leak Alert — Boiler Area (Unit 1 & 2)\" reported at Boiler Area (Unit 1 & 2). Geotagged: 31.7204° N, 72.9791° E."
+    },
+    {
+      "id": "LOG-1795383579558-91",
+      "actorId": "CPL-EMP-3648",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGIN",
+      "targetResource": "Central Control Room (CCR)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T21:39:39.558Z",
+      "details": "Staff member CPL-EMP-3648 (Sumaira Rafique) authenticated via CPL Backend Gateway."
+    },
+    {
+      "id": "LOG-1795383579083-720",
+      "actorId": "CPL-EMP-3648",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGIN",
+      "targetResource": "Central Control Room (CCR)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-22T21:39:39.083Z",
+      "details": "Employee CPL-EMP-3648 (Sumaira Rafique - HSE Manager) authenticated successfully."
+    },
+    {
+      "id": "LOG-1795243102208-403",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "admin",
+      "action": "EMERGENCY_ALARM_ALL_CLEAR",
+      "targetResource": "PLANT_WIDE",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:22.208Z",
+      "details": "All-Clear Drill issued. Active siren \"FIRE ALARM: BAGASSE & BOILER\" silenced. Site inspected and declared safe."
+    },
+    {
+      "id": "LOG-1795243102171-377",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "Plant Worker",
+      "action": "PLANT_SIREN_ALL_CLEAR",
+      "targetResource": "PLANT_WIDE",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:22.171Z",
+      "details": "All-clear drill confirmed. Siren silenced by Muhammad Imran Khan."
+    },
+    {
+      "id": "LOG-1795243101026-926",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "Plant Worker",
+      "action": "REALTIME_ALARM_RECEIVED",
+      "targetResource": "SIREN_BROADCAST",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:21.026Z",
+      "details": "Real-time emergency siren broadcast received from server: \"FIRE ALARM: BAGASSE & BOILER\"."
+    },
+    {
+      "id": "LOG-1795243100829-724",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "inspector",
+      "action": "EMERGENCY_ALARM_ACTIVATED",
+      "targetResource": "ALM-0813",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:20.829Z",
+      "details": "Plant emergency siren triggered: \"FIRE ALARM: BAGASSE & BOILER\". Automatic email dispatches sent to Rescue 1122 and plant executives."
+    },
+    {
+      "id": "LOG-1795243100791-452",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "Plant Worker",
+      "action": "PLANT_SIREN_TRIGGERED",
+      "targetResource": "PLANT_WIDE",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:20.791Z",
+      "details": "CRITICAL SIREN: \"FIRE ALARM: BAGASSE & BOILER\" activated by Muhammad Imran Khan. Evacuation broadcast triggered."
+    },
+    {
+      "id": "LOG-1795243097716-16",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "admin",
+      "action": "EMERGENCY_ALARM_ALL_CLEAR",
+      "targetResource": "PLANT_WIDE",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:17.716Z",
+      "details": "All-Clear Drill issued. Active siren \"FIRE ALARM: BAGASSE & BOILER\" silenced. Site inspected and declared safe."
+    },
+    {
+      "id": "LOG-1795243097671-751",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "Plant Worker",
+      "action": "PLANT_SIREN_ALL_CLEAR",
+      "targetResource": "PLANT_WIDE",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:17.671Z",
+      "details": "All-clear drill confirmed. Siren silenced by Muhammad Imran Khan."
+    },
+    {
+      "id": "LOG-1795243094183-117",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "Plant Worker",
+      "action": "REALTIME_ALARM_RECEIVED",
+      "targetResource": "SIREN_BROADCAST",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:14.183Z",
+      "details": "Real-time emergency siren broadcast received from server: \"FIRE ALARM: BAGASSE & BOILER\"."
+    },
+    {
+      "id": "LOG-1795243093998-356",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "inspector",
+      "action": "EMERGENCY_ALARM_ACTIVATED",
+      "targetResource": "ALM-3978",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:13.998Z",
+      "details": "Plant emergency siren triggered: \"FIRE ALARM: BAGASSE & BOILER\". Automatic email dispatches sent to Rescue 1122 and plant executives."
+    },
+    {
+      "id": "LOG-1795243093955-645",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "Plant Worker",
+      "action": "PLANT_SIREN_TRIGGERED",
+      "targetResource": "PLANT_WIDE",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:13.955Z",
+      "details": "CRITICAL SIREN: \"FIRE ALARM: BAGASSE & BOILER\" activated by Muhammad Imran Khan. Evacuation broadcast triggered."
+    },
+    {
+      "id": "LOG-1795243086212-728",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "Plant Worker",
+      "action": "QR_TOOLBOX_ATTENDANCE",
+      "targetResource": "TRN-TOOLBOX-SHIFT-A",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:06.212Z",
+      "details": "Worker Muhammad Imran Khan verified TBT attendance via dynamic QR code."
+    },
+    {
+      "id": "LOG-1795243085023-812",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "Plant Worker",
+      "action": "QR_TOOLBOX_ATTENDANCE",
+      "targetResource": "TRN-TOOLBOX-SHIFT-A",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:05.023Z",
+      "details": "Worker Muhammad Imran Khan verified TBT attendance via dynamic QR code."
+    },
+    {
+      "id": "LOG-1795243083789-305",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "Plant Worker",
+      "action": "QR_TOOLBOX_ATTENDANCE",
+      "targetResource": "TRN-TOOLBOX-SHIFT-A",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:38:03.789Z",
+      "details": "Worker Muhammad Imran Khan verified TBT attendance via dynamic QR code."
+    },
+    {
+      "id": "LOG-1795243079295-733",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "Plant Worker",
+      "action": "QR_TOOLBOX_ATTENDANCE",
+      "targetResource": "TRN-TOOLBOX-SHIFT-A",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-21T06:37:59.295Z",
+      "details": "Worker Muhammad Imran Khan verified TBT attendance via dynamic QR code."
+    },
     {
       "id": "LOG-1795201128766-584",
       "actorId": "CPL-EMP-1234",
@@ -2792,6 +3304,26 @@
   ],
   "alarms": [
     {
+      "id": "ALM-0813",
+      "title": "FIRE ALARM: BAGASSE & BOILER",
+      "zone": "Plant-Wide (Boiler & Grid)",
+      "severity": "critical",
+      "triggeredBy": "CPL-EMP-1234",
+      "timestamp": "2026-11-21T06:38:20.813Z",
+      "coords": "31.7204° N, 72.9791° E",
+      "isAcknowledged": false
+    },
+    {
+      "id": "ALM-3978",
+      "title": "FIRE ALARM: BAGASSE & BOILER",
+      "zone": "Plant-Wide (Boiler & Grid)",
+      "severity": "critical",
+      "triggeredBy": "CPL-EMP-1234",
+      "timestamp": "2026-11-21T06:38:13.978Z",
+      "coords": "31.7204° N, 72.9791° E",
+      "isAcknowledged": false
+    },
+    {
       "id": "ALM-9022",
       "title": "TEST STEAM FLANGE BLOWOUT",
       "zone": "Boiler House Unit-1",
@@ -2813,6 +3345,69 @@
     }
   ],
   "emailLogs": [
+    {
+      "id": "EML-23953",
+      "to": "muhammadsohaib.19477@gmail.com",
+      "subject": "[CPL HSE Approval Required] New Account Request: rohaan (CPL-EMP-2222)",
+      "status": "Failed (Gmail SMTP is not configured. Set SMTP_USER and a 16-character Google App Password (SMTP_PASS) in backend/.env or Admin Control Panel -> Email Rules.)",
+      "timestamp": "2026-11-22T22:32:03.888Z"
+    },
+    {
+      "id": "EML-69394",
+      "to": "muhammadsohaib.19477@gmail.com",
+      "subject": "[CPL HSE Approval Required] New Account Request: msohaib (CPL-EMP-1111)",
+      "status": "Sent (ethereal-smtp-preview)",
+      "timestamp": "2026-11-22T22:16:07.121Z"
+    },
+    {
+      "id": "EML-59386",
+      "to": "muhammadsohaib.19477@gmail.com",
+      "subject": "[CPL HSE Approval Required] New Account Request: Muhammad Sohaib Test (CPL-EMP-9988)",
+      "status": "Sent (ethereal-smtp-preview)",
+      "timestamp": "2026-11-22T22:02:36.171Z"
+    },
+    {
+      "id": "EML-813-2",
+      "to": "rescue1122.chiniot@punjab.gov.pk",
+      "subject": "[CRITICAL SIREN ALERT] FIRE ALARM: BAGASSE & BOILER at Plant-Wide (Boiler & Grid)",
+      "status": "Sent (SMTP Intranet Gateway)",
+      "timestamp": "2026-11-21T06:38:20.813Z"
+    },
+    {
+      "id": "EML-813-33",
+      "to": "hse.head@chiniotpower.com",
+      "subject": "[CRITICAL SIREN ALERT] FIRE ALARM: BAGASSE & BOILER at Plant-Wide (Boiler & Grid)",
+      "status": "Sent (SMTP Intranet Gateway)",
+      "timestamp": "2026-11-21T06:38:20.813Z"
+    },
+    {
+      "id": "EML-813-80",
+      "to": "plant.manager@chiniotpower.com",
+      "subject": "[CRITICAL SIREN ALERT] FIRE ALARM: BAGASSE & BOILER at Plant-Wide (Boiler & Grid)",
+      "status": "Sent (SMTP Intranet Gateway)",
+      "timestamp": "2026-11-21T06:38:20.813Z"
+    },
+    {
+      "id": "EML-978-80",
+      "to": "rescue1122.chiniot@punjab.gov.pk",
+      "subject": "[CRITICAL SIREN ALERT] FIRE ALARM: BAGASSE & BOILER at Plant-Wide (Boiler & Grid)",
+      "status": "Sent (SMTP Intranet Gateway)",
+      "timestamp": "2026-11-21T06:38:13.978Z"
+    },
+    {
+      "id": "EML-978-86",
+      "to": "hse.head@chiniotpower.com",
+      "subject": "[CRITICAL SIREN ALERT] FIRE ALARM: BAGASSE & BOILER at Plant-Wide (Boiler & Grid)",
+      "status": "Sent (SMTP Intranet Gateway)",
+      "timestamp": "2026-11-21T06:38:13.978Z"
+    },
+    {
+      "id": "EML-978-19",
+      "to": "plant.manager@chiniotpower.com",
+      "subject": "[CRITICAL SIREN ALERT] FIRE ALARM: BAGASSE & BOILER at Plant-Wide (Boiler & Grid)",
+      "status": "Sent (SMTP Intranet Gateway)",
+      "timestamp": "2026-11-21T06:38:13.978Z"
+    },
     {
       "id": "EML-023-42",
       "to": "rescue1122.chiniot@punjab.gov.pk",
@@ -2865,6 +3460,42 @@
   ],
   "activeAlarm": null,
   "pendingUsers": [
+    {
+      "empId": "CPL-EMP-2222",
+      "name": "rohaan",
+      "fullName": "rohaan",
+      "urduName": "rohaan",
+      "email": "rohaan@gmail.com",
+      "cnic": "222222222",
+      "role": "Safety Officer",
+      "shift": "Shift D (07:00 - 19:00 / 19:00 - 07:00)",
+      "passwordHash": "$2a$10$p21Al2YHkqEQ20mqnHckWu.Ksw2HT70HS1jhgyHpLQQO79IGSIPFq",
+      "zone": "Boiler Area (Unit 1 & 2)",
+      "assignedZone": "Boiler Area (Unit 1 & 2)",
+      "status": "Pending",
+      "approvalToken": "fbf7203ee453431ecc4ec82a24583e58665e59b831f2ec075989ab3a39e8df59",
+      "approverEmail": "muhammadsohaib.19477@gmail.com",
+      "createdAt": "2026-11-22T22:32:03.888Z"
+    },
+    {
+      "empId": "CPL-EMP-1111",
+      "name": "msohaib",
+      "fullName": "msohaib",
+      "urduName": "msohaib",
+      "email": "sohaibdev001@gmail.com",
+      "cnic": "1234567801",
+      "role": "Plant Worker",
+      "shift": "Shift D (07:00 - 19:00 / 19:00 - 07:00)",
+      "passwordHash": "$2a$10$3osHCsQuOxBDfi9h7Y1l9Or82jh/N/rdL391jINj54J3KQ3eM.ysm",
+      "zone": "Balance of Plant (BOP & Cooling Tower)",
+      "assignedZone": "Balance of Plant (BOP & Cooling Tower)",
+      "status": "Approved",
+      "approvalToken": "c9cd516a2ce3e13b51476c35cf61de4ab3863016c0289dcc",
+      "approverEmail": "muhammadsohaib.19477@gmail.com",
+      "createdAt": "2026-11-22T22:16:07.121Z",
+      "approvedBy": "Sumaira Rafique (HSE Manager) (muhammadsohaib.19477@gmail.com)",
+      "approvedAt": "2026-11-22T22:17:15.886Z"
+    },
     {
       "empId": "CPL-EMP-1234",
       "name": "Muhammad Imran Khan",

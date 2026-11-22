@@ -8,6 +8,8 @@ class UserSession extends Equatable {
   final String shift;
   final String cnic;
   final String zone;
+  final String email;
+  final String? profileImageUrl;
 
   const UserSession({
     required this.empId,
@@ -17,6 +19,8 @@ class UserSession extends Equatable {
     required this.shift,
     required this.cnic,
     required this.zone,
+    this.email = '',
+    this.profileImageUrl,
   });
 
   static const UserSession empty = UserSession(
@@ -27,6 +31,8 @@ class UserSession extends Equatable {
     shift: '',
     cnic: '',
     zone: '',
+    email: '',
+    profileImageUrl: null,
   );
 
   bool get isEmpty => empId.trim().isEmpty;
@@ -40,6 +46,8 @@ class UserSession extends Equatable {
     String? shift,
     String? cnic,
     String? zone,
+    String? email,
+    String? Function()? profileImageUrl,
   }) {
     return UserSession(
       empId: empId ?? this.empId,
@@ -49,6 +57,8 @@ class UserSession extends Equatable {
       shift: shift ?? this.shift,
       cnic: cnic ?? this.cnic,
       zone: zone ?? this.zone,
+      email: email ?? this.email,
+      profileImageUrl: profileImageUrl != null ? profileImageUrl() : this.profileImageUrl,
     );
   }
 
@@ -60,25 +70,31 @@ class UserSession extends Equatable {
     'fullName': name,
     'name': name,
     'urduName': urduName,
+    'email': email,
     'role': role,
     'shift': shift,
     'cnic': cnic,
     'assignedZone': zone,
     'zone': zone,
+    'profileImageUrl': profileImageUrl,
   };
 
   factory UserSession.fromJson(Map<String, dynamic> json) => UserSession(
     empId: (json['empId'] ?? json['employeeId'] ?? 'CPL-EMP-XXXX').toString().toUpperCase(),
     name: json['fullName'] ?? json['name'] ?? 'CPL Staff',
     urduName: json['urduName'] ?? json['fullName'] ?? json['name'] ?? 'سٹاف',
+    email: (json['email'] ?? '').toString(),
     role: json['role'] ?? 'Plant Worker',
     shift: json['shift'] ?? 'Shift A: Morning',
     cnic: json['cnic'] ?? '33202-0000000-0',
-    zone: json['assignedZone'] ?? json['zone'] ?? json['plantZone'] ?? 'Boiler House Unit-1',
+    zone: json['assignedZone'] ?? json['zone'] ?? json['plantZone'] ?? 'Boiler Area (Unit 1 & 2)',
+    profileImageUrl: (json['profileImageUrl'] != null && json['profileImageUrl'].toString().trim().isNotEmpty)
+        ? json['profileImageUrl'].toString().trim()
+        : null,
   );
 
   @override
-  List<Object?> get props => [empId, name, urduName, role, shift, cnic, zone];
+  List<Object?> get props => [empId, name, urduName, email, role, shift, cnic, zone, profileImageUrl];
 }
 
 class PlantZone extends Equatable {
@@ -614,16 +630,18 @@ class WorkerRosterItem extends Equatable {
 class PendingUserRegistration extends Equatable {
   final String empId;
   final String name;
+  final String email;
   final String cnic;
   final String role;
   final String shift;
-  final String status; // 'Pending', 'Approved', 'Blocked'
+  final String status; // 'Pending', 'Approved', 'Rejected', 'Blocked'
   final String? pin;
   final String? zone;
 
   const PendingUserRegistration({
     required this.empId,
     required this.name,
+    this.email = '',
     required this.cnic,
     required this.role,
     required this.shift,
@@ -637,12 +655,14 @@ class PendingUserRegistration extends Equatable {
     String? pin,
     String? zone,
     String? name,
+    String? email,
     String? role,
     String? shift,
   }) {
     return PendingUserRegistration(
       empId: empId,
       name: name ?? this.name,
+      email: email ?? this.email,
       cnic: cnic,
       role: role ?? this.role,
       shift: shift ?? this.shift,
@@ -655,6 +675,7 @@ class PendingUserRegistration extends Equatable {
   Map<String, dynamic> toJson() => {
     'empId': empId,
     'name': name,
+    'email': email,
     'cnic': cnic,
     'role': role,
     'shift': shift,
@@ -666,16 +687,17 @@ class PendingUserRegistration extends Equatable {
   factory PendingUserRegistration.fromJson(Map<String, dynamic> json) => PendingUserRegistration(
     empId: (json['empId'] ?? json['employeeId'] ?? '').toString().toUpperCase(),
     name: json['fullName'] ?? json['name'] ?? '',
+    email: (json['email'] ?? '').toString(),
     cnic: json['cnic'] ?? '',
     role: json['role'] ?? 'Plant Worker',
     shift: json['shift'] ?? 'Shift A',
     status: json['status'] ?? 'Pending',
     pin: json['pin']?.toString(),
-    zone: json['assignedZone'] ?? json['zone'] ?? json['plantZone'] ?? 'Boiler House Unit-1',
+    zone: json['assignedZone'] ?? json['zone'] ?? json['plantZone'] ?? 'Boiler Area (Unit 1 & 2)',
   );
 
   @override
-  List<Object?> get props => [empId, name, cnic, role, shift, status, pin, zone];
+  List<Object?> get props => [empId, name, email, cnic, role, shift, status, pin, zone];
 }
 
 class AuditLogItem extends Equatable {
