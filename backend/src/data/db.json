@@ -2012,6 +2012,166 @@
   ],
   "auditLogs": [
     {
+      "id": "LOG-1795509150751-676",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "worker",
+      "action": "CHECKLIST_SUBMITTED",
+      "targetResource": "AUD-0744",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:32:30.751Z",
+      "details": "Shift checklist AUD-0744 submitted for Boiler Area (Unit 1 & 2). Pass: 7, Fail: 0, Compliance: 100.0%."
+    },
+    {
+      "id": "LOG-1795509150725-654",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "CHECKLIST_SUBMITTED",
+      "targetResource": "AUD-150638",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:32:30.725Z",
+      "details": "Fire Extinguishers Inspection Checklist submitted for Boiler Area (Unit 1 & 2). Pass: 7, Fail: 0 (100.0%)."
+    },
+    {
+      "id": "LOG-1795509149602-83",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "CHECKLIST_DIGITAL_SIGNATURE",
+      "targetResource": "Boiler Area (Unit 1 & 2)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:32:29.602Z",
+      "details": "Operator Engr. Tariq Khan digitally verified and locked shift audit."
+    },
+    {
+      "id": "LOG-1795509145687-932",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "DEFECT_AUTO_CAPA",
+      "targetResource": "HAZ-AUTO-590",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:32:25.687Z",
+      "details": "Defect flagged in Checkpoint #3. Auto-CAPA dispatched."
+    },
+    {
+      "id": "LOG-1795509099770-889",
+      "actorId": "CP-EMP-1042",
+      "actorRole": "inspector",
+      "action": "PPE_STATUS_CHANGE",
+      "targetResource": "CPL-EMP-0509",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:31:39.770Z",
+      "details": "Worker CPL-EMP-0509 PPE 'shoes' toggled to true."
+    },
+    {
+      "id": "LOG-1795509099742-329",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "PPE_VERIFICATION",
+      "targetResource": "CPL-EMP-0509",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:31:39.742Z",
+      "details": "Worker CPL-EMP-0509 PPE (shoes) verified."
+    },
+    {
+      "id": "LOG-1795509098935-4",
+      "actorId": "CP-EMP-1042",
+      "actorRole": "inspector",
+      "action": "PPE_STATUS_CHANGE",
+      "targetResource": "CPL-EMP-0509",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:31:38.935Z",
+      "details": "Worker CPL-EMP-0509 PPE 'helmet' toggled to true."
+    },
+    {
+      "id": "LOG-1795509098910-501",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "PPE_VERIFICATION",
+      "targetResource": "CPL-EMP-0509",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:31:38.910Z",
+      "details": "Worker CPL-EMP-0509 PPE (helmet) verified."
+    },
+    {
+      "id": "LOG-1795509097765-993",
+      "actorId": "CP-EMP-1042",
+      "actorRole": "inspector",
+      "action": "PPE_STATUS_CHANGE",
+      "targetResource": "CPL-EMP-0509",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:31:37.765Z",
+      "details": "Worker CPL-EMP-0509 PPE 'shoes' toggled to false."
+    },
+    {
+      "id": "LOG-1795509097740-315",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "PPE_VERIFICATION",
+      "targetResource": "CPL-EMP-0509",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:31:37.740Z",
+      "details": "Worker CPL-EMP-0509 PPE (shoes) verified."
+    },
+    {
+      "id": "LOG-1795509096522-734",
+      "actorId": "CP-EMP-1042",
+      "actorRole": "inspector",
+      "action": "PPE_STATUS_CHANGE",
+      "targetResource": "CPL-EMP-0509",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:31:36.522Z",
+      "details": "Worker CPL-EMP-0509 PPE 'helmet' toggled to false."
+    },
+    {
+      "id": "LOG-1795509096497-229",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "PPE_VERIFICATION",
+      "targetResource": "CPL-EMP-0509",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:31:36.497Z",
+      "details": "Worker CPL-EMP-0509 PPE (helmet) verified."
+    },
+    {
+      "id": "LOG-1795509025478-894",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGIN",
+      "targetResource": "Plant Headquarters",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:30:25.478Z",
+      "details": "Staff member CPL-EMP-1001 (Engr. Tariq Khan) authenticated via CPL Backend Gateway."
+    },
+    {
+      "id": "LOG-1795509025427-399",
+      "actorId": "CP-EMP-1001",
+      "actorRole": "HSE Manager",
+      "action": "USER_LOGIN",
+      "targetResource": "Plant Headquarters",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:30:25.427Z",
+      "details": "Employee CP-EMP-1001 (Engr. Tariq Khan - HSE Manager) signed in."
+    },
+    {
+      "id": "LOG-1795508877119-407",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "Plant Worker",
+      "action": "USER_LOGOUT",
+      "targetResource": "Bagasse Piling & Shredder (BPL / RSML)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:27:57.119Z",
+      "details": "Employee CPL-EMP-1234 signed out cleanly."
+    },
+    {
+      "id": "LOG-1795508877100-694",
+      "actorId": "CPL-EMP-1234",
+      "actorRole": "Plant Worker",
+      "action": "USER_LOGOUT",
+      "targetResource": "Bagasse Piling & Shredder (BPL / RSML)",
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:27:57.100Z",
+      "details": "Employee CPL-EMP-1234 signed out."
+    },
+    {
       "id": "LOG-1795386865390-631",
       "actorId": "CPL-EMP-1111",
       "actorRole": "Plant Worker",
@@ -3600,6 +3760,79 @@
     }
   ],
   "checklistAudits": [
+    {
+      "id": "AUD-0744",
+      "templateId": "CPL-HSEFEIC-01",
+      "plantZone": "Boiler Area (Unit 1 & 2)",
+      "shiftType": "Shift A: Morning (06:00 - 14:00)",
+      "inspectorId": "CP-EMP-1001",
+      "inspectorName": "Engr. Tariq Khan",
+      "completionRate": 100,
+      "passCount": 7,
+      "failCount": 0,
+      "items": [
+        {
+          "id": 1,
+          "en": "Pressure Gauge: Needle in green zone, no glass crack or damage",
+          "ur": "پریشر گیج: سوئی سبز زون میں، شیشہ درست اور کوئی نقصان نہیں",
+          "status": "pass",
+          "standard": "Needle in operational green sector; undamaged dial glass",
+          "category": ""
+        },
+        {
+          "id": 2,
+          "en": "Safety Pin & Tamper Seal: Pin intact, wire lead seal unbroken",
+          "ur": "سیفٹی پن اور سیل: پن موجود، سیل بند اور درست حالت میں",
+          "status": "pass",
+          "standard": "Lock pin and plastic/lead tamper seal in place and undamaged",
+          "category": ""
+        },
+        {
+          "id": 3,
+          "en": "Discharge Hose & Horn/Nozzle: Free of cracks, rust, blockage or dry rot",
+          "ur": "ڈسچارج ہوز اور نوزل: کوئی دراڑ، زنگ یا رکاوٹ موجود نہیں",
+          "status": "pass",
+          "standard": "Clean rubber hose, flexible, discharge horn securely clamped",
+          "category": ""
+        },
+        {
+          "id": 4,
+          "en": "Operating Handle & Lever: Smooth action, no rust, bending or deformation",
+          "ur": "ہینڈل اور لیور: بغیر زنگ یا ٹیڑھے پن کے آسانی سے دبنے کے قابل",
+          "status": "pass",
+          "standard": "Easy to grip, smooth actuation lever, anti-corrosion coating intact",
+          "category": ""
+        },
+        {
+          "id": 5,
+          "en": "Cylinder Body & Shell: No dents, deep scratches, chemical corrosion or peeling",
+          "ur": "سلنڈر کی باڈی: زنگ، ڈینٹ یا باڈی کو نقصان سے پاک",
+          "status": "pass",
+          "standard": "Zero rust, red epoxy powder coat intact, hydro-test date within 5 yrs",
+          "category": ""
+        },
+        {
+          "id": 6,
+          "en": "Inspection Tag & QR Code: Monthly inspection card signed, punched and legible",
+          "ur": "معائنہ ٹیگ: ماہانہ معائنہ کارڈ پر دستخط اور پنچ تاریخ موجود",
+          "status": "pass",
+          "standard": "Tag visibly attached with cable tie, current month punch recorded",
+          "category": ""
+        },
+        {
+          "id": 7,
+          "en": "Mounting & Accessibility: Wall bracket secure (1.2m height), 1m clear radius",
+          "ur": "تنصیب اور رسائی: 1.2 میٹر اونچائی پر مضبوط اور 1 میٹر کا راستہ صاف",
+          "status": "pass",
+          "standard": "Unobstructed 360-degree approach; photoluminescent signage visible",
+          "category": ""
+        }
+      ],
+      "signatureVerified": true,
+      "signatureSvg": null,
+      "coords": "31.7204° N, 72.9791° E",
+      "timestamp": "2026-11-24T08:32:30.744Z"
+    },
     {
       "id": "AUD-0388",
       "templateId": "CPL-WTIC-01",
